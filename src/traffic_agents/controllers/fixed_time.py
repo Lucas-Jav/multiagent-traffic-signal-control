@@ -3,6 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, ClassVar
 
+from traffic_agents.controllers.cooperative_compact import (
+    COOPERATIVE_COMPACT_CONTROLLER_ID,
+    CooperativeCompactController,
+)
 from traffic_agents.controllers.local_adaptive import (
     LOCAL_ADAPTIVE_CONTROLLER_ID,
     LocalAdaptiveController,
@@ -43,9 +47,16 @@ class FixedTimeController:
 
 def build_controller(
     controller_id: str,
-) -> FixedTimeController | LocalAdaptiveController | LocalPressureController:
+) -> (
+    FixedTimeController
+    | LocalAdaptiveController
+    | LocalPressureController
+    | CooperativeCompactController
+):
     if controller_id == FIXED_TIME_CONTROLLER_ID:
         return FixedTimeController()
+    if controller_id == COOPERATIVE_COMPACT_CONTROLLER_ID:
+        return CooperativeCompactController()
     if controller_id == LOCAL_ADAPTIVE_CONTROLLER_ID:
         return LocalAdaptiveController()
     if controller_id == LOCAL_PRESSURE_CONTROLLER_ID:

@@ -14,6 +14,7 @@ from uuid import uuid4
 
 from traffic_agents.config import ScenarioConfig
 from traffic_agents.controllers import (
+    CooperativeCompactController,
     FixedTimeController,
     LocalAdaptiveController,
     LocalPressureController,
@@ -103,7 +104,10 @@ class TraCISimulationRunner:
         self._scenario_dir = scenario_dir
         self._sumo_info = sumo_info or detect_sumo_environment()
         self._controller = build_controller(controller_id or scenario_config.controller_id)
-        if isinstance(self._controller, LocalAdaptiveController | LocalPressureController):
+        if isinstance(
+            self._controller,
+            LocalAdaptiveController | LocalPressureController | CooperativeCompactController,
+        ):
             self._controller.configure(
                 scenario_config=scenario_config,
                 scenario_dir=scenario_dir,
@@ -288,7 +292,12 @@ class TraCISimulationRunner:
 
 def _manifest_payload(
     summary: SimulationRunSummary,
-    controller: FixedTimeController | LocalAdaptiveController | LocalPressureController,
+    controller: (
+        FixedTimeController
+        | LocalAdaptiveController
+        | LocalPressureController
+        | CooperativeCompactController
+    ),
 ) -> dict[str, object]:
     return {
         "run_id": summary.run_id,

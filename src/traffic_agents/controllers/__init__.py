@@ -1,5 +1,13 @@
 """Traffic signal controllers."""
 
+from traffic_agents.controllers.cooperative_compact import (
+    COOPERATIVE_COMPACT_CONTROLLER_ID,
+    COOPERATIVE_COMPACT_CONTROLLER_VERSION,
+    CooperativeAdjustmentResult,
+    CooperativeCompactController,
+    CooperativePressureAdjustment,
+    CooperativePressureConfig,
+)
 from traffic_agents.controllers.fixed_time import (
     FIXED_TIME_CONTROLLER_ID,
     FIXED_TIME_CONTROLLER_VERSION,
@@ -33,12 +41,18 @@ from traffic_agents.controllers.phase_safety import (
 )
 
 __all__ = [
+    "COOPERATIVE_COMPACT_CONTROLLER_ID",
+    "COOPERATIVE_COMPACT_CONTROLLER_VERSION",
     "FIXED_TIME_CONTROLLER_ID",
     "FIXED_TIME_CONTROLLER_VERSION",
     "LOCAL_ADAPTIVE_CONTROLLER_ID",
     "LOCAL_ADAPTIVE_CONTROLLER_VERSION",
     "LOCAL_PRESSURE_CONTROLLER_ID",
     "LOCAL_PRESSURE_CONTROLLER_VERSION",
+    "CooperativeAdjustmentResult",
+    "CooperativeCompactController",
+    "CooperativePressureAdjustment",
+    "CooperativePressureConfig",
     "FixedTimeController",
     "LocalAdaptiveConfig",
     "LocalAdaptiveController",

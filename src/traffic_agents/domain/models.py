@@ -112,7 +112,7 @@ class CompactNeighborMessage(DomainModel):
 class AgentObservation(DomainModel):
     state: IntersectionState
     neighbor_states: tuple[NeighborState, ...] = Field(default_factory=tuple)
-    messages: tuple[NeighborMessage, ...] = Field(default_factory=tuple)
+    messages: tuple[NeighborMessage | CompactNeighborMessage, ...] = Field(default_factory=tuple)
 
 
 class ControllerDecision(DomainModel):

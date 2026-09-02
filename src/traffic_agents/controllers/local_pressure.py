@@ -326,6 +326,14 @@ class LocalPressureController:
         safety: PhaseSafetyManager,
     ) -> TrafficLightAction:
         phase_scores = phase_calculator.calculate(observation)
+        return self._decide_action_from_phase_scores(observation, phase_scores, safety)
+
+    def _decide_action_from_phase_scores(
+        self,
+        observation: AgentObservation,
+        phase_scores: Mapping[str, float],
+        safety: PhaseSafetyManager,
+    ) -> TrafficLightAction:
         current_phase_id = observation.state.current_phase
         if current_phase_id not in phase_scores:
             return TrafficLightAction.keep_phase()

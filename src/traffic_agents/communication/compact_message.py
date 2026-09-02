@@ -62,6 +62,7 @@ class CompactNeighborMessageConfig:
 class CompactNeighborMessageFactory:
     traffic_model: IntersectionTrafficModel
     topology: CommunicationTopology
+    traffic_light_ids_by_intersection: Mapping[IntersectionId, str] | None = None
     config: CompactNeighborMessageConfig = CompactNeighborMessageConfig()
 
     def build(
@@ -120,12 +121,23 @@ class CompactNeighborMessageFactory:
         source: IntersectionId,
         destination: IntersectionId,
     ) -> tuple[Movement, ...]:
-        outgoing_edge_id = f"{source}{destination}"
+        outgoing_edge_id = self._edge_id_between(source, destination)
         return tuple(
             movement
             for movement in self.traffic_model.movements
             if movement.outgoing_edge_id == outgoing_edge_id
         )
+
+    def _edge_id_between(
+        self,
+        source: IntersectionId,
+        destination: IntersectionId,
+    ) -> str:
+        if self.traffic_light_ids_by_intersection is None:
+            return f"{source}{destination}"
+        source_tls = self.traffic_light_ids_by_intersection[source]
+        destination_tls = self.traffic_light_ids_by_intersection[destination]
+        return f"{source_tls}{destination_tls}"
 
     def _outgoing_queue_summary(
         self,
