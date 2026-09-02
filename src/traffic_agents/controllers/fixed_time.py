@@ -7,6 +7,10 @@ from traffic_agents.controllers.local_adaptive import (
     LOCAL_ADAPTIVE_CONTROLLER_ID,
     LocalAdaptiveController,
 )
+from traffic_agents.controllers.local_pressure import (
+    LOCAL_PRESSURE_CONTROLLER_ID,
+    LocalPressureController,
+)
 
 FIXED_TIME_CONTROLLER_ID = "B0_FIXED"
 FIXED_TIME_CONTROLLER_VERSION = "0.1.0"
@@ -37,11 +41,15 @@ class FixedTimeController:
         }
 
 
-def build_controller(controller_id: str) -> FixedTimeController | LocalAdaptiveController:
+def build_controller(
+    controller_id: str,
+) -> FixedTimeController | LocalAdaptiveController | LocalPressureController:
     if controller_id == FIXED_TIME_CONTROLLER_ID:
         return FixedTimeController()
     if controller_id == LOCAL_ADAPTIVE_CONTROLLER_ID:
         return LocalAdaptiveController()
+    if controller_id == LOCAL_PRESSURE_CONTROLLER_ID:
+        return LocalPressureController()
 
     msg = f"Unsupported controller_id: {controller_id}"
     raise UnsupportedControllerError(msg)

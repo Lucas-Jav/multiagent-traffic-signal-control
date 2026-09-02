@@ -16,6 +16,7 @@ from traffic_agents.config import ScenarioConfig
 from traffic_agents.controllers import (
     FixedTimeController,
     LocalAdaptiveController,
+    LocalPressureController,
     build_controller,
 )
 from traffic_agents.domain import IntersectionId
@@ -102,7 +103,7 @@ class TraCISimulationRunner:
         self._scenario_dir = scenario_dir
         self._sumo_info = sumo_info or detect_sumo_environment()
         self._controller = build_controller(controller_id or scenario_config.controller_id)
-        if isinstance(self._controller, LocalAdaptiveController):
+        if isinstance(self._controller, LocalAdaptiveController | LocalPressureController):
             self._controller.configure(
                 scenario_config=scenario_config,
                 scenario_dir=scenario_dir,
@@ -287,7 +288,7 @@ class TraCISimulationRunner:
 
 def _manifest_payload(
     summary: SimulationRunSummary,
-    controller: FixedTimeController | LocalAdaptiveController,
+    controller: FixedTimeController | LocalAdaptiveController | LocalPressureController,
 ) -> dict[str, object]:
     return {
         "run_id": summary.run_id,
