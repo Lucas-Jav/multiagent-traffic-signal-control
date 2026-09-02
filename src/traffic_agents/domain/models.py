@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Annotated, ClassVar, Self
+from typing import Annotated, Any, ClassVar, Self
 
 from pydantic import BaseModel, ConfigDict, Field, NonNegativeFloat, NonNegativeInt, model_validator
 
@@ -87,10 +87,12 @@ class NeighborState(DomainModel):
 
 
 class NeighborMessage(DomainModel):
-    sender_id: IntersectionId
-    receiver_id: IntersectionId
-    timestamp: NonNegativeFloat
-    state: NeighborState
+    message_id: Annotated[str, Field(min_length=1)]
+    source: IntersectionId
+    destination: IntersectionId
+    created_step: NonNegativeInt
+    sequence: NonNegativeInt
+    payload: dict[str, Any]
 
 
 class AgentObservation(DomainModel):

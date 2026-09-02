@@ -99,10 +99,12 @@ def test_agent_observation_decision_and_simulation_step() -> None:
     local_state = make_intersection_state()
     neighbor_state = make_neighbor_state()
     message = NeighborMessage(
-        sender_id="intersection-b",
-        receiver_id="intersection-a",
-        timestamp=10.0,
-        state=neighbor_state,
+        message_id="intersection-b:0",
+        source="intersection-b",
+        destination="intersection-a",
+        created_step=10,
+        sequence=0,
+        payload={"state": neighbor_state.model_dump()},
     )
     observation = AgentObservation(
         state=local_state,
@@ -122,5 +124,5 @@ def test_agent_observation_decision_and_simulation_step() -> None:
     )
 
     assert step.observations[0].state == local_state
-    assert step.observations[0].messages[0].sender_id == "intersection-b"
+    assert step.observations[0].messages[0].source == "intersection-b"
     assert step.decisions[0].action.kind == TrafficLightActionKind.KEEP_PHASE

@@ -386,10 +386,12 @@ def test_neighbor_information_does_not_change_local_pressure_decision() -> None:
         neighbor_states=(neighbor_state,),
         messages=(
             NeighborMessage(
-                sender_id="A2",
-                receiver_id="A1",
-                timestamp=20.0,
-                state=neighbor_state,
+                message_id="A2:0",
+                source="A2",
+                destination="A1",
+                created_step=20,
+                sequence=0,
+                payload={"state": neighbor_state.model_dump()},
             ),
         ),
     )
