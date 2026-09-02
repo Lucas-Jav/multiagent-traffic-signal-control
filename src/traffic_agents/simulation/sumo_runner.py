@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import importlib
 import json
 import os
@@ -12,6 +13,7 @@ from pathlib import Path
 from typing import Protocol, cast
 from uuid import uuid4
 
+from traffic_agents.communication import grid_3x3_communication_topology
 from traffic_agents.config import ScenarioConfig
 from traffic_agents.controllers import (
     CooperativeCompactController,
@@ -27,6 +29,7 @@ from traffic_agents.simulation.traci_sensor_adapter import (
     TraCISensorConnection,
     TrafficSensorProvider,
 )
+from traffic_agents.traffic_model import MOVEMENT_MODEL_VERSION, PHASE_PLAN_VERSION
 
 
 @dataclass(frozen=True)
@@ -280,7 +283,16 @@ class TraCISimulationRunner:
             wall_time_seconds=summary.wall_time_seconds,
         )
         manifest_path.write_text(
-            json.dumps(_manifest_payload(summary_with_manifest, self._controller), indent=2) + "\n",
+            json.dumps(
+                _manifest_payload(
+                    summary_with_manifest,
+                    self._controller,
+                    self._scenario_config,
+                    self._scenario_dir,
+                ),
+                indent=2,
+            )
+            + "\n",
             encoding="utf-8",
         )
         return summary_with_manifest
@@ -298,12 +310,23 @@ def _manifest_payload(
         | LocalPressureController
         | CooperativeCompactController
     ),
+    scenario_config: ScenarioConfig,
+    scenario_dir: Path,
 ) -> dict[str, object]:
+    network_path = scenario_dir / scenario_config.network_file
+    route_path = scenario_dir / scenario_config.route_file
+    communication_topology = grid_3x3_communication_topology()
     return {
         "run_id": summary.run_id,
         "scenario_id": summary.scenario_id,
         "demand_profile": summary.demand_profile,
         "seed": summary.seed,
+        "network_sha256": _file_sha256(network_path),
+        "route_sha256": _file_sha256(route_path),
+        "phase_plan_version": PHASE_PLAN_VERSION,
+        "movement_model_version": MOVEMENT_MODEL_VERSION,
+        "turning_ratios": scenario_config.traffic.turning_ratios.model_dump(),
+        "communication_topology_sha256": communication_topology.topology_hash,
         "started_at": summary.started_at,
         "ended_at": summary.ended_at,
         "controller": controller.manifest_metadata(),
@@ -315,6 +338,14 @@ def _manifest_payload(
         },
         "metrics_finalized": False,
     }
+
+
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as file:
+        for chunk in iter(lambda: file.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _import_traci(sumo_info: SumoEnvironmentInfo) -> _TraCIModule:

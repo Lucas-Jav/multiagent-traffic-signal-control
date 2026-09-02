@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from pathlib import Path
 
 import pytest
 
+from traffic_agents.communication import grid_3x3_communication_topology
 from traffic_agents.config import ScenarioConfig
 from traffic_agents.simulation import SumoEnvironmentInfo, TraCISimulationRunner
+from traffic_agents.traffic_model import MOVEMENT_MODEL_VERSION, PHASE_PLAN_VERSION
 
 
 class FakeSimulation:
@@ -253,9 +257,10 @@ def test_traci_runner_writes_run_manifest(
         lambda module_name: fake_traci if module_name == "traci" else None,
     )
 
+    scenario_dir = make_scenario_dir(tmp_path)
     runner = TraCISimulationRunner(
         scenario_config=make_scenario_config(),
-        scenario_dir=make_scenario_dir(tmp_path),
+        scenario_dir=scenario_dir,
         sumo_info=make_sumo_info(tmp_path),
         label="test-simulation",
         artifacts_dir=tmp_path / "artifacts" / "runs",
@@ -264,11 +269,27 @@ def test_traci_runner_writes_run_manifest(
     summary = runner.run()
 
     assert summary.manifest_path is not None
-    manifest = summary.manifest_path.read_text(encoding="utf-8")
-    assert '"controller_id": "B0_FIXED"' in manifest
-    assert '"demand_profile": "S1_BALANCED"' in manifest
-    assert '"seed": 42' in manifest
-    assert '"metrics_finalized": false' in manifest
+    manifest = json.loads(summary.manifest_path.read_text(encoding="utf-8"))
+
+    assert manifest["controller"]["controller_id"] == "B0_FIXED"
+    assert manifest["demand_profile"] == "S1_BALANCED"
+    assert manifest["seed"] == 42
+    assert manifest["metrics_finalized"] is False
+    assert manifest["network_sha256"] == _sha256(scenario_dir / "network.net.xml")
+    assert manifest["route_sha256"] == _sha256(scenario_dir / "routes_s1_seed_42.rou.xml")
+    assert manifest["phase_plan_version"] == PHASE_PLAN_VERSION
+    assert manifest["movement_model_version"] == MOVEMENT_MODEL_VERSION
+    assert manifest["turning_ratios"] == {"straight": 0.6, "left": 0.2, "right": 0.2}
+    assert manifest["communication_topology_sha256"] == (
+        grid_3x3_communication_topology().topology_hash
+    )
+    assert len(manifest["network_sha256"]) == 64
+    assert len(manifest["route_sha256"]) == 64
+    assert len(manifest["communication_topology_sha256"]) == 64
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 @pytest.mark.sumo

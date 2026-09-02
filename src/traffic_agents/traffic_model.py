@@ -18,6 +18,8 @@ TurnType = Literal["straight", "left", "right"]
 PhaseKindName = Literal["GREEN", "YELLOW", "INTERGREEN"]
 
 DIRECTION_ORDER: tuple[Direction, ...] = ("north", "east", "south", "west")
+MOVEMENT_MODEL_VERSION = "grid-movement-model-v1"
+PHASE_PLAN_VERSION = "sumo-derived-protected-turn-phase-plan-v1"
 
 
 @dataclass(frozen=True)
