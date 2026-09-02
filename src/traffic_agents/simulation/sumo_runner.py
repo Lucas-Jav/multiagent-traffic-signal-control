@@ -5,6 +5,7 @@ import json
 import os
 import sys
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -13,7 +14,13 @@ from uuid import uuid4
 
 from traffic_agents.config import ScenarioConfig
 from traffic_agents.controllers import FixedTimeController, build_controller
+from traffic_agents.domain import IntersectionId
 from traffic_agents.simulation.sumo_environment import SumoEnvironmentInfo, detect_sumo_environment
+from traffic_agents.simulation.traci_sensor_adapter import (
+    TraCISensorAdapter,
+    TraCISensorConnection,
+    TrafficSensorProvider,
+)
 
 
 @dataclass(frozen=True)
@@ -171,6 +178,18 @@ class TraCISimulationRunner:
         if self._write_manifest:
             return self._write_run_manifest(summary)
         return summary
+
+    def make_sensor_provider(
+        self,
+        *,
+        traffic_light_ids: Mapping[IntersectionId, str],
+    ) -> TrafficSensorProvider:
+        return TraCISensorAdapter(
+            connection=cast(TraCISensorConnection, self._require_connection()),
+            intersections=self._scenario_config.intersections,
+            traffic_light_ids=traffic_light_ids,
+            step_length=self._scenario_config.step_length,
+        )
 
     def _sumo_command(self) -> list[str]:
         network_path = self._scenario_dir / self._scenario_config.network_file

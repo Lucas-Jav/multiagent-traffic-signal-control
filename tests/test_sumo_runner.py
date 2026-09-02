@@ -119,6 +119,7 @@ def test_traci_runner_runs_headless_steps_and_collects_metrics(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     fake_traci = FakeTraCI()
+    monkeypatch.setenv("SUMO_HOME", "")
     monkeypatch.setattr(
         "traffic_agents.simulation.sumo_runner.importlib.import_module",
         lambda module_name: fake_traci if module_name == "traci" else None,
@@ -154,6 +155,7 @@ def test_traci_runner_can_use_gui_binary_and_step_limit(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     fake_traci = FakeTraCI()
+    monkeypatch.setenv("SUMO_HOME", "")
     monkeypatch.setattr(
         "traffic_agents.simulation.sumo_runner.importlib.import_module",
         lambda module_name: fake_traci if module_name == "traci" else None,
@@ -184,6 +186,7 @@ def test_traci_runner_stops_safely_when_step_raises(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     fake_traci = FakeTraCI()
+    monkeypatch.setenv("SUMO_HOME", "")
 
     def raise_on_step() -> None:
         raise RuntimeError("step failed")
@@ -212,6 +215,7 @@ def test_traci_runner_writes_run_manifest(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     fake_traci = FakeTraCI()
+    monkeypatch.setenv("SUMO_HOME", "")
     monkeypatch.setattr(
         "traffic_agents.simulation.sumo_runner.importlib.import_module",
         lambda module_name: fake_traci if module_name == "traci" else None,
