@@ -69,9 +69,24 @@ class FlowDefinitionConfig(ConfigModel):
         return self.vehicles_per_hour[demand_level]
 
 
+class TurningRatiosConfig(ConfigModel):
+    straight: NonNegativeFloat = 0.60
+    left: NonNegativeFloat = 0.20
+    right: NonNegativeFloat = 0.20
+
+    @model_validator(mode="after")
+    def validate_total(self) -> Self:
+        total = self.straight + self.left + self.right
+        if abs(total - 1.0) > 0.000001:
+            msg = "turning ratios must sum to 1.0"
+            raise ValueError(msg)
+        return self
+
+
 class TrafficDemandConfig(ConfigModel):
     demand_profile: DemandProfileId
     demand_level: DemandLevel
+    turning_ratios: TurningRatiosConfig = Field(default_factory=TurningRatiosConfig)
     flows: Annotated[tuple[FlowDefinitionConfig, ...], Field(min_length=1)]
 
 

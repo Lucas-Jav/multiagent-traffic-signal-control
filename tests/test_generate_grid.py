@@ -328,6 +328,10 @@ def test_generate_grid_invokes_netgenerate_and_netcheck(
     metadata = metadata_path.read_text(encoding="utf-8")
     assert '"traffic_light_offsets_seconds"' in metadata
     assert '"traffic_light_layout": "incoming"' in metadata
+    assert '"phase_min_green_seconds": 10.0' in metadata
+    assert '"phase_yellow_seconds": 3.0' in metadata
+    assert '"phase_all_red_seconds": 2.0' in metadata
+    assert '"phase_max_green_seconds": 60.0' in metadata
     assert '"traffic_light_intergreen_seconds": 2.0' in metadata
     assert '"traffic_light_stop_offset_meters": 7.0' in metadata
     assert calls[0][0] == str(netgenerate)
@@ -335,4 +339,6 @@ def test_generate_grid_invokes_netgenerate_and_netcheck(
     assert "--tls.set" in calls[0]
     assert "--tls.layout" in calls[0]
     assert "incoming" in calls[0]
+    assert "--tls.yellow.time" in calls[0]
+    assert "3" in calls[0]
     assert calls[1][1].endswith("netcheck.py")

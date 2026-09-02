@@ -9,6 +9,10 @@ controller_id: B0_FIXED
 traffic:
   demand_profile: S1_BALANCED
   demand_level: MEDIUM
+  turning_ratios:
+    straight: 0.60
+    left: 0.20
+    right: 0.20
   flows:
     - flow_id: west_to_east_middle
       origin_edge_id: left1A1

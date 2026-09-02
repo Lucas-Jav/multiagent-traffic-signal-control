@@ -38,8 +38,7 @@ def main() -> int:
         runner.step()
         provider = runner.make_sensor_provider(traffic_light_ids=traffic_light_ids)
         print(
-            "intersection timestamp phase phase_elapsed queue_total "
-            "avg_in_occupancy avg_in_speed"
+            "intersection timestamp phase phase_elapsed queue_total avg_in_occupancy avg_in_speed"
         )
         for intersection_id in INTERSECTION_LABELS:
             state = provider.observe(intersection_id)

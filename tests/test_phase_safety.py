@@ -198,6 +198,26 @@ def test_phase_program_rejects_conflicting_green_states() -> None:
         )
 
 
+def test_phase_program_rejects_conflicting_green_movements() -> None:
+    with pytest.raises(UnsafePhaseProgramError, match="conflicting movements"):
+        PhaseSafetyManager(
+            phases=(
+                PhaseDefinition(
+                    phase_id="unsafe_green",
+                    phase_index=0,
+                    signal_state="GG",
+                    duration_seconds=30.0,
+                    movement_ids=("A1:north_to_south", "A1:east_to_west"),
+                ),
+            ),
+            min_green_seconds=10.0,
+            movement_conflicts={
+                "A1:north_to_south": ("A1:east_to_west",),
+                "A1:east_to_west": ("A1:north_to_south",),
+            },
+        )
+
+
 def test_allowed_transition_must_follow_sumo_sequence() -> None:
     with pytest.raises(UnsafePhaseProgramError, match="yellow/intergreen sequence"):
         PhaseSafetyManager(

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import xml.etree.ElementTree as ET
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -21,6 +20,10 @@ from traffic_agents.domain import (
     IntersectionId,
     LaneId,
     TrafficLightAction,
+)
+from traffic_agents.traffic_model import (
+    IntersectionTrafficModel,
+    load_grid_traffic_models,
 )
 
 if TYPE_CHECKING:
@@ -123,18 +126,7 @@ class LocalAdaptivePolicy:
         }
 
 
-class _TrafficLightProgramPhase(Protocol):
-    duration: float
-    state: str
-
-
-class _TrafficLightProgram(Protocol):
-    phases: tuple[_TrafficLightProgramPhase, ...]
-
-
 class _AdaptiveTrafficLight(Protocol):
-    def getAllProgramLogics(self, tls_id: str) -> tuple[_TrafficLightProgram, ...]: ...  # noqa: N802
-
     def setPhase(self, tls_id: str, index: int) -> None: ...  # noqa: N802
 
 
@@ -195,11 +187,14 @@ class LocalAdaptiveController:
             )
             self._runtime_by_intersection.update(
                 _build_runtime_by_intersection(
-                    connection=adaptive_connection,
                     intersections=scenario_config.intersections,
                     traffic_light_ids=traffic_light_ids,
                     internal_lane_ids_by_traffic_light_id=_load_internal_lane_ids_by_traffic_light_id(
                         scenario_dir / scenario_config.network_file
+                    ),
+                    traffic_models=load_grid_traffic_models(
+                        scenario_config=scenario_config,
+                        scenario_dir=scenario_dir,
                     ),
                     config=self.config,
                 )
@@ -261,16 +256,17 @@ class LocalAdaptiveController:
 
 def _build_runtime_by_intersection(
     *,
-    connection: _AdaptiveConnection,
     intersections: tuple[IntersectionConfig, ...],
     traffic_light_ids: Mapping[IntersectionId, str],
     internal_lane_ids_by_traffic_light_id: Mapping[str, tuple[LaneId, ...]],
+    traffic_models: Mapping[IntersectionId, IntersectionTrafficModel],
     config: LocalAdaptiveConfig,
 ) -> dict[IntersectionId, _IntersectionRuntime]:
     runtime_by_intersection: dict[IntersectionId, _IntersectionRuntime] = {}
     for intersection in intersections:
         traffic_light_id = traffic_light_ids[intersection.intersection_id]
-        phases = _read_phase_definitions(connection, traffic_light_id)
+        traffic_model = traffic_models[intersection.intersection_id]
+        phases = traffic_model.phases
         phase_lane_ids = _build_phase_lane_ids(intersection, phases)
         runtime_by_intersection[intersection.intersection_id] = _IntersectionRuntime(
             traffic_light_id=traffic_light_id,
@@ -279,30 +275,10 @@ def _build_runtime_by_intersection(
             safety=PhaseSafetyManager(
                 phases=phases,
                 min_green_seconds=config.min_green_seconds,
+                movement_conflicts=traffic_model.conflicts,
             ),
         )
     return runtime_by_intersection
-
-
-def _read_phase_definitions(
-    connection: _AdaptiveConnection,
-    traffic_light_id: str,
-) -> tuple[PhaseDefinition, ...]:
-    programs = connection.trafficlight.getAllProgramLogics(traffic_light_id)
-    if not programs:
-        msg = f"No SUMO traffic-light program found for {traffic_light_id}"
-        raise RuntimeError(msg)
-
-    phases = programs[0].phases
-    return tuple(
-        PhaseDefinition(
-            phase_id=f"phase_{index}",
-            phase_index=index,
-            signal_state=phase.state,
-            duration_seconds=float(phase.duration),
-        )
-        for index, phase in enumerate(phases)
-    )
 
 
 def _build_phase_lane_ids(
@@ -360,6 +336,8 @@ def _has_stopped_internal_vehicle(
 def _load_internal_lane_ids_by_traffic_light_id(
     network_path: Path,
 ) -> dict[str, tuple[LaneId, ...]]:
+    import xml.etree.ElementTree as ET
+
     tree = ET.parse(network_path)
     root = tree.getroot()
     return {

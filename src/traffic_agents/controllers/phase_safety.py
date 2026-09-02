@@ -8,6 +8,7 @@ from types import MappingProxyType
 from traffic_agents.domain import (
     AgentObservation,
     ControllerDecision,
+    MovementId,
     TrafficLightAction,
     TrafficLightActionKind,
 )
@@ -38,6 +39,7 @@ class PhaseDefinition:
     phase_index: int
     signal_state: str
     duration_seconds: float
+    movement_ids: tuple[MovementId, ...] = ()
 
     @property
     def kind(self) -> PhaseKind:
@@ -84,6 +86,7 @@ class PhaseSafetyManager:
         min_green_seconds: float,
         allowed_green_transitions: Mapping[str, tuple[str, ...]] | None = None,
         conflicting_signal_groups: tuple[tuple[int, ...], ...] = (),
+        movement_conflicts: Mapping[MovementId, tuple[MovementId, ...]] | None = None,
     ) -> None:
         if min_green_seconds < 0:
             msg = "min_green_seconds must be non-negative"
@@ -92,7 +95,7 @@ class PhaseSafetyManager:
             msg = "phases must not be empty"
             raise ValueError(msg)
 
-        _validate_phase_program(phases, conflicting_signal_groups)
+        _validate_phase_program(phases, conflicting_signal_groups, movement_conflicts or {})
         transition_map = _build_allowed_green_transitions(phases, allowed_green_transitions)
 
         object.__setattr__(self, "phases", phases)
@@ -130,9 +133,7 @@ class PhaseSafetyManager:
 
         allowed_targets = self.allowed_green_transitions[current_phase.phase_id]
         if target_phase_id not in allowed_targets:
-            msg = (
-                f"transition from {current_phase.phase_id} to {target_phase_id} is not allowed"
-            )
+            msg = f"transition from {current_phase.phase_id} to {target_phase_id} is not allowed"
             raise PhaseSafetyViolationError(msg)
 
         return PhaseCommand.set_phase(self._next_phase_after(current_phase))
@@ -181,6 +182,7 @@ class PhaseSafetyManager:
 def _validate_phase_program(
     phases: tuple[PhaseDefinition, ...],
     conflicting_signal_groups: tuple[tuple[int, ...], ...],
+    movement_conflicts: Mapping[MovementId, tuple[MovementId, ...]],
 ) -> None:
     phase_ids = {phase.phase_id for phase in phases}
     if len(phase_ids) != len(phases):
@@ -227,6 +229,17 @@ def _validate_phase_program(
                     f"{tuple(green_indexes)}"
                 )
                 raise UnsafePhaseProgramError(msg)
+
+        movement_ids = phase.movement_ids
+        for index, movement_id in enumerate(movement_ids):
+            conflicts = set(movement_conflicts.get(movement_id, ()))
+            for other_movement_id in movement_ids[index + 1 :]:
+                if other_movement_id in conflicts:
+                    msg = (
+                        f"phase {phase.phase_id} contains conflicting movements: "
+                        f"{movement_id}, {other_movement_id}"
+                    )
+                    raise UnsafePhaseProgramError(msg)
 
 
 def _build_allowed_green_transitions(

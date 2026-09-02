@@ -23,10 +23,14 @@ GRID_SIZE = 3
 SUMO_INTERNAL_TLS_IDS = "A0,A1,A2,B0,B1,B2,C0,C1,C2"
 TLS_LAYOUT = "incoming"
 TLS_APPROACH_COUNT = 4
+PHASE_MIN_GREEN_SECONDS = 10.0
+PHASE_YELLOW_SECONDS = 3.0
+PHASE_ALL_RED_SECONDS = 2.0
+PHASE_MAX_GREEN_SECONDS = 60.0
 PROTECTED_THROUGH_GREEN_SECONDS = 32.0
 PROTECTED_TURN_GREEN_SECONDS = 10.0
-PROTECTED_TURN_YELLOW_SECONDS = 3.0
-TRAFFIC_LIGHT_INTERGREEN_SECONDS = 2.0
+PROTECTED_TURN_YELLOW_SECONDS = PHASE_YELLOW_SECONDS
+TRAFFIC_LIGHT_INTERGREEN_SECONDS = PHASE_ALL_RED_SECONDS
 TLS_CYCLE_SECONDS = 98
 TLS_OFFSET_STEP_SECONDS = 10
 TRAFFIC_LIGHT_STOP_OFFSET_METERS = 7.0
@@ -82,6 +86,8 @@ def generate_grid(sumo_info: SumoEnvironmentInfo) -> GeneratedGridInfo:
             "static",
             "--tls.layout",
             TLS_LAYOUT,
+            "--tls.yellow.time",
+            _format_number(PHASE_YELLOW_SECONDS),
             "--no-turnarounds",
             "--seed",
             "42",
@@ -375,6 +381,10 @@ def write_metadata(
     payload = {
         "scenario_id": "grid_3x3",
         "traffic_light_layout": TLS_LAYOUT,
+        "phase_min_green_seconds": PHASE_MIN_GREEN_SECONDS,
+        "phase_yellow_seconds": PHASE_YELLOW_SECONDS,
+        "phase_all_red_seconds": PHASE_ALL_RED_SECONDS,
+        "phase_max_green_seconds": PHASE_MAX_GREEN_SECONDS,
         "traffic_light_intergreen_seconds": intergreen_seconds,
         "traffic_light_protected_through_green_seconds": PROTECTED_THROUGH_GREEN_SECONDS,
         "traffic_light_protected_turn_green_seconds": PROTECTED_TURN_GREEN_SECONDS,

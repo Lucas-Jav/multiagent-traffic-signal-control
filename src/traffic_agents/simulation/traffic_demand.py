@@ -225,6 +225,7 @@ class TrafficDemandGenerator:
             "seed": self._seed,
             "demand_profile": self._demand_profile,
             "demand_level": self._scenario_config.traffic.demand_level,
+            "turning_ratios": self._scenario_config.traffic.turning_ratios.model_dump(),
             "generated_at": generated_at,
             "config_hash": config_hash,
             "flows": [flow.__dict__ for flow in selected_flows],

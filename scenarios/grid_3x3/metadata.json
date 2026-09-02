@@ -1,4 +1,8 @@
 {
+  "phase_all_red_seconds": 2.0,
+  "phase_max_green_seconds": 60.0,
+  "phase_min_green_seconds": 10.0,
+  "phase_yellow_seconds": 3.0,
   "scenario_id": "grid_3x3",
   "traffic_light_ids": {
     "A1": "A2",

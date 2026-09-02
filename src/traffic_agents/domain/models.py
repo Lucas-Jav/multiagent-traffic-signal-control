@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, NonNegativeFloat, NonNegative
 type IntersectionId = Annotated[str, Field(min_length=1)]
 type LaneId = Annotated[str, Field(min_length=1)]
 type EdgeId = Annotated[str, Field(min_length=1)]
+type MovementId = Annotated[str, Field(min_length=1)]
 type Occupancy = Annotated[float, Field(ge=0.0, le=1.0)]
 
 type QueueByLane = dict[LaneId, NonNegativeInt]
@@ -60,10 +61,14 @@ class TrafficLightAction(DomainModel):
 
     @model_validator(mode="after")
     def validate_parameters(self) -> Self:
-        if self.kind in {
-            TrafficLightActionKind.KEEP_PHASE,
-            TrafficLightActionKind.REQUEST_NEXT_PHASE,
-        } and self.target_phase is not None:
+        if (
+            self.kind
+            in {
+                TrafficLightActionKind.KEEP_PHASE,
+                TrafficLightActionKind.REQUEST_NEXT_PHASE,
+            }
+            and self.target_phase is not None
+        ):
             msg = f"target_phase must be omitted for {self.kind}"
             raise ValueError(msg)
         if self.kind == TrafficLightActionKind.SWITCH_PHASE and self.target_phase is None:

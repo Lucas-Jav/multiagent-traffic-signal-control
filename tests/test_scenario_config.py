@@ -61,6 +61,9 @@ def test_load_valid_scenario_config(tmp_path: Path) -> None:
     assert scenario.simulation.seed == 42
     assert scenario.traffic.demand_profile == "S1_BALANCED"
     assert scenario.traffic.demand_level == "MEDIUM"
+    assert scenario.traffic.turning_ratios.straight == 0.60
+    assert scenario.traffic.turning_ratios.left == 0.20
+    assert scenario.traffic.turning_ratios.right == 0.20
     assert scenario.traffic.flows[0].rate_for("MEDIUM") == 600
     assert scenario.intersections[0].intersection_id == "junction_1_1"
 
@@ -108,6 +111,18 @@ def test_scenario_config_requires_all_demand_level_rates() -> None:
     del payload["traffic"]["flows"][0]["vehicles_per_hour"]["HIGH"]
 
     with pytest.raises(ValidationError, match="LOW, MEDIUM, and HIGH"):
+        ScenarioConfig.model_validate(payload)
+
+
+def test_scenario_config_rejects_invalid_turning_ratios() -> None:
+    payload = valid_payload()
+    payload["traffic"]["turning_ratios"] = {
+        "straight": 0.50,
+        "left": 0.20,
+        "right": 0.20,
+    }
+
+    with pytest.raises(ValidationError, match="turning ratios must sum"):
         ScenarioConfig.model_validate(payload)
 
 

@@ -8,6 +8,7 @@ from traffic_agents.config.scenario import (
     ScenarioConfig,
     SimulationConfig,
     TrafficDemandConfig,
+    TurningRatiosConfig,
     load_scenario_config,
     validate_scenario_config,
 )
@@ -22,6 +23,7 @@ __all__ = [
     "Settings",
     "SimulationConfig",
     "TrafficDemandConfig",
+    "TurningRatiosConfig",
     "get_settings",
     "load_scenario_config",
     "validate_scenario_config",
