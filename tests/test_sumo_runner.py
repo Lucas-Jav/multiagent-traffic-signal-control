@@ -181,6 +181,38 @@ def test_traci_runner_can_use_gui_binary_and_step_limit(
     assert "--start" in command
 
 
+def test_traci_runner_loads_scenario_viewsettings_for_gui(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_traci = FakeTraCI()
+    monkeypatch.setenv("SUMO_HOME", "")
+    monkeypatch.setattr(
+        "traffic_agents.simulation.sumo_runner.importlib.import_module",
+        lambda module_name: fake_traci if module_name == "traci" else None,
+    )
+    sumo_info = make_sumo_info(tmp_path)
+    sumo_info.sumo_gui_binary.write_text("", encoding="utf-8")
+    scenario_dir = make_scenario_dir(tmp_path)
+    viewsettings_path = scenario_dir / "viewsettings.xml"
+    viewsettings_path.write_text("<viewsettings/>", encoding="utf-8")
+
+    runner = TraCISimulationRunner(
+        scenario_config=make_scenario_config(duration_seconds=1),
+        scenario_dir=scenario_dir,
+        sumo_info=sumo_info,
+        label="test-simulation",
+        use_gui=True,
+        write_manifest=False,
+    )
+
+    runner.run()
+
+    command = fake_traci.started_commands[0]
+    assert "--gui-settings-file" in command
+    assert str(viewsettings_path) in command
+
+
 def test_traci_runner_stops_safely_when_step_raises(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

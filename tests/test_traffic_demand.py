@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import json
 import subprocess
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import pytest
 
 from traffic_agents.config import ScenarioConfig
 from traffic_agents.simulation import SumoEnvironmentInfo, TrafficDemandGenerator
+from traffic_agents.simulation.traffic_demand import apply_visual_vehicle_style
 
 
 def scenario_config() -> ScenarioConfig:
@@ -117,6 +119,9 @@ def test_traffic_demand_generator_writes_routes_and_metadata(
 
     assert generated.route_path.exists()
     assert "<flow" in route_content
+    assert 'guiShape="passenger"' in route_content
+    assert 'color="#1971c2"' in route_content
+    assert 'width="1.80"' in route_content
     assert metadata["seed"] == 42
     assert metadata["generated_at"]
     assert metadata["flows"]
@@ -177,3 +182,52 @@ def test_traffic_demand_generator_rejects_profile_mismatch(tmp_path: Path) -> No
             seed=42,
             demand_profile="S1_BALANCED_WRONG",  # type: ignore[arg-type]
         )
+
+
+def test_apply_visual_vehicle_style_adds_passenger_type_when_missing(tmp_path: Path) -> None:
+    route_path = tmp_path / "routes.rou.xml"
+    route_path.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
+<routes>
+    <flow id="flow-a" begin="0" end="10" route="route0"/>
+</routes>
+""",
+        encoding="utf-8",
+    )
+
+    apply_visual_vehicle_style(route_path)
+
+    route_content = route_path.read_text(encoding="utf-8")
+    assert '<vType id="passenger"' in route_content
+    assert 'guiShape="passenger"' in route_content
+    assert 'color="#2f80ed"' in route_content
+
+
+def test_apply_visual_vehicle_style_colors_known_flows(tmp_path: Path) -> None:
+    route_path = tmp_path / "routes.rou.xml"
+    route_path.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
+<routes>
+    <flow id="west_to_east_middle" begin="0" end="10" route="route0">
+        <route edges="left1A1 A1B1 B1C1 C1right1"/>
+    </flow>
+    <flow id="east_to_west_middle" begin="0" end="10" route="route1">
+        <route edges="right1C1 C1B1 B1A1 A1left1"/>
+    </flow>
+</routes>
+""",
+        encoding="utf-8",
+    )
+
+    apply_visual_vehicle_style(route_path)
+
+    root = ET.parse(route_path).getroot()
+    west_flow = root.find("./flow[@id='west_to_east_middle']")
+    east_flow = root.find("./flow[@id='east_to_west_middle']")
+    assert west_flow is not None
+    assert east_flow is not None
+    assert west_flow.attrib["color"] == "#1971c2"
+    assert east_flow.attrib["color"] == "#e03131"
+    west_route = west_flow.find("route")
+    assert west_route is not None
+    assert west_route.attrib["color"] == "#1971c2"

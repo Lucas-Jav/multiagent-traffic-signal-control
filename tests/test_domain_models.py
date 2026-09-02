@@ -72,10 +72,13 @@ def test_intersection_state_rejects_invalid_invariants(
 
 def test_traffic_light_action_validates_required_parameters() -> None:
     keep = TrafficLightAction.keep_phase()
+    request_next = TrafficLightAction.request_next_phase()
     switch = TrafficLightAction.switch_phase("east_west")
 
     assert keep.kind == TrafficLightActionKind.KEEP_PHASE
     assert keep.target_phase is None
+    assert request_next.kind == TrafficLightActionKind.REQUEST_NEXT_PHASE
+    assert request_next.target_phase is None
     assert switch.kind == TrafficLightActionKind.SWITCH_PHASE
     assert switch.target_phase == "east_west"
 
@@ -84,6 +87,12 @@ def test_traffic_light_action_validates_required_parameters() -> None:
 
     with pytest.raises(ValidationError, match="target_phase must be omitted"):
         TrafficLightAction(kind=TrafficLightActionKind.KEEP_PHASE, target_phase="east_west")
+
+    with pytest.raises(ValidationError, match="target_phase must be omitted"):
+        TrafficLightAction(
+            kind=TrafficLightActionKind.REQUEST_NEXT_PHASE,
+            target_phase="east_west",
+        )
 
 
 def test_agent_observation_decision_and_simulation_step() -> None:

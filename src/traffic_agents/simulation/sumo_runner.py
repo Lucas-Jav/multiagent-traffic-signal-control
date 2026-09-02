@@ -13,7 +13,11 @@ from typing import Protocol, cast
 from uuid import uuid4
 
 from traffic_agents.config import ScenarioConfig
-from traffic_agents.controllers import FixedTimeController, build_controller
+from traffic_agents.controllers import (
+    FixedTimeController,
+    LocalAdaptiveController,
+    build_controller,
+)
 from traffic_agents.domain import IntersectionId
 from traffic_agents.simulation.sumo_environment import SumoEnvironmentInfo, detect_sumo_environment
 from traffic_agents.simulation.traci_sensor_adapter import (
@@ -98,6 +102,11 @@ class TraCISimulationRunner:
         self._scenario_dir = scenario_dir
         self._sumo_info = sumo_info or detect_sumo_environment()
         self._controller = build_controller(controller_id or scenario_config.controller_id)
+        if isinstance(self._controller, LocalAdaptiveController):
+            self._controller.configure(
+                scenario_config=scenario_config,
+                scenario_dir=scenario_dir,
+            )
         self._label = label or f"traffic-agents-{uuid4()}"
         self._use_gui = use_gui
         self._step_delay_seconds = step_delay_seconds
@@ -217,6 +226,9 @@ class TraCISimulationRunner:
             "--quit-on-end",
         ]
         if self._use_gui:
+            gui_settings_path = self._scenario_dir / "viewsettings.xml"
+            if gui_settings_path.exists():
+                command.extend(["--gui-settings-file", str(gui_settings_path)])
             command.append("--start")
         return command
 
@@ -275,7 +287,7 @@ class TraCISimulationRunner:
 
 def _manifest_payload(
     summary: SimulationRunSummary,
-    controller: FixedTimeController,
+    controller: FixedTimeController | LocalAdaptiveController,
 ) -> dict[str, object]:
     return {
         "run_id": summary.run_id,

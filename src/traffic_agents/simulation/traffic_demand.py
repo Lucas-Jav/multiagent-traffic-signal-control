@@ -21,6 +21,28 @@ GENERATED_COMMENT_PATTERN = re.compile(
     r"\n?<!-- generated on .*?</duarouterConfiguration>\s*-->\s*",
     re.DOTALL,
 )
+PASSENGER_VEHICLE_VISUAL_STYLE: Mapping[str, str] = {
+    "color": "#2f80ed",
+    "guiShape": "passenger",
+    "height": "1.50",
+    "length": "5.00",
+    "width": "1.80",
+}
+DEFAULT_FLOW_COLOR = "#2f80ed"
+FLOW_VISUAL_COLORS: Mapping[str, str] = {
+    "east_to_north_turn": "#ff6b6b",
+    "east_to_south_turn": "#f59f00",
+    "east_to_west_middle": "#e03131",
+    "north_to_east_turn": "#20c997",
+    "north_to_south_middle": "#2f9e44",
+    "north_to_west_turn": "#94d82d",
+    "south_to_east_turn": "#748ffc",
+    "south_to_north_middle": "#364fc7",
+    "south_to_west_turn": "#15aabf",
+    "west_to_east_middle": "#1971c2",
+    "west_to_north_turn": "#9c36b5",
+    "west_to_south_turn": "#d6336c",
+}
 
 
 @dataclass(frozen=True)
@@ -85,6 +107,7 @@ class TrafficDemandGenerator:
 
         _remove_duarouter_alternatives(route_path)
         normalize_generated_route_header(route_path)
+        apply_visual_vehicle_style(route_path)
         _validate_route_file(route_path)
         self._write_metadata(metadata_path, selected_flows, config_hash)
 
@@ -118,9 +141,13 @@ class TrafficDemandGenerator:
                 "accel": "2.6",
                 "decel": "4.5",
                 "sigma": "0.5",
-                "length": "5.0",
+                "length": PASSENGER_VEHICLE_VISUAL_STYLE["length"],
+                "width": PASSENGER_VEHICLE_VISUAL_STYLE["width"],
+                "height": PASSENGER_VEHICLE_VISUAL_STYLE["height"],
                 "minGap": "2.5",
                 "maxSpeed": "13.89",
+                "color": PASSENGER_VEHICLE_VISUAL_STYLE["color"],
+                "guiShape": PASSENGER_VEHICLE_VISUAL_STYLE["guiShape"],
             },
         )
 
@@ -138,6 +165,7 @@ class TrafficDemandGenerator:
                     "to": flow.destination_edge_id,
                     "departLane": "best",
                     "departSpeed": "max",
+                    "color": _flow_color(flow.flow_id),
                 },
             )
 
@@ -215,6 +243,27 @@ def normalize_generated_route_header(route_path: Path) -> None:
         count=1,
     )
     route_path.write_text(normalized, encoding="utf-8")
+
+
+def apply_visual_vehicle_style(route_path: Path) -> None:
+    tree = ET.parse(route_path)
+    root = tree.getroot()
+    passenger_type = root.find("./vType[@id='passenger']")
+    if passenger_type is None:
+        passenger_type = ET.Element("vType", {"id": "passenger", "vClass": "passenger"})
+        root.insert(0, passenger_type)
+
+    for attribute, value in PASSENGER_VEHICLE_VISUAL_STYLE.items():
+        passenger_type.set(attribute, value)
+    for flow in root.findall("flow"):
+        flow_color = _flow_color(flow.attrib.get("id", ""))
+        flow.set("color", flow_color)
+        route = flow.find("route")
+        if route is not None:
+            route.set("color", flow_color)
+
+    ET.indent(tree, space="    ")
+    tree.write(route_path, encoding="utf-8", xml_declaration=True)
 
 
 def _select_flow(flow: FlowDefinitionConfig, demand_level: DemandLevel) -> SelectedFlow:
@@ -295,3 +344,7 @@ def _subprocess_env(sumo_info: SumoEnvironmentInfo) -> Mapping[str, str]:
 
 def _format_number(value: float) -> str:
     return f"{value:g}"
+
+
+def _flow_color(flow_id: str) -> str:
+    return FLOW_VISUAL_COLORS.get(flow_id, DEFAULT_FLOW_COLOR)
