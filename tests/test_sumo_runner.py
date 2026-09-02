@@ -10,6 +10,7 @@ import pytest
 import traffic_agents.simulation.sumo_runner as sumo_runner
 from traffic_agents.communication import grid_3x3_communication_topology
 from traffic_agents.config import ScenarioConfig
+from traffic_agents.experiments import RunInvariantValidationError
 from traffic_agents.metrics import StepTelemetryRecord
 from traffic_agents.simulation import SumoEnvironmentInfo, TraCISimulationRunner
 from traffic_agents.traffic_model import MOVEMENT_MODEL_VERSION, PHASE_PLAN_VERSION
@@ -136,8 +137,18 @@ def make_scenario_config(duration_seconds: int = 2) -> ScenarioConfig:
         intersections=[
             {
                 "intersection_id": "A1",
-                "incoming_lanes": ["left1A1_0"],
-                "outgoing_lanes": ["A1left1_0"],
+                "incoming_lanes": [
+                    "top1A1_0",
+                    "right1A1_0",
+                    "bottom1A1_0",
+                    "left1A1_0",
+                ],
+                "outgoing_lanes": [
+                    "A1top1_0",
+                    "A1right1_0",
+                    "A1bottom1_0",
+                    "A1left1_0",
+                ],
                 "phases": ["north_south", "east_west"],
             }
         ],
@@ -163,7 +174,31 @@ def make_sumo_info(tmp_path: Path) -> SumoEnvironmentInfo:
 def make_scenario_dir(tmp_path: Path) -> Path:
     scenario_dir = tmp_path / "scenario"
     scenario_dir.mkdir()
-    (scenario_dir / "network.net.xml").write_text("<net/>", encoding="utf-8")
+    (scenario_dir / "network.net.xml").write_text(
+        """
+<net>
+  <junction id="J1"/>
+  <tlLogic id="J1" type="static" programID="0" offset="0">
+    <phase duration="10" state="G"/>
+    <phase duration="3" state="y"/>
+    <phase duration="2" state="r"/>
+  </tlLogic>
+</net>
+""".strip(),
+        encoding="utf-8",
+    )
+    (scenario_dir / "metadata.json").write_text(
+        json.dumps(
+            {
+                "phase_min_green_seconds": 10.0,
+                "phase_yellow_seconds": 3.0,
+                "phase_all_red_seconds": 2.0,
+                "phase_max_green_seconds": 60.0,
+                "traffic_light_ids": {"A1": "J1"},
+            }
+        ),
+        encoding="utf-8",
+    )
     (scenario_dir / "routes_s1_seed_42.rou.xml").write_text("<routes/>", encoding="utf-8")
     return scenario_dir
 
@@ -294,6 +329,44 @@ def test_traci_runner_stops_safely_when_step_raises(
         runner.run()
 
     assert fake_traci.closed is True
+
+
+def test_traci_runner_fails_fast_before_traci_start_on_invalid_run_inputs(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_traci = FakeTraCI()
+    monkeypatch.setenv("SUMO_HOME", "")
+    monkeypatch.setattr(
+        "traffic_agents.simulation.sumo_runner.importlib.import_module",
+        lambda module_name: fake_traci if module_name == "traci" else None,
+    )
+    scenario_dir = make_scenario_dir(tmp_path)
+    (scenario_dir / "metadata.json").write_text(
+        json.dumps(
+            {
+                "phase_min_green_seconds": 10.0,
+                "phase_yellow_seconds": 4.0,
+                "phase_all_red_seconds": 2.0,
+                "phase_max_green_seconds": 60.0,
+                "traffic_light_ids": {"A1": "J1"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    runner = TraCISimulationRunner(
+        scenario_config=make_scenario_config(duration_seconds=1),
+        scenario_dir=scenario_dir,
+        sumo_info=make_sumo_info(tmp_path),
+        label="test-simulation",
+        write_manifest=False,
+    )
+
+    with pytest.raises(RunInvariantValidationError, match="invalid phase plan"):
+        runner.run()
+
+    assert fake_traci.started_commands == []
+    assert fake_traci.closed is False
 
 
 def test_traci_runner_writes_run_manifest(

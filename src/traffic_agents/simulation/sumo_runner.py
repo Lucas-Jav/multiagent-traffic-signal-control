@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import importlib
 import json
 import os
@@ -13,7 +12,6 @@ from pathlib import Path
 from typing import Protocol, cast
 from uuid import uuid4
 
-from traffic_agents.communication import grid_3x3_communication_topology
 from traffic_agents.config import ScenarioConfig
 from traffic_agents.controllers import (
     CooperativeCompactController,
@@ -23,6 +21,11 @@ from traffic_agents.controllers import (
     build_controller,
 )
 from traffic_agents.domain import IntersectionId
+from traffic_agents.experiments import (
+    RunInvariantFingerprint,
+    build_run_invariant_fingerprint,
+    validate_run_inputs,
+)
 from traffic_agents.metrics import StepTelemetryRecord, append_step_telemetry
 from traffic_agents.simulation.sumo_environment import SumoEnvironmentInfo, detect_sumo_environment
 from traffic_agents.simulation.traci_sensor_adapter import (
@@ -30,7 +33,6 @@ from traffic_agents.simulation.traci_sensor_adapter import (
     TraCISensorConnection,
     TrafficSensorProvider,
 )
-from traffic_agents.traffic_model import MOVEMENT_MODEL_VERSION, PHASE_PLAN_VERSION
 
 
 @dataclass(frozen=True)
@@ -128,6 +130,7 @@ class TraCISimulationRunner:
         self._write_manifest = write_manifest
         self._active_run_dir: Path | None = None
         self._telemetry_path: Path | None = None
+        self._run_invariant_fingerprint: RunInvariantFingerprint | None = None
         self._traci: _TraCIModule | None = None
         self._connection: _TraCIConnection | None = None
         self._started = False
@@ -139,6 +142,10 @@ class TraCISimulationRunner:
         if self._started:
             return
 
+        self._run_invariant_fingerprint = validate_run_inputs(
+            scenario_config=self._scenario_config,
+            scenario_dir=self._scenario_dir,
+        )
         traci = _import_traci(self._sumo_info)
         command = self._sumo_command()
         traci.start(command, label=self._label)
@@ -298,6 +305,7 @@ class TraCISimulationRunner:
                     self._controller,
                     self._scenario_config,
                     self._scenario_dir,
+                    self._run_invariant_fingerprint,
                     self._telemetry_path.name
                     if self._telemetry_path is not None and self._telemetry_path.exists()
                     else None,
@@ -343,22 +351,19 @@ def _manifest_payload(
     ),
     scenario_config: ScenarioConfig,
     scenario_dir: Path,
+    run_invariant_fingerprint: RunInvariantFingerprint | None = None,
     intersection_trace_file: str | None = None,
 ) -> dict[str, object]:
-    network_path = scenario_dir / scenario_config.network_file
-    route_path = scenario_dir / scenario_config.route_file
-    communication_topology = grid_3x3_communication_topology()
+    fingerprint = run_invariant_fingerprint or build_run_invariant_fingerprint(
+        scenario_config=scenario_config,
+        scenario_dir=scenario_dir,
+    )
     payload: dict[str, object] = {
         "run_id": summary.run_id,
         "scenario_id": summary.scenario_id,
         "demand_profile": summary.demand_profile,
         "seed": summary.seed,
-        "network_sha256": _file_sha256(network_path),
-        "route_sha256": _file_sha256(route_path),
-        "phase_plan_version": PHASE_PLAN_VERSION,
-        "movement_model_version": MOVEMENT_MODEL_VERSION,
-        "turning_ratios": scenario_config.traffic.turning_ratios.model_dump(),
-        "communication_topology_sha256": communication_topology.topology_hash,
+        **fingerprint.manifest_fields(),
         "started_at": summary.started_at,
         "ended_at": summary.ended_at,
         "controller": controller.manifest_metadata(),
@@ -373,14 +378,6 @@ def _manifest_payload(
     if intersection_trace_file is not None:
         payload["intersection_trace_file"] = intersection_trace_file
     return payload
-
-
-def _file_sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as file:
-        for chunk in iter(lambda: file.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def _import_traci(sumo_info: SumoEnvironmentInfo) -> _TraCIModule:
