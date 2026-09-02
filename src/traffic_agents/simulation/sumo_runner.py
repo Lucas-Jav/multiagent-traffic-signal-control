@@ -23,6 +23,7 @@ from traffic_agents.controllers import (
     build_controller,
 )
 from traffic_agents.domain import IntersectionId
+from traffic_agents.metrics import StepTelemetryRecord, append_step_telemetry
 from traffic_agents.simulation.sumo_environment import SumoEnvironmentInfo, detect_sumo_environment
 from traffic_agents.simulation.traci_sensor_adapter import (
     TraCISensorAdapter,
@@ -81,6 +82,10 @@ class _TraCIModule(Protocol):
     def close(self, wait: bool) -> None: ...
 
 
+class _TelemetryProducer(Protocol):
+    def pop_step_telemetry_records(self) -> tuple[StepTelemetryRecord, ...]: ...
+
+
 class TraCISimulationRunner:
     def __init__(
         self,
@@ -121,6 +126,8 @@ class TraCISimulationRunner:
         self._max_steps = max_steps
         self._artifacts_dir = artifacts_dir
         self._write_manifest = write_manifest
+        self._active_run_dir: Path | None = None
+        self._telemetry_path: Path | None = None
         self._traci: _TraCIModule | None = None
         self._connection: _TraCIConnection | None = None
         self._started = False
@@ -148,6 +155,7 @@ class TraCISimulationRunner:
         self._vehicles_departed += int(simulation.getDepartedNumber())
         self._vehicles_arrived += int(simulation.getArrivedNumber())
         self._controller.after_simulation_step(connection)
+        self._write_step_telemetry()
 
     def stop(self) -> None:
         if not self._started:
@@ -165,6 +173,7 @@ class TraCISimulationRunner:
 
     def run(self) -> SimulationRunSummary:
         run_id = self._build_run_id()
+        self._prepare_run_artifacts(run_id)
         started_at = _utc_now()
         start_time = time.perf_counter()
         try:
@@ -264,7 +273,7 @@ class TraCISimulationRunner:
         )
 
     def _write_run_manifest(self, summary: SimulationRunSummary) -> SimulationRunSummary:
-        manifest_dir = self._manifest_dir(summary.run_id)
+        manifest_dir = self._active_run_dir or self._manifest_dir(summary.run_id)
         manifest_dir.mkdir(parents=True, exist_ok=True)
         manifest_path = manifest_dir / "manifest.json"
         summary_with_manifest = SimulationRunSummary(
@@ -289,6 +298,9 @@ class TraCISimulationRunner:
                     self._controller,
                     self._scenario_config,
                     self._scenario_dir,
+                    self._telemetry_path.name
+                    if self._telemetry_path is not None and self._telemetry_path.exists()
+                    else None,
                 ),
                 indent=2,
             )
@@ -301,6 +313,25 @@ class TraCISimulationRunner:
         artifacts_dir = self._artifacts_dir or Path("artifacts") / "runs"
         return artifacts_dir / run_id
 
+    def _prepare_run_artifacts(self, run_id: str) -> None:
+        self._active_run_dir = None
+        self._telemetry_path = None
+        if not self._write_manifest:
+            return
+        self._active_run_dir = self._manifest_dir(run_id)
+        self._active_run_dir.mkdir(parents=True, exist_ok=True)
+        self._telemetry_path = self._active_run_dir / "intersection_trace.csv"
+
+    def _write_step_telemetry(self) -> None:
+        if self._telemetry_path is None:
+            return
+        producer = self._controller
+        pop_records = getattr(producer, "pop_step_telemetry_records", None)
+        if not callable(pop_records):
+            return
+        records = cast(_TelemetryProducer, producer).pop_step_telemetry_records()
+        append_step_telemetry(self._telemetry_path, records)
+
 
 def _manifest_payload(
     summary: SimulationRunSummary,
@@ -312,11 +343,12 @@ def _manifest_payload(
     ),
     scenario_config: ScenarioConfig,
     scenario_dir: Path,
+    intersection_trace_file: str | None = None,
 ) -> dict[str, object]:
     network_path = scenario_dir / scenario_config.network_file
     route_path = scenario_dir / scenario_config.route_file
     communication_topology = grid_3x3_communication_topology()
-    return {
+    payload: dict[str, object] = {
         "run_id": summary.run_id,
         "scenario_id": summary.scenario_id,
         "demand_profile": summary.demand_profile,
@@ -338,6 +370,9 @@ def _manifest_payload(
         },
         "metrics_finalized": False,
     }
+    if intersection_trace_file is not None:
+        payload["intersection_trace_file"] = intersection_trace_file
+    return payload
 
 
 def _file_sha256(path: Path) -> str:

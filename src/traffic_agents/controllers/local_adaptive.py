@@ -21,6 +21,12 @@ from traffic_agents.domain import (
     LaneId,
     TrafficLightAction,
 )
+from traffic_agents.metrics import (
+    JunctionFlowTracker,
+    StepTelemetryRecord,
+    build_step_telemetry_records,
+    internal_lane_vehicle_reader,
+)
 from traffic_agents.traffic_model import (
     IntersectionTrafficModel,
     load_grid_traffic_models,
@@ -143,6 +149,7 @@ class _AdaptiveConnection(Protocol):
 class _IntersectionRuntime:
     traffic_light_id: str
     internal_lane_ids: tuple[LaneId, ...]
+    traffic_model: IntersectionTrafficModel
     policy: LocalAdaptivePolicy
     safety: PhaseSafetyManager
 
@@ -161,12 +168,26 @@ class LocalAdaptiveController:
         init=False,
         repr=False,
     )
+    _junction_flow_tracker: JunctionFlowTracker = field(
+        default_factory=JunctionFlowTracker,
+        init=False,
+        repr=False,
+    )
+    _step_index: int = field(default=0, init=False, repr=False)
+    _telemetry_records: list[StepTelemetryRecord] = field(
+        default_factory=list,
+        init=False,
+        repr=False,
+    )
 
     def configure(self, *, scenario_config: ScenarioConfig, scenario_dir: Path) -> None:
         self._scenario_config = scenario_config
         self._scenario_dir = scenario_dir
         self._sensor_provider = None
         self._runtime_by_intersection.clear()
+        self._junction_flow_tracker = JunctionFlowTracker()
+        self._step_index = 0
+        self._telemetry_records.clear()
 
     def before_simulation_step(self, connection: Any) -> None:
         from traffic_agents.simulation.traci_sensor_adapter import (
@@ -211,6 +232,24 @@ class LocalAdaptiveController:
                 action=action,
             )
             command = runtime.safety.resolve(observation, decision)
+            junction_entries, junction_exits = self._junction_flow_tracker.update(
+                intersection_id=intersection.intersection_id,
+                internal_lane_ids=runtime.internal_lane_ids,
+                lane_reader=internal_lane_vehicle_reader(adaptive_connection),
+            )
+            self._telemetry_records.extend(
+                build_step_telemetry_records(
+                    step_index=self._step_index,
+                    observation=observation,
+                    action=action,
+                    command=command,
+                    safety=runtime.safety,
+                    traffic_model=runtime.traffic_model,
+                    turning_ratios=scenario_config.traffic.turning_ratios,
+                    junction_entries=junction_entries,
+                    junction_exits=junction_exits,
+                )
+            )
             if command.kind == PhaseCommandKind.SET_PHASE:
                 if _opens_green(command.phase_id, runtime.safety) and _has_stopped_internal_vehicle(
                     adaptive_connection,
@@ -222,9 +261,15 @@ class LocalAdaptiveController:
                     runtime.traffic_light_id,
                     command.phase_index,
                 )
+        self._step_index += 1
 
     def after_simulation_step(self, connection: Any) -> None:
         return None
+
+    def pop_step_telemetry_records(self) -> tuple[StepTelemetryRecord, ...]:
+        records = tuple(self._telemetry_records)
+        self._telemetry_records.clear()
+        return records
 
     def manifest_metadata(self) -> dict[str, str | int | float | bool]:
         return {
@@ -271,6 +316,7 @@ def _build_runtime_by_intersection(
         runtime_by_intersection[intersection.intersection_id] = _IntersectionRuntime(
             traffic_light_id=traffic_light_id,
             internal_lane_ids=internal_lane_ids_by_traffic_light_id.get(traffic_light_id, ()),
+            traffic_model=traffic_model,
             policy=LocalAdaptivePolicy(config=config, phase_lane_ids=phase_lane_ids),
             safety=PhaseSafetyManager(
                 phases=phases,

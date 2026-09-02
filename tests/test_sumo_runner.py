@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import csv
 import hashlib
 import json
 from pathlib import Path
 
 import pytest
 
+import traffic_agents.simulation.sumo_runner as sumo_runner
 from traffic_agents.communication import grid_3x3_communication_topology
 from traffic_agents.config import ScenarioConfig
+from traffic_agents.metrics import StepTelemetryRecord
 from traffic_agents.simulation import SumoEnvironmentInfo, TraCISimulationRunner
 from traffic_agents.traffic_model import MOVEMENT_MODEL_VERSION, PHASE_PLAN_VERSION
 
@@ -53,6 +56,48 @@ class FakeTraCI:
     def close(self, wait: bool) -> None:
         assert wait is False
         self.closed = True
+
+
+class FakeTelemetryController:
+    controller_id = "TELEMETRY_FAKE"
+    controller_version = "0.1.0"
+
+    def before_simulation_step(self, connection: FakeConnection) -> None:
+        return None
+
+    def after_simulation_step(self, connection: FakeConnection) -> None:
+        return None
+
+    def manifest_metadata(self) -> dict[str, str | bool]:
+        return {
+            "controller_id": self.controller_id,
+            "controller_version": self.controller_version,
+            "adaptive_adjustments_enabled": True,
+        }
+
+    def pop_step_telemetry_records(self) -> tuple[StepTelemetryRecord, ...]:
+        return (
+            StepTelemetryRecord(
+                step_index=0,
+                timestamp=0.0,
+                intersection_id="A1",
+                movement_id="A1:north_to_south",
+                approach_id="top0A2",
+                queue=1,
+                occupancy=0.2,
+                speed=3.0,
+                current_phase="phase_0",
+                phase_elapsed=4.0,
+                requested_phase="phase_3",
+                actual_phase="phase_1",
+                safety_override=True,
+                turn_count_straight=0.6,
+                turn_count_left=0.2,
+                turn_count_right=0.2,
+                junction_entries=1,
+                junction_exits=0,
+            ),
+        )
 
 
 def make_scenario_config(duration_seconds: int = 2) -> ScenarioConfig:
@@ -286,6 +331,45 @@ def test_traci_runner_writes_run_manifest(
     assert len(manifest["network_sha256"]) == 64
     assert len(manifest["route_sha256"]) == 64
     assert len(manifest["communication_topology_sha256"]) == 64
+
+
+def test_traci_runner_writes_intersection_trace_for_telemetry_controller(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_traci = FakeTraCI()
+    monkeypatch.setenv("SUMO_HOME", "")
+    monkeypatch.setattr(
+        "traffic_agents.simulation.sumo_runner.importlib.import_module",
+        lambda module_name: fake_traci if module_name == "traci" else None,
+    )
+    monkeypatch.setattr(
+        sumo_runner,
+        "build_controller",
+        lambda _controller_id: FakeTelemetryController(),
+    )
+    scenario_dir = make_scenario_dir(tmp_path)
+    runner = TraCISimulationRunner(
+        scenario_config=make_scenario_config(duration_seconds=1),
+        scenario_dir=scenario_dir,
+        sumo_info=make_sumo_info(tmp_path),
+        label="test-simulation",
+        artifacts_dir=tmp_path / "artifacts" / "runs",
+    )
+
+    summary = runner.run()
+
+    assert summary.manifest_path is not None
+    manifest = json.loads(summary.manifest_path.read_text(encoding="utf-8"))
+    trace_path = summary.manifest_path.parent / manifest["intersection_trace_file"]
+    with trace_path.open(encoding="utf-8", newline="") as file:
+        rows = list(csv.DictReader(file))
+
+    assert rows[0]["intersection_id"] == "A1"
+    assert rows[0]["movement_id"] == "A1:north_to_south"
+    assert rows[0]["requested_phase"] == "phase_3"
+    assert rows[0]["actual_phase"] == "phase_1"
+    assert rows[0]["safety_override"] == "True"
 
 
 def _sha256(path: Path) -> str:
