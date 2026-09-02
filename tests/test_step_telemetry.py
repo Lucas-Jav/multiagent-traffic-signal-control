@@ -9,6 +9,9 @@ from traffic_agents.controllers import PhaseDefinition, PhaseSafetyManager
 from traffic_agents.domain import AgentObservation, IntersectionState, TrafficLightAction
 from traffic_agents.metrics import (
     JunctionFlowTracker,
+    JunctionStepMetrics,
+    MovementQueueStats,
+    MovementQueueTracker,
     StepTelemetryRecord,
     append_step_telemetry,
     build_step_telemetry_records,
@@ -127,8 +130,17 @@ def test_build_step_telemetry_records_contains_scientific_debug_fields() -> None
         safety=safety,
         traffic_model=traffic_model,
         turning_ratios=TurningRatiosConfig(straight=0.6, left=0.2, right=0.2),
-        junction_entries=3,
-        junction_exits=1,
+        junction_metrics=JunctionStepMetrics(
+            entries=3,
+            exits=1,
+            blocking_events=2,
+            internal_vehicle_count=1,
+        ),
+        movement_queue_stats={
+            "A1:straight": MovementQueueStats(mean=7.5, max=10),
+            "A1:left": MovementQueueStats(mean=7.5, max=10),
+            "A1:right": MovementQueueStats(mean=2.5, max=5),
+        },
     )
 
     assert len(records) == 3
@@ -149,6 +161,11 @@ def test_build_step_telemetry_records_contains_scientific_debug_fields() -> None
     assert first.turn_count_right == 1.0
     assert first.junction_entries == 3
     assert first.junction_exits == 1
+    assert first.junction_blocking_events == 2
+    assert first.clearance_violations == 0
+    assert abs(first.turn_completion_count - (6 / 9)) < 0.000001
+    assert first.movement_queue_mean == 7.5
+    assert first.movement_queue_max == 10
 
 
 def test_junction_flow_tracker_counts_entries_and_exits_without_logging_vehicle_positions() -> None:
@@ -165,21 +182,70 @@ def test_junction_flow_tracker_counts_entries_and_exits_without_logging_vehicle_
     tracker = JunctionFlowTracker()
     lane_reader = FakeLaneReader()
 
-    assert tracker.update(
+    first = tracker.update(
         intersection_id="A1",
         internal_lane_ids=(":A1_0_0", ":A1_1_0"),
         lane_reader=lane_reader,
-    ) == (2, 0)
+    )
+    assert first.entries == 2
+    assert first.exits == 0
+    assert first.blocking_events == 0
     lane_reader.vehicle_ids = {
         ":A1_0_0": ("veh-b", "veh-c"),
         ":A1_1_0": (),
     }
 
-    assert tracker.update(
+    second = tracker.update(
         intersection_id="A1",
         internal_lane_ids=(":A1_0_0", ":A1_1_0"),
         lane_reader=lane_reader,
-    ) == (1, 1)
+    )
+    assert second.entries == 1
+    assert second.exits == 1
+    assert second.blocking_events == 1
+
+
+def test_clearance_violation_flags_green_with_internal_vehicle_present() -> None:
+    traffic_model = make_traffic_model()
+    safety = PhaseSafetyManager(phases=traffic_model.phases, min_green_seconds=10.0)
+    command = safety.resolve_action(make_observation(), TrafficLightAction.keep_phase())
+
+    records = build_step_telemetry_records(
+        step_index=12,
+        observation=make_observation(),
+        action=TrafficLightAction.keep_phase(),
+        command=command,
+        safety=safety,
+        traffic_model=traffic_model,
+        turning_ratios=TurningRatiosConfig(straight=0.6, left=0.2, right=0.2),
+        junction_metrics=JunctionStepMetrics(
+            entries=0,
+            exits=0,
+            blocking_events=1,
+            internal_vehicle_count=1,
+        ),
+    )
+
+    assert records[0].clearance_violations == 1
+
+
+def test_movement_queue_tracker_reports_running_mean_and_max() -> None:
+    traffic_model = make_traffic_model()
+    tracker = MovementQueueTracker()
+    tracker.update(observation=make_observation(), traffic_model=traffic_model)
+    updated = tracker.update(
+        observation=AgentObservation(
+            state=make_observation().state.model_copy(
+                update={"incoming_queue": {"north_in_0": 4, "east_in_0": 9}}
+            )
+        ),
+        traffic_model=traffic_model,
+    )
+
+    assert updated["A1:straight"].mean == 7.0
+    assert updated["A1:straight"].max == 10
+    assert updated["A1:right"].mean == 7.0
+    assert updated["A1:right"].max == 9
 
 
 def test_append_step_telemetry_writes_csv_without_vehicle_position_columns(tmp_path: Path) -> None:
@@ -206,6 +272,11 @@ def test_append_step_telemetry_writes_csv_without_vehicle_position_columns(tmp_p
                 turn_count_right=0.4,
                 junction_entries=1,
                 junction_exits=0,
+                junction_blocking_events=0,
+                clearance_violations=0,
+                turn_completion_count=0.0,
+                movement_queue_mean=2.0,
+                movement_queue_max=2,
             ),
         ),
     )

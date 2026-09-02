@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Protocol, cast
@@ -35,6 +36,25 @@ class StepTelemetryRecord:
     turn_count_right: float
     junction_entries: int
     junction_exits: int
+    junction_blocking_events: int
+    clearance_violations: int
+    turn_completion_count: float
+    movement_queue_mean: float
+    movement_queue_max: int
+
+
+@dataclass(frozen=True)
+class JunctionStepMetrics:
+    entries: int
+    exits: int
+    blocking_events: int
+    internal_vehicle_count: int
+
+
+@dataclass(frozen=True)
+class MovementQueueStats:
+    mean: float
+    max: int
 
 
 class InternalLaneVehicleReader(Protocol):
@@ -51,7 +71,7 @@ class JunctionFlowTracker:
         intersection_id: IntersectionId,
         internal_lane_ids: tuple[str, ...],
         lane_reader: InternalLaneVehicleReader | None,
-    ) -> tuple[int, int]:
+    ) -> JunctionStepMetrics:
         current_vehicle_ids = _read_internal_vehicle_ids(lane_reader, internal_lane_ids)
         previous_vehicle_ids = self._vehicle_ids_by_intersection.get(
             intersection_id,
@@ -60,7 +80,48 @@ class JunctionFlowTracker:
         self._vehicle_ids_by_intersection[intersection_id] = current_vehicle_ids
         entries = len(current_vehicle_ids - previous_vehicle_ids)
         exits = len(previous_vehicle_ids - current_vehicle_ids)
-        return entries, exits
+        blocking_events = len(current_vehicle_ids & previous_vehicle_ids)
+        return JunctionStepMetrics(
+            entries=entries,
+            exits=exits,
+            blocking_events=blocking_events,
+            internal_vehicle_count=len(current_vehicle_ids),
+        )
+
+
+class MovementQueueTracker:
+    def __init__(self) -> None:
+        self._total_by_movement: dict[str, int] = {}
+        self._samples_by_movement: dict[str, int] = {}
+        self._max_by_movement: dict[str, int] = {}
+
+    def update(
+        self,
+        *,
+        observation: AgentObservation,
+        traffic_model: IntersectionTrafficModel,
+    ) -> dict[str, MovementQueueStats]:
+        stats: dict[str, MovementQueueStats] = {}
+        for movement in traffic_model.movements:
+            queue = observation.state.incoming_queue.get(movement.incoming_lane_id, 0)
+            self._total_by_movement[movement.movement_id] = (
+                self._total_by_movement.get(movement.movement_id, 0) + queue
+            )
+            self._samples_by_movement[movement.movement_id] = (
+                self._samples_by_movement.get(movement.movement_id, 0) + 1
+            )
+            self._max_by_movement[movement.movement_id] = max(
+                queue,
+                self._max_by_movement.get(movement.movement_id, 0),
+            )
+            stats[movement.movement_id] = MovementQueueStats(
+                mean=(
+                    self._total_by_movement[movement.movement_id]
+                    / self._samples_by_movement[movement.movement_id]
+                ),
+                max=self._max_by_movement[movement.movement_id],
+            )
+        return stats
 
 
 def build_step_telemetry_records(
@@ -72,15 +133,26 @@ def build_step_telemetry_records(
     safety: PhaseSafetyManager,
     traffic_model: IntersectionTrafficModel,
     turning_ratios: TurningRatiosConfig,
-    junction_entries: int,
-    junction_exits: int,
+    junction_metrics: JunctionStepMetrics,
+    movement_queue_stats: Mapping[str, MovementQueueStats] | None = None,
 ) -> tuple[StepTelemetryRecord, ...]:
     state = observation.state
     requested_phase = requested_phase_id(observation, action, safety)
+    clearance_violations = _clearance_violations(
+        command=command,
+        safety=safety,
+        internal_vehicle_count=junction_metrics.internal_vehicle_count,
+    )
     turn_counts = _turn_counts(
         observation=observation,
         traffic_model=traffic_model,
         turning_ratios=turning_ratios,
+    )
+    turn_completion_counts = _turn_completion_counts(
+        observation=observation,
+        traffic_model=traffic_model,
+        turning_ratios=turning_ratios,
+        junction_exits=junction_metrics.exits,
     )
     return tuple(
         StepTelemetryRecord(
@@ -100,8 +172,21 @@ def build_step_telemetry_records(
             turn_count_straight=turn_counts["straight"],
             turn_count_left=turn_counts["left"],
             turn_count_right=turn_counts["right"],
-            junction_entries=junction_entries,
-            junction_exits=junction_exits,
+            junction_entries=junction_metrics.entries,
+            junction_exits=junction_metrics.exits,
+            junction_blocking_events=junction_metrics.blocking_events,
+            clearance_violations=clearance_violations,
+            turn_completion_count=turn_completion_counts.get(movement.movement_id, 0.0),
+            movement_queue_mean=_movement_queue_stats(
+                movement_queue_stats,
+                movement.movement_id,
+                state.incoming_queue.get(movement.incoming_lane_id, 0),
+            ).mean,
+            movement_queue_max=_movement_queue_stats(
+                movement_queue_stats,
+                movement.movement_id,
+                state.incoming_queue.get(movement.incoming_lane_id, 0),
+            ).max,
         )
         for movement in traffic_model.movements
     )
@@ -162,6 +247,64 @@ def _turn_counts(
         queue = observation.state.incoming_queue.get(movement.incoming_lane_id, 0)
         turn_counts[movement.turn_type] += queue * _turn_ratio(turning_ratios, movement.turn_type)
     return turn_counts
+
+
+def _turn_completion_counts(
+    *,
+    observation: AgentObservation,
+    traffic_model: IntersectionTrafficModel,
+    turning_ratios: TurningRatiosConfig,
+    junction_exits: int,
+) -> dict[str, float]:
+    if junction_exits <= 0:
+        return {movement.movement_id: 0.0 for movement in traffic_model.movements}
+
+    weights = {
+        movement.movement_id: (
+            observation.state.incoming_queue.get(movement.incoming_lane_id, 0)
+            * _turn_ratio(turning_ratios, movement.turn_type)
+        )
+        for movement in traffic_model.movements
+    }
+    total_weight = sum(weights.values())
+    if total_weight <= 0:
+        weights = {
+            movement.movement_id: _turn_ratio(turning_ratios, movement.turn_type)
+            for movement in traffic_model.movements
+        }
+        total_weight = sum(weights.values())
+
+    return {
+        movement_id: junction_exits * weight / total_weight
+        for movement_id, weight in weights.items()
+    }
+
+
+def _clearance_violations(
+    *,
+    command: PhaseCommand,
+    safety: PhaseSafetyManager,
+    internal_vehicle_count: int,
+) -> int:
+    if internal_vehicle_count <= 0:
+        return 0
+    actual_phase = next(phase for phase in safety.phases if phase.phase_id == command.phase_id)
+    if actual_phase.kind == PhaseKind.GREEN:
+        return 1
+    return 0
+
+
+def _movement_queue_stats(
+    movement_queue_stats: Mapping[str, MovementQueueStats] | None,
+    movement_id: str,
+    current_queue: int,
+) -> MovementQueueStats:
+    if movement_queue_stats is None:
+        return MovementQueueStats(mean=float(current_queue), max=current_queue)
+    return movement_queue_stats.get(
+        movement_id,
+        MovementQueueStats(mean=float(current_queue), max=current_queue),
+    )
 
 
 def _turn_ratio(turning_ratios: TurningRatiosConfig, turn_type: TurnType) -> float:

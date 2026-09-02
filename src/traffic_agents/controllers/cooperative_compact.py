@@ -44,6 +44,7 @@ from traffic_agents.domain import (
 )
 from traffic_agents.metrics import (
     JunctionFlowTracker,
+    MovementQueueTracker,
     StepTelemetryRecord,
     build_step_telemetry_records,
     internal_lane_vehicle_reader,
@@ -306,6 +307,11 @@ class CooperativeCompactController:
         init=False,
         repr=False,
     )
+    _movement_queue_tracker: MovementQueueTracker = field(
+        default_factory=MovementQueueTracker,
+        init=False,
+        repr=False,
+    )
     _telemetry_records: list[StepTelemetryRecord] = field(
         default_factory=list,
         init=False,
@@ -325,6 +331,7 @@ class CooperativeCompactController:
         self._step_index = 0
         self._sequence_by_source.clear()
         self._junction_flow_tracker = JunctionFlowTracker()
+        self._movement_queue_tracker = MovementQueueTracker()
         self._telemetry_records.clear()
 
     def decide(self, observation: AgentObservation) -> TrafficLightAction:
@@ -419,10 +426,14 @@ class CooperativeCompactController:
                 action=action,
             )
             command = runtime.safety.resolve(observation, decision)
-            junction_entries, junction_exits = self._junction_flow_tracker.update(
+            junction_metrics = self._junction_flow_tracker.update(
                 intersection_id=intersection.intersection_id,
                 internal_lane_ids=runtime.internal_lane_ids,
                 lane_reader=internal_lane_vehicle_reader(cooperative_connection),
+            )
+            movement_queue_stats = self._movement_queue_tracker.update(
+                observation=observation,
+                traffic_model=runtime.traffic_model,
             )
             self._telemetry_records.extend(
                 build_step_telemetry_records(
@@ -433,8 +444,8 @@ class CooperativeCompactController:
                     safety=runtime.safety,
                     traffic_model=runtime.traffic_model,
                     turning_ratios=scenario_config.traffic.turning_ratios,
-                    junction_entries=junction_entries,
-                    junction_exits=junction_exits,
+                    junction_metrics=junction_metrics,
+                    movement_queue_stats=movement_queue_stats,
                 )
             )
             if command.kind == PhaseCommandKind.SET_PHASE:

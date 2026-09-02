@@ -96,6 +96,11 @@ class FakeTelemetryController:
                 turn_count_right=0.2,
                 junction_entries=1,
                 junction_exits=0,
+                junction_blocking_events=0,
+                clearance_violations=0,
+                turn_completion_count=0.0,
+                movement_queue_mean=1.0,
+                movement_queue_max=1,
             ),
         )
 
@@ -370,6 +375,11 @@ def test_traci_runner_writes_intersection_trace_for_telemetry_controller(
     assert rows[0]["requested_phase"] == "phase_3"
     assert rows[0]["actual_phase"] == "phase_1"
     assert rows[0]["safety_override"] == "True"
+    assert rows[0]["junction_blocking_events"] == "0"
+    assert rows[0]["clearance_violations"] == "0"
+    assert rows[0]["turn_completion_count"] == "0.0"
+    assert rows[0]["movement_queue_mean"] == "1.0"
+    assert rows[0]["movement_queue_max"] == "1"
 
 
 def _sha256(path: Path) -> str:
