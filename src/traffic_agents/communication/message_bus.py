@@ -11,7 +11,9 @@ from traffic_agents.communication.topology import (
     CommunicationTopology,
     CommunicationTopologyError,
 )
-from traffic_agents.domain import IntersectionId, NeighborMessage
+from traffic_agents.domain import CompactNeighborMessage, IntersectionId, NeighborMessage
+
+type CommunicationMessage = NeighborMessage | CompactNeighborMessage
 
 
 class MessageBusError(ValueError):
@@ -52,7 +54,7 @@ class MessageBusMetrics:
 @dataclass(frozen=True)
 class _QueuedMessage:
     deliver_at_step: int
-    message: NeighborMessage
+    message: CommunicationMessage
 
 
 @dataclass
@@ -111,21 +113,11 @@ class MessageBus:
         created_step: int,
         payload: Mapping[str, Any],
     ) -> NeighborMessage:
-        if created_step < 0:
-            msg = "created_step must be non-negative"
-            raise MessageBusError(msg)
-        if source not in self._destinations:
-            msg = f"invalid message source: {source}"
-            raise MessageBusError(msg)
-        if destination not in self._destinations:
-            msg = f"invalid message destination: {destination}"
-            raise MessageBusError(msg)
-        if self.topology is not None:
-            try:
-                self.topology.require_can_communicate(source, destination)
-            except CommunicationTopologyError as exc:
-                raise MessageBusError(str(exc)) from exc
-
+        self._validate_envelope(
+            source=source,
+            destination=destination,
+            created_step=created_step,
+        )
         sequence = self._next_sequence(source)
         message = NeighborMessage(
             message_id=f"{source}:{sequence}",
@@ -135,23 +127,10 @@ class MessageBus:
             sequence=sequence,
             payload=dict(payload),
         )
-        serialized_bytes = len(serialize_message(message))
-        self._metrics = MessageBusMetrics(
-            messages_sent=self._metrics.messages_sent + 1,
-            messages_delivered=self._metrics.messages_delivered,
-            serialized_bytes=self._metrics.serialized_bytes + serialized_bytes,
-            messages_dropped=self._metrics.messages_dropped,
-            stale_messages=self._metrics.stale_messages,
-        )
+        self._record_sent(message)
 
         if self._should_drop():
-            self._metrics = MessageBusMetrics(
-                messages_sent=self._metrics.messages_sent,
-                messages_delivered=self._metrics.messages_delivered,
-                serialized_bytes=self._metrics.serialized_bytes,
-                messages_dropped=self._metrics.messages_dropped + 1,
-                stale_messages=self._metrics.stale_messages,
-            )
+            self._record_dropped()
             return message
 
         self._queues_by_destination[destination].append(
@@ -162,12 +141,32 @@ class MessageBus:
         )
         return message
 
+    def publish_compact(self, message: CompactNeighborMessage) -> CompactNeighborMessage:
+        self._validate_envelope(
+            source=message.source,
+            destination=message.destination,
+            created_step=message.created_step,
+        )
+        self._record_sent(message)
+
+        if self._should_drop():
+            self._record_dropped()
+            return message
+
+        self._queues_by_destination[message.destination].append(
+            _QueuedMessage(
+                deliver_at_step=message.created_step + self.config.delay_steps,
+                message=message,
+            )
+        )
+        return message
+
     def receive(
         self,
         *,
         destination: IntersectionId,
         current_step: int,
-    ) -> tuple[NeighborMessage, ...]:
+    ) -> tuple[CommunicationMessage, ...]:
         if current_step < 0:
             msg = "current_step must be non-negative"
             raise MessageBusError(msg)
@@ -194,7 +193,8 @@ class MessageBus:
                 queued.deliver_at_step,
                 queued.message.created_step,
                 queued.message.sequence,
-                queued.message.message_id,
+                queued.message.source,
+                queued.message.destination,
             )
         )
         messages = tuple(queued.message for queued in deliverable)
@@ -220,6 +220,47 @@ class MessageBus:
         self._sequence_by_source[source] = sequence + 1
         return sequence
 
+    def _validate_envelope(
+        self,
+        *,
+        source: IntersectionId,
+        destination: IntersectionId,
+        created_step: int,
+    ) -> None:
+        if created_step < 0:
+            msg = "created_step must be non-negative"
+            raise MessageBusError(msg)
+        if source not in self._destinations:
+            msg = f"invalid message source: {source}"
+            raise MessageBusError(msg)
+        if destination not in self._destinations:
+            msg = f"invalid message destination: {destination}"
+            raise MessageBusError(msg)
+        if self.topology is not None:
+            try:
+                self.topology.require_can_communicate(source, destination)
+            except CommunicationTopologyError as exc:
+                raise MessageBusError(str(exc)) from exc
+
+    def _record_sent(self, message: CommunicationMessage) -> None:
+        serialized_bytes = len(serialize_message(message))
+        self._metrics = MessageBusMetrics(
+            messages_sent=self._metrics.messages_sent + 1,
+            messages_delivered=self._metrics.messages_delivered,
+            serialized_bytes=self._metrics.serialized_bytes + serialized_bytes,
+            messages_dropped=self._metrics.messages_dropped,
+            stale_messages=self._metrics.stale_messages,
+        )
+
+    def _record_dropped(self) -> None:
+        self._metrics = MessageBusMetrics(
+            messages_sent=self._metrics.messages_sent,
+            messages_delivered=self._metrics.messages_delivered,
+            serialized_bytes=self._metrics.serialized_bytes,
+            messages_dropped=self._metrics.messages_dropped + 1,
+            stale_messages=self._metrics.stale_messages,
+        )
+
     def _should_drop(self) -> bool:
         if self.config.drop_probability <= 0.0:
             return False
@@ -228,13 +269,13 @@ class MessageBus:
             raise MessageBusError(msg)
         return self.rng.random() < self.config.drop_probability
 
-    def _is_stale(self, message: NeighborMessage, current_step: int) -> bool:
+    def _is_stale(self, message: CommunicationMessage, current_step: int) -> bool:
         if self.config.stale_after_steps is None:
             return False
         return current_step - message.created_step > self.config.stale_after_steps
 
 
-def serialize_message(message: NeighborMessage) -> bytes:
+def serialize_message(message: CommunicationMessage) -> bytes:
     payload = message.model_dump(mode="json")
     encoded = json.dumps(
         payload,

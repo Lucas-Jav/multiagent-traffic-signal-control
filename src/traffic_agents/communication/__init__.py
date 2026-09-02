@@ -1,6 +1,13 @@
 """Agent communication primitives."""
 
+from traffic_agents.communication.compact_message import (
+    CompactNeighborMessageConfig,
+    CompactNeighborMessageError,
+    CompactNeighborMessageFactory,
+    compact_message_payload,
+)
 from traffic_agents.communication.message_bus import (
+    CommunicationMessage,
     MessageBus,
     MessageBusConfig,
     MessageBusError,
@@ -20,12 +27,17 @@ __all__ = [
     "GRID_3X3_COMMUNICATION_NEIGHBORS",
     "GRID_3X3_COMMUNICATION_TOPOLOGY_ID",
     "GRID_3X3_INTERSECTION_IDS",
+    "CommunicationMessage",
     "CommunicationTopology",
     "CommunicationTopologyError",
+    "CompactNeighborMessageConfig",
+    "CompactNeighborMessageError",
+    "CompactNeighborMessageFactory",
     "MessageBus",
     "MessageBusConfig",
     "MessageBusError",
     "MessageBusMetrics",
+    "compact_message_payload",
     "grid_3x3_communication_topology",
     "serialize_message",
 ]

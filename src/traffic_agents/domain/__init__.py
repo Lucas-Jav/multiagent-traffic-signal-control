@@ -2,6 +2,7 @@
 
 from traffic_agents.domain.models import (
     AgentObservation,
+    CompactNeighborMessage,
     ControllerDecision,
     EdgeId,
     IntersectionId,
@@ -17,6 +18,7 @@ from traffic_agents.domain.models import (
 
 __all__ = [
     "AgentObservation",
+    "CompactNeighborMessage",
     "ControllerDecision",
     "EdgeId",
     "IntersectionId",

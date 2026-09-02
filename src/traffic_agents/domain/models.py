@@ -15,6 +15,7 @@ type QueueByLane = dict[LaneId, NonNegativeInt]
 type OccupancyByLane = dict[LaneId, Occupancy]
 type SpeedByLane = dict[LaneId, NonNegativeFloat]
 type ArrivalRateByEdge = dict[EdgeId, NonNegativeFloat]
+type QueueSummary = dict[str, NonNegativeFloat]
 
 
 class DomainModel(BaseModel):
@@ -93,6 +94,19 @@ class NeighborMessage(DomainModel):
     created_step: NonNegativeInt
     sequence: NonNegativeInt
     payload: dict[str, Any]
+
+
+class CompactNeighborMessage(DomainModel):
+    source: IntersectionId
+    destination: IntersectionId
+    created_step: NonNegativeInt
+    sequence: NonNegativeInt
+    source_timestamp: NonNegativeFloat
+    outgoing_pressure: float
+    outgoing_queue_summary: QueueSummary
+    arrival_trend: NonNegativeFloat
+    downstream_occupancy: Occupancy
+    active_phase_group: Annotated[str, Field(min_length=1)]
 
 
 class AgentObservation(DomainModel):
