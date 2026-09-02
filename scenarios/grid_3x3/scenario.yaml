@@ -1,0 +1,34 @@
+scenario_id: grid_3x3
+network_file: grid_3x3.net.xml
+route_file: grid_3x3.rou.xml
+duration_seconds: 3600
+warmup_seconds: 300
+step_length: 1.0
+seed: 42
+controller_id: fixed_time
+traffic:
+  demand_level: medium
+  flows:
+    - flow_id: west_to_east_main
+      origin_edge_id: west_in
+      destination_edge_id: east_out
+      begin_seconds: 0
+      end_seconds: 3600
+      vehicles_per_hour: 900
+    - flow_id: north_to_south_main
+      origin_edge_id: north_in
+      destination_edge_id: south_out
+      begin_seconds: 0
+      end_seconds: 3600
+      vehicles_per_hour: 700
+intersections:
+  - intersection_id: junction_1_1
+    incoming_lanes:
+      - west_in_0
+      - north_in_0
+    outgoing_lanes:
+      - east_out_0
+      - south_out_0
+    phases:
+      - north_south
+      - east_west
