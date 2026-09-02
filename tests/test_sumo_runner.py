@@ -141,6 +141,36 @@ def test_traci_runner_runs_headless_steps_and_collects_metrics(
     assert command[0].endswith("sumo.exe")
     assert "--net-file" in command
     assert "--route-files" in command
+    assert "--start" not in command
+
+
+def test_traci_runner_can_use_gui_binary_and_step_limit(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_traci = FakeTraCI()
+    monkeypatch.setattr(
+        "traffic_agents.simulation.sumo_runner.importlib.import_module",
+        lambda module_name: fake_traci if module_name == "traci" else None,
+    )
+    sumo_info = make_sumo_info(tmp_path)
+    sumo_info.sumo_gui_binary.write_text("", encoding="utf-8")
+
+    runner = TraCISimulationRunner(
+        scenario_config=make_scenario_config(duration_seconds=10),
+        scenario_dir=make_scenario_dir(tmp_path),
+        sumo_info=sumo_info,
+        label="test-simulation",
+        use_gui=True,
+        max_steps=2,
+    )
+
+    summary = runner.run()
+
+    assert summary.steps_executed == 2
+    command = fake_traci.started_commands[0]
+    assert command[0].endswith("sumo-gui.exe")
+    assert "--start" in command
 
 
 def test_traci_runner_stops_safely_when_step_raises(

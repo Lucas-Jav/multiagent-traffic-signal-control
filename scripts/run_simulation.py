@@ -10,12 +10,32 @@ from traffic_agents.simulation import TraCISimulationRunner
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run a SUMO scenario without signal control.")
     parser.add_argument("--scenario", type=Path, required=True)
+    parser.add_argument(
+        "--gui",
+        action="store_true",
+        help="Run with sumo-gui instead of headless sumo.",
+    )
+    parser.add_argument(
+        "--step-delay-ms",
+        type=int,
+        default=0,
+        help="Delay between TraCI steps, useful for visual inspection with --gui.",
+    )
+    parser.add_argument(
+        "--max-steps",
+        type=int,
+        default=None,
+        help="Optional step limit for short visual smoke runs.",
+    )
     args = parser.parse_args()
 
     scenario_config = load_scenario_config(args.scenario)
     runner = TraCISimulationRunner(
         scenario_config=scenario_config,
         scenario_dir=args.scenario.parent,
+        use_gui=args.gui,
+        step_delay_seconds=args.step_delay_ms / 1000,
+        max_steps=args.max_steps,
     )
 
     print("simulation start")

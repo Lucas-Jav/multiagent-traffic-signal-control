@@ -64,11 +64,24 @@ class TraCISimulationRunner:
         scenario_dir: Path,
         sumo_info: SumoEnvironmentInfo | None = None,
         label: str | None = None,
+        use_gui: bool = False,
+        step_delay_seconds: float = 0.0,
+        max_steps: int | None = None,
     ) -> None:
+        if step_delay_seconds < 0:
+            msg = "step_delay_seconds must be non-negative"
+            raise ValueError(msg)
+        if max_steps is not None and max_steps <= 0:
+            msg = "max_steps must be positive"
+            raise ValueError(msg)
+
         self._scenario_config = scenario_config
         self._scenario_dir = scenario_dir
         self._sumo_info = sumo_info or detect_sumo_environment()
         self._label = label or f"traffic-agents-{uuid4()}"
+        self._use_gui = use_gui
+        self._step_delay_seconds = step_delay_seconds
+        self._max_steps = max_steps
         self._traci: _TraCIModule | None = None
         self._connection: _TraCIConnection | None = None
         self._started = False
@@ -116,6 +129,8 @@ class TraCISimulationRunner:
             self.start()
             for _ in range(self._target_steps()):
                 self.step()
+                if self._step_delay_seconds > 0:
+                    time.sleep(self._step_delay_seconds)
         finally:
             self.stop()
 
@@ -140,8 +155,9 @@ class TraCISimulationRunner:
             msg = f"Route file not found: {route_path}"
             raise FileNotFoundError(msg)
 
-        return [
-            str(self._sumo_info.sumo_binary),
+        binary = self._sumo_info.sumo_gui_binary if self._use_gui else self._sumo_info.sumo_binary
+        command = [
+            str(binary),
             "--net-file",
             str(network_path),
             "--route-files",
@@ -153,9 +169,17 @@ class TraCISimulationRunner:
             "--no-step-log",
             "--quit-on-end",
         ]
+        if self._use_gui:
+            command.append("--start")
+        return command
 
     def _target_steps(self) -> int:
-        return int(self._scenario_config.duration_seconds / self._scenario_config.step_length)
+        scenario_steps = int(
+            self._scenario_config.duration_seconds / self._scenario_config.step_length
+        )
+        if self._max_steps is None:
+            return scenario_steps
+        return min(scenario_steps, self._max_steps)
 
     def _require_connection(self) -> _TraCIConnection:
         if self._connection is None:
