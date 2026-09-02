@@ -17,7 +17,7 @@ def valid_payload() -> dict[str, Any]:
         "warmup_seconds": 300,
         "step_length": 1.0,
         "seed": 42,
-        "controller_id": "fixed_time",
+        "controller_id": "B0_FIXED",
         "traffic": {
             "demand_profile": "S1_BALANCED",
             "demand_level": "MEDIUM",

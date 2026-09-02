@@ -24,6 +24,7 @@ class FakeConnection:
     def __init__(self) -> None:
         self.simulation = FakeSimulation()
         self.steps = 0
+        self.adaptive_adjustments = 0
 
     def simulationStep(self) -> None:  # noqa: N802
         self.steps += 1
@@ -59,7 +60,7 @@ def make_scenario_config(duration_seconds: int = 2) -> ScenarioConfig:
         warmup_seconds=0,
         step_length=1.0,
         seed=42,
-        controller_id="fixed_time",
+        controller_id="B0_FIXED",
         traffic={
             "demand_profile": "S1_BALANCED",
             "demand_level": "MEDIUM",
@@ -128,13 +129,17 @@ def test_traci_runner_runs_headless_steps_and_collects_metrics(
         scenario_dir=make_scenario_dir(tmp_path),
         sumo_info=make_sumo_info(tmp_path),
         label="test-simulation",
+        write_manifest=False,
     )
 
     summary = runner.run()
 
     assert summary.steps_executed == 2
+    assert summary.controller_id == "B0_FIXED"
+    assert summary.controller_version
     assert summary.vehicles_departed == 3
     assert summary.vehicles_arrived == 1
+    assert fake_traci.connection.adaptive_adjustments == 0
     assert fake_traci.closed is True
     assert fake_traci.switched_label == "test-simulation"
     command = fake_traci.started_commands[0]
@@ -163,6 +168,7 @@ def test_traci_runner_can_use_gui_binary_and_step_limit(
         label="test-simulation",
         use_gui=True,
         max_steps=2,
+        write_manifest=False,
     )
 
     summary = runner.run()
@@ -192,12 +198,41 @@ def test_traci_runner_stops_safely_when_step_raises(
         scenario_dir=make_scenario_dir(tmp_path),
         sumo_info=make_sumo_info(tmp_path),
         label="test-simulation",
+        write_manifest=False,
     )
 
     with pytest.raises(RuntimeError, match="step failed"):
         runner.run()
 
     assert fake_traci.closed is True
+
+
+def test_traci_runner_writes_run_manifest(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_traci = FakeTraCI()
+    monkeypatch.setattr(
+        "traffic_agents.simulation.sumo_runner.importlib.import_module",
+        lambda module_name: fake_traci if module_name == "traci" else None,
+    )
+
+    runner = TraCISimulationRunner(
+        scenario_config=make_scenario_config(),
+        scenario_dir=make_scenario_dir(tmp_path),
+        sumo_info=make_sumo_info(tmp_path),
+        label="test-simulation",
+        artifacts_dir=tmp_path / "artifacts" / "runs",
+    )
+
+    summary = runner.run()
+
+    assert summary.manifest_path is not None
+    manifest = summary.manifest_path.read_text(encoding="utf-8")
+    assert '"controller_id": "B0_FIXED"' in manifest
+    assert '"demand_profile": "S1_BALANCED"' in manifest
+    assert '"seed": 42' in manifest
+    assert '"metrics_finalized": false' in manifest
 
 
 @pytest.mark.sumo

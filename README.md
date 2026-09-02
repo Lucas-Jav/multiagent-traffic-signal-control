@@ -2,21 +2,101 @@
 
 Bootstrap Python para um projeto de controle semaforico multiagente.
 
-Este repositorio ainda nao implementa integracao com SUMO. O objetivo inicial e manter uma
-base pequena, validavel e pronta para evoluir com experimentos reprodutiveis.
+O projeto ja possui uma primeira execucao real com Eclipse SUMO, usando uma rede
+sintetica 3x3 e demanda sintetica reproduzivel. O baseline `B0_FIXED` formaliza a
+execucao fixed-time: ele nao aplica ajustes adaptativos e deixa as fases definidas no
+arquivo SUMO.
 
 ## Requisitos
 
 - Python 3.12
 - uv
+- Eclipse SUMO 1.27.1
 
-## Setup
+No Windows, se o comando `uv` nao for encontrado, adicione o diretorio do executavel ao
+`PATH` do usuario:
+
+```powershell
+$uvPath = "$env:APPDATA\Python\Python313\Scripts"
+$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+
+if ($userPath -notlike "*$uvPath*") {
+    [Environment]::SetEnvironmentVariable("Path", "$uvPath;$userPath", "User")
+}
+```
+
+Depois feche e abra o terminal novamente.
+
+## Setup Inicial
 
 ```powershell
 uv sync
 ```
 
-## Execucao
+Confira se o SUMO esperado esta disponivel:
+
+```powershell
+uv run python scripts/check_sumo.py
+```
+
+Saida esperada:
+
+```text
+SUMO detected
+version=1.27.1
+binary=<path>
+```
+
+## Gerar Artefatos Do Cenario
+
+A rede 3x3 e as rotas ja estao versionadas, mas podem ser regeneradas de forma
+idempotente.
+
+Gerar rede:
+
+```powershell
+uv run python scripts/generate_grid.py
+```
+
+Gerar demanda sintetica `S1_BALANCED`:
+
+```powershell
+uv run python scripts/generate_routes.py scenarios/grid_3x3/scenario.yaml
+```
+
+Validar o YAML do cenario:
+
+```powershell
+uv run python scripts/validate_scenario.py scenarios/grid_3x3/scenario.yaml
+```
+
+## Executar Simulacao
+
+Execucao headless:
+
+```powershell
+uv run python scripts/run_simulation.py --scenario scenarios/grid_3x3/scenario.yaml
+```
+
+Smoke explicito do baseline inicial:
+
+```powershell
+uv run python scripts/run_simulation.py --scenario scenarios/grid_3x3/scenario.yaml --controller-id B0_FIXED --max-steps 300
+```
+
+Execucao visual com `sumo-gui`:
+
+```powershell
+uv run python scripts/run_simulation.py --scenario scenarios/grid_3x3/scenario.yaml --gui --step-delay-ms 40 --max-steps 900
+```
+
+Use `--step-delay-ms` para desacelerar a visualizacao e `--max-steps` para limitar uma
+execucao curta. Para rodar o cenario inteiro no GUI, remova `--max-steps`.
+
+Cada execucao grava `artifacts/runs/<run_id>/manifest.json`, exceto quando usada a flag
+`--no-manifest`.
+
+## Execucao Do Package
 
 ```powershell
 uv run python -m traffic_agents
@@ -33,8 +113,15 @@ environment=development
 
 ```powershell
 uv run pytest
+uv run pytest -m "not sumo"
 uv run ruff check .
 uv run mypy src
+```
+
+O teste de integracao real com SUMO fica marcado com `sumo`:
+
+```powershell
+uv run pytest -m sumo
 ```
 
 ## Configuracao

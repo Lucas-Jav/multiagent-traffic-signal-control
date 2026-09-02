@@ -1,5 +1,5 @@
 {
-  "config_hash": "cdf1dd5cba8aca560d5f29deab673f4cae65fee368066465ea0f03db100a133e",
+  "config_hash": "27fc48f65478bcc4176e55bee9d99efaea86f05495406072d7a1be8d3c0bc255",
   "demand_level": "MEDIUM",
   "demand_profile": "S1_BALANCED",
   "flows": [
@@ -36,7 +36,7 @@
       "vehicles_per_hour": 600.0
     }
   ],
-  "generated_at": "2026-09-02T00:56:13.988180Z",
+  "generated_at": "2026-09-02T01:16:07.202003Z",
   "route_file": "routes_s1_seed_42.rou.xml",
   "scenario_id": "grid_3x3",
   "seed": 42
