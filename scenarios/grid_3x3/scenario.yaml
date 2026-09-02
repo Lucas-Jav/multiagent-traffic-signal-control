@@ -1,5 +1,5 @@
 scenario_id: grid_3x3
-network_file: grid_3x3.net.xml
+network_file: network.net.xml
 route_file: grid_3x3.rou.xml
 duration_seconds: 3600
 warmup_seconds: 300
