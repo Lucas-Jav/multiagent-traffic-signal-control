@@ -48,3 +48,6 @@ plugins = ["pydantic.mypy"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+    "sumo: integration tests that require Eclipse SUMO and TraCI",
+]
