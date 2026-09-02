@@ -7,6 +7,10 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Any, Protocol
 
+from traffic_agents.communication.topology import (
+    CommunicationTopology,
+    CommunicationTopologyError,
+)
 from traffic_agents.domain import IntersectionId, NeighborMessage
 
 
@@ -55,6 +59,7 @@ class _QueuedMessage:
 class MessageBus:
     destinations: Iterable[IntersectionId]
     config: MessageBusConfig = field(default_factory=MessageBusConfig)
+    topology: CommunicationTopology | None = None
     rng: MessageBusRng | None = None
     _destinations: frozenset[IntersectionId] = field(
         default_factory=frozenset,
@@ -115,6 +120,11 @@ class MessageBus:
         if destination not in self._destinations:
             msg = f"invalid message destination: {destination}"
             raise MessageBusError(msg)
+        if self.topology is not None:
+            try:
+                self.topology.require_can_communicate(source, destination)
+            except CommunicationTopologyError as exc:
+                raise MessageBusError(str(exc)) from exc
 
         sequence = self._next_sequence(source)
         message = NeighborMessage(

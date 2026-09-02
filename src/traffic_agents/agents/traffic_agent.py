@@ -5,6 +5,12 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Protocol, Self
 
+from traffic_agents.communication import (
+    GRID_3X3_COMMUNICATION_NEIGHBORS as _GRID_3X3_COMMUNICATION_NEIGHBORS,
+)
+from traffic_agents.communication import (
+    GRID_3X3_INTERSECTION_IDS as _GRID_3X3_INTERSECTION_IDS,
+)
 from traffic_agents.domain import (
     AgentObservation,
     ControllerDecision,
@@ -43,30 +49,9 @@ class TrafficAgent:
         )
 
 
-GRID_3X3_INTERSECTION_IDS: tuple[IntersectionId, ...] = (
-    "A1",
-    "A2",
-    "A3",
-    "A4",
-    "A5",
-    "A6",
-    "A7",
-    "A8",
-    "A9",
-)
-
-GRID_3X3_NEIGHBOR_IDS: Mapping[IntersectionId, tuple[IntersectionId, ...]] = MappingProxyType(
-    {
-        "A1": ("A2", "A4"),
-        "A2": ("A1", "A3", "A5"),
-        "A3": ("A2", "A6"),
-        "A4": ("A1", "A5", "A7"),
-        "A5": ("A2", "A4", "A6", "A8"),
-        "A6": ("A3", "A5", "A9"),
-        "A7": ("A4", "A8"),
-        "A8": ("A5", "A7", "A9"),
-        "A9": ("A6", "A8"),
-    }
+GRID_3X3_INTERSECTION_IDS: tuple[IntersectionId, ...] = _GRID_3X3_INTERSECTION_IDS
+GRID_3X3_NEIGHBOR_IDS: Mapping[IntersectionId, tuple[IntersectionId, ...]] = (
+    _GRID_3X3_COMMUNICATION_NEIGHBORS
 )
 
 
@@ -101,6 +86,16 @@ class AgentRegistry:
 
     def get(self, intersection_id: IntersectionId) -> TrafficAgent:
         return self._agents[intersection_id]
+
+    def neighbor_ids_for(self, intersection_id: IntersectionId) -> tuple[IntersectionId, ...]:
+        return self.get(intersection_id).neighbor_ids
+
+    def can_query_agent(
+        self,
+        source: IntersectionId,
+        destination: IntersectionId,
+    ) -> bool:
+        return destination in self.neighbor_ids_for(source)
 
     def __contains__(self, intersection_id: object) -> bool:
         return intersection_id in self._agents
