@@ -34,11 +34,13 @@ class IntersectionState(DomainModel):
 
 class TrafficLightActionKind(StrEnum):
     KEEP_PHASE = "KEEP_PHASE"
+    REQUEST_NEXT_PHASE = "REQUEST_NEXT_PHASE"
     SWITCH_PHASE = "SWITCH_PHASE"
 
 
 class TrafficLightAction(DomainModel):
     KEEP_PHASE: ClassVar[TrafficLightActionKind] = TrafficLightActionKind.KEEP_PHASE
+    REQUEST_NEXT_PHASE: ClassVar[TrafficLightActionKind] = TrafficLightActionKind.REQUEST_NEXT_PHASE
     SWITCH_PHASE: ClassVar[TrafficLightActionKind] = TrafficLightActionKind.SWITCH_PHASE
 
     kind: TrafficLightActionKind
@@ -49,16 +51,23 @@ class TrafficLightAction(DomainModel):
         return cls(kind=TrafficLightActionKind.KEEP_PHASE)
 
     @classmethod
+    def request_next_phase(cls) -> TrafficLightAction:
+        return cls(kind=TrafficLightActionKind.REQUEST_NEXT_PHASE)
+
+    @classmethod
     def switch_phase(cls, target_phase: str) -> TrafficLightAction:
         return cls(kind=TrafficLightActionKind.SWITCH_PHASE, target_phase=target_phase)
 
     @model_validator(mode="after")
     def validate_parameters(self) -> Self:
+        if self.kind in {
+            TrafficLightActionKind.KEEP_PHASE,
+            TrafficLightActionKind.REQUEST_NEXT_PHASE,
+        } and self.target_phase is not None:
+            msg = f"target_phase must be omitted for {self.kind}"
+            raise ValueError(msg)
         if self.kind == TrafficLightActionKind.SWITCH_PHASE and self.target_phase is None:
             msg = "target_phase is required when switching phase"
-            raise ValueError(msg)
-        if self.kind == TrafficLightActionKind.KEEP_PHASE and self.target_phase is not None:
-            msg = "target_phase must be omitted when keeping phase"
             raise ValueError(msg)
         return self
 
