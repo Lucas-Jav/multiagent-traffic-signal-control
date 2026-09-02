@@ -19,7 +19,8 @@ def valid_payload() -> dict[str, Any]:
         "seed": 42,
         "controller_id": "fixed_time",
         "traffic": {
-            "demand_level": "medium",
+            "demand_profile": "S1_BALANCED",
+            "demand_level": "MEDIUM",
             "flows": [
                 {
                     "flow_id": "west_to_east_main",
@@ -27,7 +28,11 @@ def valid_payload() -> dict[str, Any]:
                     "destination_edge_id": "east_out",
                     "begin_seconds": 0,
                     "end_seconds": 3600,
-                    "vehicles_per_hour": 900,
+                    "vehicles_per_hour": {
+                        "LOW": 300,
+                        "MEDIUM": 600,
+                        "HIGH": 900,
+                    },
                 }
             ],
         },
@@ -54,8 +59,9 @@ def test_load_valid_scenario_config(tmp_path: Path) -> None:
 
     assert scenario.scenario_id == "grid_3x3"
     assert scenario.simulation.seed == 42
-    assert scenario.traffic.demand_level == "medium"
-    assert scenario.traffic.flows[0].vehicles_per_hour == 900
+    assert scenario.traffic.demand_profile == "S1_BALANCED"
+    assert scenario.traffic.demand_level == "MEDIUM"
+    assert scenario.traffic.flows[0].rate_for("MEDIUM") == 600
     assert scenario.intersections[0].intersection_id == "junction_1_1"
 
 
@@ -94,6 +100,14 @@ def test_scenario_config_rejects_invalid_demand() -> None:
     payload["traffic"]["demand_level"] = "rush_hour"
 
     with pytest.raises(ValidationError, match="demand_level"):
+        ScenarioConfig.model_validate(payload)
+
+
+def test_scenario_config_requires_all_demand_level_rates() -> None:
+    payload = valid_payload()
+    del payload["traffic"]["flows"][0]["vehicles_per_hour"]["HIGH"]
+
+    with pytest.raises(ValidationError, match="LOW, MEDIUM, and HIGH"):
         ScenarioConfig.model_validate(payload)
 
 

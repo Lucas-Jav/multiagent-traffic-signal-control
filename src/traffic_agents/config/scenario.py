@@ -16,9 +16,11 @@ from pydantic import (
 
 from traffic_agents.domain import EdgeId, IntersectionId, LaneId
 
-DemandLevel = Literal["low", "medium", "high"]
+DemandLevel = Literal["LOW", "MEDIUM", "HIGH"]
+DemandProfileId = Literal["S1_BALANCED"]
 ControllerId = Annotated[str, Field(min_length=1)]
 PhaseId = Annotated[str, Field(min_length=1)]
+type VehicleRateByDemandLevel = dict[DemandLevel, PositiveFloat]
 
 
 class ConfigModel(BaseModel):
@@ -45,7 +47,7 @@ class FlowDefinitionConfig(ConfigModel):
     destination_edge_id: EdgeId
     begin_seconds: NonNegativeFloat
     end_seconds: PositiveFloat
-    vehicles_per_hour: PositiveFloat
+    vehicles_per_hour: VehicleRateByDemandLevel
 
     @model_validator(mode="after")
     def validate_time_window(self) -> Self:
@@ -54,8 +56,21 @@ class FlowDefinitionConfig(ConfigModel):
             raise ValueError(msg)
         return self
 
+    @model_validator(mode="after")
+    def validate_demand_levels(self) -> Self:
+        expected_levels = {"LOW", "MEDIUM", "HIGH"}
+        actual_levels = set(self.vehicles_per_hour)
+        if actual_levels != expected_levels:
+            msg = "vehicles_per_hour must define LOW, MEDIUM, and HIGH"
+            raise ValueError(msg)
+        return self
+
+    def rate_for(self, demand_level: DemandLevel) -> float:
+        return self.vehicles_per_hour[demand_level]
+
 
 class TrafficDemandConfig(ConfigModel):
+    demand_profile: DemandProfileId
     demand_level: DemandLevel
     flows: Annotated[tuple[FlowDefinitionConfig, ...], Field(min_length=1)]
 

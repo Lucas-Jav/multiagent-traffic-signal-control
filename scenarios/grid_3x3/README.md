@@ -33,3 +33,21 @@ conteudo derivado dos mesmos parametros.
 - Intersecoes semaforizadas.
 
 O script tambem executa uma validacao smoke com `netcheck.py`.
+
+## Demanda S1_BALANCED
+
+```powershell
+uv run python scripts/generate_routes.py scenarios/grid_3x3/scenario.yaml
+```
+
+O perfil inicial `S1_BALANCED` cria fluxos sinteticos semelhantes nos dois eixos
+principais da malha:
+
+- oeste -> leste no eixo central;
+- leste -> oeste no eixo central;
+- norte -> sul no eixo central;
+- sul -> norte no eixo central.
+
+Os niveis `LOW`, `MEDIUM` e `HIGH` ficam registrados em `scenario.yaml`. O arquivo
+`routes_s1_seed_42.metadata.json` registra `seed`, `flows`, `generated_at` e
+`config_hash` da geracao.

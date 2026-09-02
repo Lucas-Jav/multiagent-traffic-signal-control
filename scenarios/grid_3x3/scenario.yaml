@@ -1,26 +1,51 @@
 scenario_id: grid_3x3
 network_file: network.net.xml
-route_file: grid_3x3.rou.xml
+route_file: routes_s1_seed_42.rou.xml
 duration_seconds: 3600
 warmup_seconds: 300
 step_length: 1.0
 seed: 42
 controller_id: fixed_time
 traffic:
-  demand_level: medium
+  demand_profile: S1_BALANCED
+  demand_level: MEDIUM
   flows:
-    - flow_id: west_to_east_main
-      origin_edge_id: west_in
-      destination_edge_id: east_out
+    - flow_id: west_to_east_middle
+      origin_edge_id: left1A1
+      destination_edge_id: C1right1
       begin_seconds: 0
       end_seconds: 3600
-      vehicles_per_hour: 900
-    - flow_id: north_to_south_main
-      origin_edge_id: north_in
-      destination_edge_id: south_out
+      vehicles_per_hour:
+        LOW: 300
+        MEDIUM: 600
+        HIGH: 900
+    - flow_id: east_to_west_middle
+      origin_edge_id: right1C1
+      destination_edge_id: A1left1
       begin_seconds: 0
       end_seconds: 3600
-      vehicles_per_hour: 700
+      vehicles_per_hour:
+        LOW: 300
+        MEDIUM: 600
+        HIGH: 900
+    - flow_id: north_to_south_middle
+      origin_edge_id: top1B2
+      destination_edge_id: B0bottom1
+      begin_seconds: 0
+      end_seconds: 3600
+      vehicles_per_hour:
+        LOW: 300
+        MEDIUM: 600
+        HIGH: 900
+    - flow_id: south_to_north_middle
+      origin_edge_id: bottom1B0
+      destination_edge_id: B2top1
+      begin_seconds: 0
+      end_seconds: 3600
+      vehicles_per_hour:
+        LOW: 300
+        MEDIUM: 600
+        HIGH: 900
 intersections:
   - intersection_id: junction_1_1
     incoming_lanes:

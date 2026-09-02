@@ -1,6 +1,8 @@
 """Configuration helpers."""
 
 from traffic_agents.config.scenario import (
+    DemandLevel,
+    DemandProfileId,
     FlowDefinitionConfig,
     IntersectionConfig,
     ScenarioConfig,
@@ -12,6 +14,8 @@ from traffic_agents.config.scenario import (
 from traffic_agents.config.settings import Settings, get_settings
 
 __all__ = [
+    "DemandLevel",
+    "DemandProfileId",
     "FlowDefinitionConfig",
     "IntersectionConfig",
     "ScenarioConfig",
