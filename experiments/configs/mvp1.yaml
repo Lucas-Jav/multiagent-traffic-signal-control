@@ -1,0 +1,10 @@
+experiment_id: mvp1
+scenario: ../../scenarios/grid_3x3/scenario.yaml
+controllers:
+  - B0_FIXED
+  - B1_LOCAL_ADAPTIVE
+  - B2_LOCAL_PRESSURE
+  - C1_COOPERATIVE_COMPACT
+seeds:
+  - 42
+max_steps: 300

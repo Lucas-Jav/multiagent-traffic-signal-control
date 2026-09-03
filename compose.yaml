@@ -1,0 +1,16 @@
+services:
+  simulator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: multiagent-traffic-signal-control:sumo-1.27.1
+    working_dir: /app
+    environment:
+      APP_ENV: production
+      ARTIFACTS_DIR: /app/artifacts
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - ./scenarios:/app/scenarios
+      - ./experiments:/app/experiments
+      - ./artifacts:/app/artifacts
+      - ./docs:/app/docs:ro

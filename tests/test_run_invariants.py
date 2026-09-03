@@ -175,17 +175,21 @@ def _write_scenario_dir(
 
 def _fingerprint(
     *,
+    scenario_sha256: str = "a" * 64,
     network_sha256: str = "a" * 64,
     route_sha256: str = "a" * 64,
     phase_plan_version: str = PHASE_PLAN_VERSION,
+    phase_plan_sha256: str = "a" * 64,
     movement_model_version: str = MOVEMENT_MODEL_VERSION,
     turning_ratios: dict[str, float] | None = None,
     communication_topology_sha256: str = "a" * 64,
 ) -> RunInvariantFingerprint:
     return RunInvariantFingerprint(
+        scenario_sha256=scenario_sha256,
         network_sha256=network_sha256,
         route_sha256=route_sha256,
         phase_plan_version=phase_plan_version,
+        phase_plan_sha256=phase_plan_sha256,
         movement_model_version=movement_model_version,
         turning_ratios=turning_ratios or {"straight": 0.6, "left": 0.2, "right": 0.2},
         communication_topology_sha256=communication_topology_sha256,

@@ -397,10 +397,15 @@ def test_traci_runner_writes_run_manifest(
     assert manifest["controller"]["controller_id"] == "B0_FIXED"
     assert manifest["demand_profile"] == "S1_BALANCED"
     assert manifest["seed"] == 42
+    assert manifest["python_version"]
+    assert manifest["sumo_version"] == "1.27.1"
+    assert manifest["git_sha"] is None or isinstance(manifest["git_sha"], str)
     assert manifest["metrics_finalized"] is False
+    assert len(manifest["scenario_sha256"]) == 64
     assert manifest["network_sha256"] == _sha256(scenario_dir / "network.net.xml")
     assert manifest["route_sha256"] == _sha256(scenario_dir / "routes_s1_seed_42.rou.xml")
     assert manifest["phase_plan_version"] == PHASE_PLAN_VERSION
+    assert len(manifest["phase_plan_sha256"]) == 64
     assert manifest["movement_model_version"] == MOVEMENT_MODEL_VERSION
     assert manifest["turning_ratios"] == {"straight": 0.6, "left": 0.2, "right": 0.2}
     assert manifest["communication_topology_sha256"] == (

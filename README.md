@@ -96,6 +96,38 @@ execucao curta. Para rodar o cenario inteiro no GUI, remova `--max-steps`.
 Cada execucao grava `artifacts/runs/<run_id>/manifest.json`, exceto quando usada a flag
 `--no-manifest`.
 
+## Container Headless
+
+O container usa a imagem oficial versionada do Eclipse SUMO `ghcr.io/eclipse-sumo/sumo:v1_27_1`
+e instala as dependencias Python a partir de `pyproject.toml` e `uv.lock`.
+
+Build:
+
+```powershell
+docker compose build
+```
+
+Verificar SUMO:
+
+```powershell
+docker compose run --rm simulator sumo --version
+```
+
+Smoke:
+
+```powershell
+docker compose run --rm simulator traffic-agents simulation run --scenario scenarios/grid_3x3/scenario.yaml --controller B0_FIXED --seed 42 --max-steps 300
+```
+
+Experimento MVP:
+
+```powershell
+docker compose run --rm simulator traffic-agents experiment run --config experiments/configs/mvp1.yaml
+```
+
+Os volumes `scenarios`, `experiments` e `artifacts` sao montados no container; `docs` e montado
+como somente leitura. A imagem roda com usuario nao-root.
+
 ## Execucao Do Package
 
 ```powershell

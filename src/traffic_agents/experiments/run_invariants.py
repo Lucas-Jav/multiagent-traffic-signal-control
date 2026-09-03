@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +12,7 @@ from traffic_agents.config import ScenarioConfig
 from traffic_agents.traffic_model import (
     MOVEMENT_MODEL_VERSION,
     PHASE_PLAN_VERSION,
+    IntersectionTrafficModel,
     PhaseTimingConfig,
     load_grid_traffic_models,
     validate_traffic_models,
@@ -23,6 +24,7 @@ COMPARISON_INVARIANT_FIELDS: tuple[str, ...] = (
     "network_sha256",
     "route_sha256",
     "phase_plan_version",
+    "phase_plan_sha256",
     "movement_model_version",
     "turning_ratios",
     "communication_topology_sha256",
@@ -35,18 +37,22 @@ class RunInvariantValidationError(ValueError):
 
 @dataclass(frozen=True)
 class RunInvariantFingerprint:
+    scenario_sha256: str
     network_sha256: str
     route_sha256: str
     phase_plan_version: str
+    phase_plan_sha256: str
     movement_model_version: str
     turning_ratios: Mapping[str, float]
     communication_topology_sha256: str
 
     def manifest_fields(self) -> dict[str, object]:
         return {
+            "scenario_sha256": self.scenario_sha256,
             "network_sha256": self.network_sha256,
             "route_sha256": self.route_sha256,
             "phase_plan_version": self.phase_plan_version,
+            "phase_plan_sha256": self.phase_plan_sha256,
             "movement_model_version": self.movement_model_version,
             "turning_ratios": dict(self.turning_ratios),
             "communication_topology_sha256": self.communication_topology_sha256,
@@ -81,11 +87,17 @@ def build_run_invariant_fingerprint(
 
     turning_ratios = _turning_ratios_payload(scenario_config)
     _validate_turning_ratios(turning_ratios)
+    traffic_models = load_grid_traffic_models(
+        scenario_config=scenario_config,
+        scenario_dir=scenario_dir,
+    )
 
     return RunInvariantFingerprint(
+        scenario_sha256=scenario_config_sha256(scenario_config),
         network_sha256=file_sha256(network_path),
         route_sha256=file_sha256(route_path),
         phase_plan_version=PHASE_PLAN_VERSION,
+        phase_plan_sha256=phase_plan_sha256(traffic_models),
         movement_model_version=MOVEMENT_MODEL_VERSION,
         turning_ratios=turning_ratios,
         communication_topology_sha256=grid_3x3_communication_topology().topology_hash,
@@ -164,9 +176,11 @@ def run_invariant_fingerprint_from_manifest(
     manifest: Mapping[str, object],
 ) -> RunInvariantFingerprint:
     return RunInvariantFingerprint(
+        scenario_sha256=_required_string(manifest, "scenario_sha256"),
         network_sha256=_required_string(manifest, "network_sha256"),
         route_sha256=_required_string(manifest, "route_sha256"),
         phase_plan_version=_required_string(manifest, "phase_plan_version"),
+        phase_plan_sha256=_required_string(manifest, "phase_plan_sha256"),
         movement_model_version=_required_string(manifest, "movement_model_version"),
         turning_ratios=_required_turning_ratios(manifest),
         communication_topology_sha256=_required_string(
@@ -182,6 +196,23 @@ def file_sha256(path: Path) -> str:
         for chunk in iter(lambda: file.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def scenario_config_sha256(scenario_config: ScenarioConfig) -> str:
+    payload = scenario_config.model_dump(mode="json")
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def phase_plan_sha256(
+    traffic_models: Mapping[str, IntersectionTrafficModel],
+) -> str:
+    payload = {
+        intersection_id: [asdict(phase) for phase in traffic_model.phase_plan]
+        for intersection_id, traffic_model in sorted(traffic_models.items())
+    }
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def _require_file(path: Path, *, label: str) -> None:

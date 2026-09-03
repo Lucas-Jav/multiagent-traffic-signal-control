@@ -9,21 +9,35 @@ from traffic_agents.experiments.run_invariants import (
     build_run_invariant_fingerprint,
     file_sha256,
     load_phase_timing_config,
+    phase_plan_sha256,
     run_invariant_fingerprint_from_manifest,
+    scenario_config_sha256,
     validate_phase_plan,
     validate_run_inputs,
+)
+from traffic_agents.experiments.runner import (
+    ExperimentConfig,
+    ExperimentRunner,
+    ExperimentRunSummary,
+    load_experiment_config,
 )
 
 __all__ = [
     "COMPARISON_INVARIANT_FIELDS",
+    "ExperimentConfig",
+    "ExperimentRunSummary",
+    "ExperimentRunner",
     "RunInvariantFingerprint",
     "RunInvariantValidationError",
     "assert_comparable_manifests",
     "assert_comparable_run_fingerprints",
     "build_run_invariant_fingerprint",
     "file_sha256",
+    "load_experiment_config",
     "load_phase_timing_config",
+    "phase_plan_sha256",
     "run_invariant_fingerprint_from_manifest",
+    "scenario_config_sha256",
     "validate_phase_plan",
     "validate_run_inputs",
 ]

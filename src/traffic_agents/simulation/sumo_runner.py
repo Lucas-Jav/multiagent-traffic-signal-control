@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib
 import json
 import os
+import platform
 import sys
 import time
 from collections.abc import Mapping
@@ -12,7 +13,7 @@ from pathlib import Path
 from typing import Protocol, cast
 from uuid import uuid4
 
-from traffic_agents.config import ScenarioConfig
+from traffic_agents.config import ScenarioConfig, get_settings
 from traffic_agents.controllers import (
     CooperativeCompactController,
     FixedTimeController,
@@ -21,7 +22,7 @@ from traffic_agents.controllers import (
     build_controller,
 )
 from traffic_agents.domain import IntersectionId
-from traffic_agents.experiments import (
+from traffic_agents.experiments.run_invariants import (
     RunInvariantFingerprint,
     build_run_invariant_fingerprint,
     validate_run_inputs,
@@ -305,6 +306,7 @@ class TraCISimulationRunner:
                     self._controller,
                     self._scenario_config,
                     self._scenario_dir,
+                    self._sumo_info,
                     self._run_invariant_fingerprint,
                     self._telemetry_path.name
                     if self._telemetry_path is not None and self._telemetry_path.exists()
@@ -318,7 +320,7 @@ class TraCISimulationRunner:
         return summary_with_manifest
 
     def _manifest_dir(self, run_id: str) -> Path:
-        artifacts_dir = self._artifacts_dir or Path("artifacts") / "runs"
+        artifacts_dir = self._artifacts_dir or get_settings().artifacts_dir / "runs"
         return artifacts_dir / run_id
 
     def _prepare_run_artifacts(self, run_id: str) -> None:
@@ -351,6 +353,7 @@ def _manifest_payload(
     ),
     scenario_config: ScenarioConfig,
     scenario_dir: Path,
+    sumo_info: SumoEnvironmentInfo,
     run_invariant_fingerprint: RunInvariantFingerprint | None = None,
     intersection_trace_file: str | None = None,
 ) -> dict[str, object]:
@@ -363,6 +366,9 @@ def _manifest_payload(
         "scenario_id": summary.scenario_id,
         "demand_profile": summary.demand_profile,
         "seed": summary.seed,
+        "python_version": platform.python_version(),
+        "sumo_version": sumo_info.version,
+        "git_sha": _detect_git_sha(Path.cwd()),
         **fingerprint.manifest_fields(),
         "started_at": summary.started_at,
         "ended_at": summary.ended_at,
@@ -400,3 +406,51 @@ def _import_traci(sumo_info: SumoEnvironmentInfo) -> _TraCIModule:
 
 def _utc_now() -> str:
     return datetime.now(UTC).isoformat().replace("+00:00", "Z")
+
+
+def _detect_git_sha(start_path: Path) -> str | None:
+    git_dir = _find_git_dir(start_path)
+    if git_dir is None:
+        return None
+
+    head_path = git_dir / "HEAD"
+    if not head_path.exists():
+        return None
+
+    head = head_path.read_text(encoding="utf-8").strip()
+    if head.startswith("ref: "):
+        ref = head.removeprefix("ref: ").strip()
+        ref_path = git_dir / ref
+        if ref_path.exists():
+            return ref_path.read_text(encoding="utf-8").strip() or None
+        return _read_packed_ref(git_dir / "packed-refs", ref)
+
+    return head or None
+
+
+def _find_git_dir(start_path: Path) -> Path | None:
+    for candidate in (start_path, *start_path.parents):
+        git_path = candidate / ".git"
+        if git_path.is_dir():
+            return git_path
+        if git_path.is_file():
+            gitdir = git_path.read_text(encoding="utf-8").strip()
+            if gitdir.startswith("gitdir: "):
+                resolved = (candidate / gitdir.removeprefix("gitdir: ").strip()).resolve()
+                if resolved.is_dir():
+                    return resolved
+    return None
+
+
+def _read_packed_ref(path: Path, ref: str) -> str | None:
+    if not path.exists():
+        return None
+    with path.open(encoding="utf-8") as file:
+        for line in file:
+            stripped = line.strip()
+            if not stripped or stripped.startswith(("#", "^")):
+                continue
+            sha, _, packed_ref = stripped.partition(" ")
+            if packed_ref == ref:
+                return sha
+    return None
