@@ -13,8 +13,8 @@ from traffic_agents.simulation.sumo_environment import (
 )
 
 
-def create_fake_sumo_home(tmp_path: Path) -> Path:
-    sumo_home = tmp_path / "sumo"
+def create_fake_sumo_home(tmp_path: Path, dir_name: str = "sumo") -> Path:
+    sumo_home = tmp_path / dir_name
     bin_dir = sumo_home / "bin"
     bin_dir.mkdir(parents=True)
     (bin_dir / "sumo.exe").write_text("", encoding="utf-8")
@@ -58,7 +58,7 @@ def test_detect_sumo_environment_from_common_windows_install_path(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    sumo_home = create_fake_sumo_home(tmp_path / "Program Files (x86)" / "Eclipse")
+    sumo_home = create_fake_sumo_home(tmp_path / "Program Files (x86)" / "Eclipse", dir_name="Sumo")
     mock_sumo_version(monkeypatch, f"Eclipse SUMO Version {EXPECTED_SUMO_VERSION}\n")
     monkeypatch.setattr("shutil.which", lambda _binary_name: None)
 
