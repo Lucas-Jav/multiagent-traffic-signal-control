@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import random
 from collections import defaultdict
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
@@ -11,6 +12,7 @@ from traffic_agents.communication.topology import (
     CommunicationTopology,
     CommunicationTopologyError,
 )
+from traffic_agents.communication_seed import derive_communication_rng_seed
 from traffic_agents.domain import CompactNeighborMessage, IntersectionId, NeighborMessage
 
 type CommunicationMessage = NeighborMessage | CompactNeighborMessage
@@ -28,6 +30,8 @@ class MessageBusRng(Protocol):
 class MessageBusConfig:
     delay_steps: int = 0
     drop_probability: float = 0.0
+    rng_seed: int | None = None
+    simulation_seed: int = 0
     stale_after_steps: int | None = None
 
     def __post_init__(self) -> None:
@@ -37,9 +41,25 @@ class MessageBusConfig:
         if self.drop_probability < 0.0 or self.drop_probability > 1.0:
             msg = "drop_probability must be between 0.0 and 1.0"
             raise ValueError(msg)
+        if self.rng_seed is not None and self.rng_seed < 0:
+            msg = "rng_seed must be non-negative when configured"
+            raise ValueError(msg)
+        if self.simulation_seed < 0:
+            msg = "simulation_seed must be non-negative"
+            raise ValueError(msg)
         if self.stale_after_steps is not None and self.stale_after_steps < 0:
             msg = "stale_after_steps must be non-negative when configured"
             raise ValueError(msg)
+
+    @property
+    def resolved_rng_seed(self) -> int:
+        if self.rng_seed is not None:
+            return self.rng_seed
+        return derive_communication_rng_seed(
+            simulation_seed=self.simulation_seed,
+            delay_steps=self.delay_steps,
+            drop_probability=self.drop_probability,
+        )
 
 
 @dataclass(frozen=True)
@@ -51,6 +71,7 @@ class MessageBusMetrics:
     max_message_delay: int = 0
     serialized_bytes: int = 0
     messages_dropped: int = 0
+    observed_drop_rate: float = 0.0
     stale_messages: int = 0
 
 
@@ -64,16 +85,20 @@ class _QueuedMessage:
 class MessageBus:
     """Deterministic in-memory bus driven by simulation steps.
 
-    Messages created at step t are scheduled for t + delay_steps. A call to
-    receive(destination=..., current_step=s) happens before that destination's
-    controller decision for simulation step s, so a message scheduled for s can
-    influence the decision taken in the same step.
+    Messages created at step t are first counted as sent. The drop decision is
+    made immediately during publish with the bus' dedicated RNG; dropped
+    messages never enter the delivery schedule. Messages that are not dropped
+    are scheduled for t + delay_steps. A call to receive(destination=...,
+    current_step=s) happens before that destination's controller decision for
+    simulation step s, so a message scheduled for s can influence the decision
+    taken in the same step.
     """
 
     destinations: Iterable[IntersectionId]
     config: MessageBusConfig = field(default_factory=MessageBusConfig)
     topology: CommunicationTopology | None = None
     rng: MessageBusRng | None = None
+    _rng: MessageBusRng = field(init=False, repr=False)
     _destinations: frozenset[IntersectionId] = field(
         default_factory=frozenset,
         init=False,
@@ -100,9 +125,7 @@ class MessageBus:
         if not destination_set:
             msg = "destinations must not be empty"
             raise ValueError(msg)
-        if self.config.drop_probability > 0.0 and self.rng is None:
-            msg = "rng is required when drop_probability is greater than zero"
-            raise ValueError(msg)
+        self._rng = self.rng or random.Random(self.config.resolved_rng_seed)
         self._destinations = destination_set
         self._sequence_by_source = defaultdict(int)
         self._scheduled_by_delivery_step = defaultdict(list)
@@ -251,6 +274,10 @@ class MessageBus:
             ),
             serialized_bytes=self._metrics.serialized_bytes,
             messages_dropped=self._metrics.messages_dropped,
+            observed_drop_rate=_observed_drop_rate(
+                messages_dropped=self._metrics.messages_dropped,
+                messages_sent=self._metrics.messages_sent,
+            ),
             stale_messages=self._metrics.stale_messages + stale_count,
         )
         return messages
@@ -305,6 +332,10 @@ class MessageBus:
             max_message_delay=self._metrics.max_message_delay,
             serialized_bytes=self._metrics.serialized_bytes + serialized_bytes,
             messages_dropped=self._metrics.messages_dropped,
+            observed_drop_rate=_observed_drop_rate(
+                messages_dropped=self._metrics.messages_dropped,
+                messages_sent=self._metrics.messages_sent + 1,
+            ),
             stale_messages=self._metrics.stale_messages,
         )
 
@@ -317,16 +348,17 @@ class MessageBus:
             max_message_delay=self._metrics.max_message_delay,
             serialized_bytes=self._metrics.serialized_bytes,
             messages_dropped=self._metrics.messages_dropped + 1,
+            observed_drop_rate=_observed_drop_rate(
+                messages_dropped=self._metrics.messages_dropped + 1,
+                messages_sent=self._metrics.messages_sent,
+            ),
             stale_messages=self._metrics.stale_messages,
         )
 
     def _should_drop(self) -> bool:
         if self.config.drop_probability <= 0.0:
             return False
-        if self.rng is None:
-            msg = "rng is required when drop_probability is greater than zero"
-            raise MessageBusError(msg)
-        return self.rng.random() < self.config.drop_probability
+        return self._rng.random() < self.config.drop_probability
 
     def _is_stale(self, message: CommunicationMessage, current_step: int) -> bool:
         if self.config.stale_after_steps is None:
@@ -351,6 +383,16 @@ def _mark_delivered(
     delivered_step: int,
 ) -> CommunicationMessage:
     return message.model_copy(update={"delivered_step": delivered_step})
+
+
+def _observed_drop_rate(
+    *,
+    messages_dropped: int,
+    messages_sent: int,
+) -> float:
+    if messages_sent == 0:
+        return 0.0
+    return messages_dropped / messages_sent
 
 
 def freeze_payload(payload: Mapping[str, Any]) -> Mapping[str, Any]:

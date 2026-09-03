@@ -124,6 +124,8 @@ traffic:
         HIGH: 220
 communication:
   delay_steps: 0
+  drop_probability: 0.0
+  rng_seed: null
 intersections:
   - intersection_id: A1
     incoming_lanes:

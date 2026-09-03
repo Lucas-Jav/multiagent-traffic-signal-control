@@ -22,6 +22,7 @@ from traffic_agents.communication.topology import (
     CommunicationTopologyError,
     grid_3x3_communication_topology,
 )
+from traffic_agents.communication_seed import derive_communication_rng_seed
 
 __all__ = [
     "GRID_3X3_COMMUNICATION_NEIGHBORS",
@@ -38,6 +39,7 @@ __all__ = [
     "MessageBusError",
     "MessageBusMetrics",
     "compact_message_payload",
+    "derive_communication_rng_seed",
     "grid_3x3_communication_topology",
     "serialize_message",
 ]

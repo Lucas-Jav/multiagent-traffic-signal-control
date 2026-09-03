@@ -373,6 +373,11 @@ def _manifest_payload(
         "started_at": summary.started_at,
         "ended_at": summary.ended_at,
         "controller": controller.manifest_metadata(),
+        "communication": {
+            "delay_steps": int(scenario_config.communication.delay_steps),
+            "drop_probability": float(scenario_config.communication.drop_probability),
+            "rng_seed": scenario_config.communication.resolved_rng_seed(int(scenario_config.seed)),
+        },
         "simulation": {
             "steps_executed": summary.steps_executed,
             "vehicles_departed": summary.vehicles_departed,

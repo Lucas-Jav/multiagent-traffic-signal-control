@@ -32,6 +32,8 @@ def test_publish_records_message_and_metrics() -> None:
     assert message.payload == {"queue": 7}
     assert bus.metrics.messages_sent == 1
     assert bus.metrics.messages_delivered == 0
+    assert bus.metrics.messages_dropped == 0
+    assert bus.metrics.observed_drop_rate == 0.0
     assert bus.pending_count("A2") == 1
 
 
@@ -228,3 +230,104 @@ def test_stale_messages_are_discarded_without_delivery() -> None:
     assert bus.receive(destination="A2", current_step=2) == ()
     assert bus.metrics.messages_delivered == 0
     assert bus.metrics.stale_messages == 1
+
+
+def test_drop_probability_zero_loses_no_messages() -> None:
+    bus = MessageBus(
+        destinations=("A1", "A2"),
+        config=MessageBusConfig(drop_probability=0.0, rng_seed=123),
+    )
+    first = bus.publish(source="A1", destination="A2", created_step=0, payload={"n": 1})
+    second = bus.publish(source="A1", destination="A2", created_step=1, payload={"n": 2})
+
+    assert bus.receive(destination="A2", current_step=1) == (
+        first.model_copy(update={"delivered_step": 1}),
+        second.model_copy(update={"delivered_step": 1}),
+    )
+    assert bus.metrics.messages_sent == 2
+    assert bus.metrics.messages_delivered == 2
+    assert bus.metrics.messages_dropped == 0
+    assert bus.metrics.observed_drop_rate == 0.0
+
+
+def test_drop_probability_one_loses_all_messages() -> None:
+    bus = MessageBus(
+        destinations=("A1", "A2"),
+        config=MessageBusConfig(drop_probability=1.0, rng_seed=123),
+    )
+    bus.publish(source="A1", destination="A2", created_step=0, payload={"n": 1})
+    bus.publish(source="A1", destination="A2", created_step=1, payload={"n": 2})
+
+    assert bus.pending_count("A2") == 0
+    assert bus.receive(destination="A2", current_step=100) == ()
+    assert bus.metrics.messages_sent == 2
+    assert bus.metrics.messages_delivered == 0
+    assert bus.metrics.messages_dropped == 2
+    assert bus.metrics.observed_drop_rate == 1.0
+
+
+def test_intermediate_drop_probability_is_reproducible_with_fixed_seed() -> None:
+    assert _drop_sequence(rng_seed=123) == _drop_sequence(rng_seed=123)
+
+
+def test_different_rng_seed_can_change_drop_sequence() -> None:
+    assert _drop_sequence(rng_seed=123) != _drop_sequence(rng_seed=456)
+
+
+def test_delay_and_drop_work_together() -> None:
+    bus = MessageBus(
+        destinations=("A1", "A2"),
+        config=MessageBusConfig(delay_steps=2, drop_probability=0.5, rng_seed=2),
+    )
+    first = bus.publish(source="A1", destination="A2", created_step=0, payload={"n": 1})
+    second = bus.publish(source="A1", destination="A2", created_step=1, payload={"n": 2})
+    bus.publish(source="A1", destination="A2", created_step=2, payload={"n": 3})
+
+    assert bus.receive(destination="A2", current_step=1) == ()
+    assert bus.receive(destination="A2", current_step=2) == (
+        first.model_copy(update={"delivered_step": 2}),
+    )
+    assert bus.receive(destination="A2", current_step=3) == (
+        second.model_copy(update={"delivered_step": 3}),
+    )
+    assert bus.receive(destination="A2", current_step=4) == ()
+    assert bus.metrics.messages_sent == 3
+    assert bus.metrics.messages_delivered == 2
+    assert bus.metrics.messages_dropped == 1
+    assert bus.metrics.observed_drop_rate == pytest.approx(1 / 3)
+    assert bus.metrics.message_delay_steps == 4
+    assert bus.metrics.average_message_delay == 2.0
+    assert bus.metrics.max_message_delay == 2
+
+
+def test_derived_rng_seed_is_deterministic_from_bus_config() -> None:
+    first = MessageBusConfig(
+        simulation_seed=42,
+        delay_steps=3,
+        drop_probability=0.25,
+    )
+    second = MessageBusConfig(
+        simulation_seed=42,
+        delay_steps=3,
+        drop_probability=0.25,
+    )
+    changed = MessageBusConfig(
+        simulation_seed=43,
+        delay_steps=3,
+        drop_probability=0.25,
+    )
+
+    assert first.resolved_rng_seed == second.resolved_rng_seed
+    assert first.resolved_rng_seed != changed.resolved_rng_seed
+
+
+def _drop_sequence(*, rng_seed: int) -> tuple[bool, ...]:
+    bus = MessageBus(
+        destinations=("A1", "A2"),
+        config=MessageBusConfig(drop_probability=0.5, rng_seed=rng_seed),
+    )
+    was_dropped: list[bool] = []
+    for step in range(10):
+        bus.publish(source="A1", destination="A2", created_step=step, payload={"step": step})
+        was_dropped.append(bus.receive(destination="A2", current_step=step) == ())
+    return tuple(was_dropped)

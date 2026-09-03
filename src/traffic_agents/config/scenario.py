@@ -14,6 +14,7 @@ from pydantic import (
     model_validator,
 )
 
+from traffic_agents.communication_seed import derive_communication_rng_seed
 from traffic_agents.domain import EdgeId, IntersectionId, LaneId
 
 DemandLevel = Literal["LOW", "MEDIUM", "HIGH"]
@@ -92,6 +93,17 @@ class TrafficDemandConfig(ConfigModel):
 
 class CommunicationConfig(ConfigModel):
     delay_steps: NonNegativeInt = 0
+    drop_probability: Annotated[float, Field(ge=0.0, le=1.0)] = 0.0
+    rng_seed: NonNegativeInt | None = None
+
+    def resolved_rng_seed(self, simulation_seed: int) -> int:
+        if self.rng_seed is not None:
+            return int(self.rng_seed)
+        return derive_communication_rng_seed(
+            simulation_seed=simulation_seed,
+            delay_steps=int(self.delay_steps),
+            drop_probability=float(self.drop_probability),
+        )
 
 
 class IntersectionConfig(ConfigModel):

@@ -9,6 +9,7 @@ import pytest
 
 import traffic_agents.simulation.sumo_runner as sumo_runner
 from traffic_agents.communication import grid_3x3_communication_topology
+from traffic_agents.communication_seed import derive_communication_rng_seed
 from traffic_agents.config import ScenarioConfig
 from traffic_agents.experiments import RunInvariantValidationError
 from traffic_agents.metrics import StepTelemetryRecord
@@ -408,6 +409,15 @@ def test_traci_runner_writes_run_manifest(
     assert len(manifest["phase_plan_sha256"]) == 64
     assert manifest["movement_model_version"] == MOVEMENT_MODEL_VERSION
     assert manifest["turning_ratios"] == {"straight": 0.6, "left": 0.2, "right": 0.2}
+    assert manifest["communication"] == {
+        "delay_steps": 0,
+        "drop_probability": 0.0,
+        "rng_seed": derive_communication_rng_seed(
+            simulation_seed=42,
+            delay_steps=0,
+            drop_probability=0.0,
+        ),
+    }
     assert manifest["communication_topology_sha256"] == (
         grid_3x3_communication_topology().topology_hash
     )
