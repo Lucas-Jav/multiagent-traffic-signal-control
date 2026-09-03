@@ -1,5 +1,7 @@
 # Multi-Agent Traffic Signal Control
 
+[![CI](https://github.com/Lucas-Jav/multiagent-traffic-signal-control/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Lucas-Jav/multiagent-traffic-signal-control/actions/workflows/ci.yml)
+
 Bootstrap Python para um projeto de controle semaforico multiagente.
 
 O projeto ja possui uma primeira execucao real com Eclipse SUMO, usando uma rede

@@ -1,24 +1,75 @@
-name: ci
+name: CI
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
-  validate:
+  quality:
+    name: Quality Gates
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v3
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
       - name: Set up Python
-        run: uv python install 3.12
+        uses: actions/setup-python@v6.2.0
+        with:
+          python-version: "3.12"
+          check-latest: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v9.0.0
+        with:
+          version: "0.12.5"
+          enable-cache: false
+
       - name: Install dependencies
-        run: uv sync --all-groups
+        run: uv sync --frozen
+
       - name: Ruff check
         run: uv run ruff check .
+
       - name: Ruff format
         run: uv run ruff format --check .
+
       - name: mypy
         run: uv run mypy src
+
       - name: pytest
-        run: uv run pytest -q
+        run: uv run pytest -q -m "not sumo"
+
+      - name: Python dependency audit
+        run: uv run pip-audit --skip-editable --cache-dir .pip-audit-cache
+
+  docker:
+    name: Docker Build And Smoke
+    runs-on: ubuntu-latest
+    needs:
+      - quality
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Build image
+        run: docker build --tag traffic-agents-ci .
+
+      - name: Verify SUMO version
+        run: docker run --rm traffic-agents-ci sumo --version
+
+      - name: Verify Python SUMO imports
+        run: docker run --rm traffic-agents-ci python -c "import traci; import sumolib"
+
+      - name: Short headless simulation smoke
+        run: >
+          docker run --rm traffic-agents-ci
+          traffic-agents simulation run
+          --scenario scenarios/grid_3x3/scenario.yaml
+          --controller B0_FIXED
+          --seed 42
+          --max-steps 10
