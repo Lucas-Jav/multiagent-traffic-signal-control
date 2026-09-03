@@ -32,7 +32,6 @@ class MessageBusConfig:
     drop_probability: float = 0.0
     rng_seed: int | None = None
     simulation_seed: int = 0
-    stale_after_steps: int | None = None
 
     def __post_init__(self) -> None:
         if self.delay_steps < 0:
@@ -46,9 +45,6 @@ class MessageBusConfig:
             raise ValueError(msg)
         if self.simulation_seed < 0:
             msg = "simulation_seed must be non-negative"
-            raise ValueError(msg)
-        if self.stale_after_steps is not None and self.stale_after_steps < 0:
-            msg = "stale_after_steps must be non-negative when configured"
             raise ValueError(msg)
 
     @property
@@ -219,7 +215,6 @@ class MessageBus:
             raise MessageBusError(msg)
 
         deliverable: list[_QueuedMessage] = []
-        stale_count = 0
         delivery_steps = sorted(
             delivery_step
             for delivery_step in self._scheduled_by_delivery_step
@@ -231,9 +226,6 @@ class MessageBus:
             for queued in queue:
                 if queued.message.destination != destination:
                     pending.append(queued)
-                    continue
-                if self._is_stale(queued.message, current_step):
-                    stale_count += 1
                     continue
                 deliverable.append(queued)
 
@@ -278,7 +270,7 @@ class MessageBus:
                 messages_dropped=self._metrics.messages_dropped,
                 messages_sent=self._metrics.messages_sent,
             ),
-            stale_messages=self._metrics.stale_messages + stale_count,
+            stale_messages=self._metrics.stale_messages,
         )
         return messages
 
@@ -359,11 +351,6 @@ class MessageBus:
         if self.config.drop_probability <= 0.0:
             return False
         return self._rng.random() < self.config.drop_probability
-
-    def _is_stale(self, message: CommunicationMessage, current_step: int) -> bool:
-        if self.config.stale_after_steps is None:
-            return False
-        return current_step - message.created_step > self.config.stale_after_steps
 
 
 def serialize_message(message: CommunicationMessage) -> bytes:

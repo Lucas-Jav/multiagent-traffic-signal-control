@@ -377,6 +377,7 @@ def _manifest_payload(
             "delay_steps": int(scenario_config.communication.delay_steps),
             "drop_probability": float(scenario_config.communication.drop_probability),
             "rng_seed": scenario_config.communication.resolved_rng_seed(int(scenario_config.seed)),
+            "max_message_age_steps": int(scenario_config.communication.max_message_age_steps),
         },
         "simulation": {
             "steps_executed": summary.steps_executed,

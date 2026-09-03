@@ -95,6 +95,7 @@ class CommunicationConfig(ConfigModel):
     delay_steps: NonNegativeInt = 0
     drop_probability: Annotated[float, Field(ge=0.0, le=1.0)] = 0.0
     rng_seed: NonNegativeInt | None = None
+    max_message_age_steps: NonNegativeInt = 1
 
     def resolved_rng_seed(self, simulation_seed: int) -> int:
         if self.rng_seed is not None:

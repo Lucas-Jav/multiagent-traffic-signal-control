@@ -6,7 +6,11 @@ from typing import Any, cast
 
 import pytest
 
-from traffic_agents.communication import grid_3x3_communication_topology
+from traffic_agents.communication import (
+    MessageBus,
+    MessageBusConfig,
+    grid_3x3_communication_topology,
+)
 from traffic_agents.config import CommunicationConfig, load_scenario_config
 from traffic_agents.controllers import (
     COOPERATIVE_COMPACT_CONTROLLER_ID,
@@ -328,8 +332,45 @@ def test_high_future_incoming_flow_increases_related_phase_score() -> None:
     assert result.phase_scores["phase_3"] == pytest.approx(0.0)
 
 
+def test_fresh_message_is_used() -> None:
+    adjustment = make_adjustment(CooperativePressureConfig(max_message_age_steps=2))
+
+    result = adjustment.adjust(
+        local_phase_scores={"phase_0": 0.0, "phase_3": 0.0},
+        observation=make_observation(
+            messages=(make_message(created_step=19, queue_summary={"straight": 10.0}),),
+        ),
+        current_step=20,
+    )
+
+    assert result.phase_scores["phase_0"] == pytest.approx(10.0)
+    assert result.messages_fresh == 1
+    assert result.messages_stale == 0
+    assert result.average_message_age == 1.0
+    assert result.max_observed_message_age == 1
+    assert result.message_usage_traces[0].used is True
+
+
+def test_boundary_message_age_is_fresh() -> None:
+    adjustment = make_adjustment(CooperativePressureConfig(max_message_age_steps=2))
+
+    result = adjustment.adjust(
+        local_phase_scores={"phase_0": 0.0, "phase_3": 0.0},
+        observation=make_observation(
+            messages=(make_message(created_step=18, queue_summary={"straight": 10.0}),),
+        ),
+        current_step=20,
+    )
+
+    assert result.phase_scores["phase_0"] == pytest.approx(10.0)
+    assert result.messages_fresh == 1
+    assert result.messages_stale == 0
+    assert result.average_message_age == 2.0
+    assert result.max_observed_message_age == 2
+
+
 def test_stale_message_is_ignored() -> None:
-    adjustment = make_adjustment(CooperativePressureConfig(stale_after_steps=1))
+    adjustment = make_adjustment(CooperativePressureConfig(max_message_age_steps=1))
 
     result = adjustment.adjust(
         local_phase_scores={"phase_0": 0.0, "phase_3": 0.0},
@@ -341,7 +382,88 @@ def test_stale_message_is_ignored() -> None:
 
     assert result.phase_scores["phase_0"] == pytest.approx(0.0)
     assert result.stale_messages == 1
+    assert result.messages_stale == 1
     assert result.valid_messages == 0
+    assert result.messages_fresh == 0
+    assert result.average_message_age == 2.0
+    assert result.max_observed_message_age == 2
+    assert result.message_usage_traces[0].used is False
+    assert result.message_usage_traces[0].reason == "STALE"
+
+
+def test_missing_messages_keep_local_scores_without_exception() -> None:
+    adjustment = make_adjustment(CooperativePressureConfig(max_message_age_steps=1))
+
+    result = adjustment.adjust(
+        local_phase_scores={"phase_0": 3.0, "phase_3": 7.0},
+        observation=make_observation(messages=()),
+        current_step=20,
+    )
+
+    assert result.phase_scores["phase_0"] == pytest.approx(3.0)
+    assert result.phase_scores["phase_3"] == pytest.approx(7.0)
+    assert result.messages_fresh == 0
+    assert result.messages_stale == 0
+    assert result.average_message_age == 0.0
+    assert result.max_observed_message_age == 0
+    assert result.message_usage_traces == ()
+
+
+def test_stale_messages_fall_back_to_b2_local_decision() -> None:
+    config = LocalPressureConfig(switch_score_margin=0.0)
+    observation = make_observation(
+        current_phase="phase_0",
+        a2_queue=1,
+        a4_queue=4,
+        messages=(make_message(created_step=18, queue_summary={"straight": 100.0}),),
+    )
+
+    assert make_c1(
+        CooperativePressureConfig(
+            local_pressure=config,
+            max_message_age_steps=1,
+        )
+    ).decide(observation) == make_b2(config).decide(AgentObservation(state=observation.state))
+
+
+def test_delayed_message_can_still_be_fresh_when_age_is_within_limit() -> None:
+    bus = MessageBus(
+        destinations=("A1", "A2"),
+        config=MessageBusConfig(delay_steps=2),
+    )
+    message = make_message(created_step=0, queue_summary={"straight": 10.0})
+    bus.publish_compact(message)
+
+    delivered = bus.receive(destination="A1", current_step=2)
+    result = make_adjustment(CooperativePressureConfig(max_message_age_steps=2)).adjust(
+        local_phase_scores={"phase_0": 0.0, "phase_3": 0.0},
+        observation=make_observation(messages=delivered),
+        current_step=2,
+    )
+
+    assert result.phase_scores["phase_0"] == pytest.approx(10.0)
+    assert result.messages_fresh == 1
+    assert result.messages_stale == 0
+
+
+def test_delayed_message_is_stale_when_age_exceeds_limit() -> None:
+    bus = MessageBus(
+        destinations=("A1", "A2"),
+        config=MessageBusConfig(delay_steps=2),
+    )
+    message = make_message(created_step=0, queue_summary={"straight": 10.0})
+    bus.publish_compact(message)
+
+    delivered = bus.receive(destination="A1", current_step=2)
+    result = make_adjustment(CooperativePressureConfig(max_message_age_steps=1)).adjust(
+        local_phase_scores={"phase_0": 0.0, "phase_3": 0.0},
+        observation=make_observation(messages=delivered),
+        current_step=2,
+    )
+
+    assert result.phase_scores["phase_0"] == pytest.approx(0.0)
+    assert result.messages_fresh == 0
+    assert result.messages_stale == 1
 
 
 def test_non_neighbor_message_is_rejected() -> None:
@@ -477,7 +599,7 @@ def test_runtime_message_bus_uses_explicit_communication_topology() -> None:
 
 def test_configure_uses_scenario_communication_delay_steps() -> None:
     scenario = load_scenario_config(Path("scenarios/grid_3x3/scenario.yaml")).model_copy(
-        update={"communication": CommunicationConfig(delay_steps=3)}
+        update={"communication": CommunicationConfig(delay_steps=3, max_message_age_steps=5)}
     )
     controller = CooperativeCompactController()
 
@@ -487,12 +609,14 @@ def test_configure_uses_scenario_communication_delay_steps() -> None:
     )
 
     assert controller.config.message_bus.delay_steps == 3
+    assert controller.config.max_message_age_steps == 5
 
 
 @pytest.mark.parametrize(
     "kwargs",
     [
         {"stale_after_steps": -1},
+        {"max_message_age_steps": -1},
         {"projected_incoming_weight": -0.1},
         {"directed_pressure_weight": -0.1},
         {"downstream_congestion_weight": -0.1},

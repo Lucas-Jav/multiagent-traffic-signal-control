@@ -417,6 +417,7 @@ def test_traci_runner_writes_run_manifest(
             delay_steps=0,
             drop_probability=0.0,
         ),
+        "max_message_age_steps": 1,
     }
     assert manifest["communication_topology_sha256"] == (
         grid_3x3_communication_topology().topology_hash

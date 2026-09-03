@@ -7,6 +7,7 @@ from traffic_agents.controllers.cooperative_compact import (
     CooperativeCompactController,
     CooperativePressureAdjustment,
     CooperativePressureConfig,
+    MessageUsageTrace,
 )
 from traffic_agents.controllers.fixed_time import (
     FIXED_TIME_CONTROLLER_ID,
@@ -59,6 +60,7 @@ __all__ = [
     "LocalAdaptivePolicy",
     "LocalPressureConfig",
     "LocalPressureController",
+    "MessageUsageTrace",
     "MovementPressureCalculator",
     "PhaseCommand",
     "PhaseCommandKind",

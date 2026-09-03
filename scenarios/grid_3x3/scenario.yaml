@@ -126,6 +126,7 @@ communication:
   delay_steps: 0
   drop_probability: 0.0
   rng_seed: null
+  max_message_age_steps: 1
 intersections:
   - intersection_id: A1
     incoming_lanes:

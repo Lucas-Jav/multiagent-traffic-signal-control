@@ -68,6 +68,7 @@ def test_load_valid_scenario_config(tmp_path: Path) -> None:
     assert scenario.communication.delay_steps == 0
     assert scenario.communication.drop_probability == 0.0
     assert scenario.communication.rng_seed is None
+    assert scenario.communication.max_message_age_steps == 1
     assert scenario.traffic.flows[0].rate_for("MEDIUM") == 600
     assert scenario.intersections[0].intersection_id == "junction_1_1"
 
@@ -145,6 +146,7 @@ def test_scenario_config_accepts_communication_delay_steps() -> None:
         "delay_steps": 3,
         "drop_probability": 0.25,
         "rng_seed": 99,
+        "max_message_age_steps": 5,
     }
 
     scenario = ScenarioConfig.model_validate(payload)
@@ -152,6 +154,7 @@ def test_scenario_config_accepts_communication_delay_steps() -> None:
     assert scenario.communication.delay_steps == 3
     assert scenario.communication.drop_probability == 0.25
     assert scenario.communication.rng_seed == 99
+    assert scenario.communication.max_message_age_steps == 5
     assert scenario.communication.resolved_rng_seed(int(scenario.seed)) == 99
 
 
@@ -176,6 +179,14 @@ def test_scenario_config_rejects_negative_communication_rng_seed() -> None:
     payload["communication"] = {"rng_seed": -1}
 
     with pytest.raises(ValidationError, match="rng_seed"):
+        ScenarioConfig.model_validate(payload)
+
+
+def test_scenario_config_rejects_negative_max_message_age_steps() -> None:
+    payload = valid_payload()
+    payload["communication"] = {"max_message_age_steps": -1}
+
+    with pytest.raises(ValidationError, match="max_message_age_steps"):
         ScenarioConfig.model_validate(payload)
 
 

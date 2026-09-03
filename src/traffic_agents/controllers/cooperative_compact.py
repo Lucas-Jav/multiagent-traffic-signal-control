@@ -72,7 +72,8 @@ class CooperativeCompactSensorConnection(Protocol):
 class CooperativePressureConfig:
     local_pressure: LocalPressureConfig = field(default_factory=LocalPressureConfig)
     message_bus: MessageBusConfig = field(default_factory=MessageBusConfig)
-    stale_after_steps: int = 1
+    max_message_age_steps: int = 1
+    stale_after_steps: int | None = None
     projected_incoming_weight: float = 1.0
     directed_pressure_weight: float = 0.25
     downstream_congestion_weight: float = 10.0
@@ -81,8 +82,13 @@ class CooperativePressureConfig:
     right_turn_weight: float = 0.20
 
     def __post_init__(self) -> None:
-        if self.stale_after_steps < 0:
-            msg = "stale_after_steps must be non-negative"
+        if self.stale_after_steps is not None:
+            if self.stale_after_steps < 0:
+                msg = "stale_after_steps must be non-negative"
+                raise ValueError(msg)
+            object.__setattr__(self, "max_message_age_steps", self.stale_after_steps)
+        if self.max_message_age_steps < 0:
+            msg = "max_message_age_steps must be non-negative"
             raise ValueError(msg)
         for field_name, value in (
             ("projected_incoming_weight", self.projected_incoming_weight),
@@ -108,12 +114,27 @@ class CooperativePressureConfig:
 
 
 @dataclass(frozen=True)
+class MessageUsageTrace:
+    source: IntersectionId
+    destination: IntersectionId
+    created_step: int
+    message_age_steps: int
+    used: bool
+    reason: str | None = None
+
+
+@dataclass(frozen=True)
 class CooperativeAdjustmentResult:
     phase_scores: Mapping[str, float]
     valid_messages: int = 0
     stale_messages: int = 0
+    messages_fresh: int = 0
+    messages_stale: int = 0
+    average_message_age: float = 0.0
+    max_observed_message_age: int = 0
     invalid_messages: int = 0
     rejected_messages: int = 0
+    message_usage_traces: tuple[MessageUsageTrace, ...] = ()
 
 
 @dataclass(frozen=True, init=False)
@@ -172,6 +193,8 @@ class CooperativePressureAdjustment:
         stale_messages = 0
         invalid_messages = 0
         rejected_messages = 0
+        observed_ages: list[int] = []
+        usage_traces: list[MessageUsageTrace] = []
         for raw_message in observation.messages:
             message = self._parse_message(raw_message)
             if message is None:
@@ -183,19 +206,48 @@ class CooperativePressureAdjustment:
             if message.source not in self.neighbor_ids:
                 rejected_messages += 1
                 continue
-            if current_step - message.created_step > self.config.stale_after_steps:
+            message_age = current_step - message.created_step
+            if message_age < 0:
+                invalid_messages += 1
+                continue
+            observed_ages.append(message_age)
+            if message_age > self.config.max_message_age_steps:
                 stale_messages += 1
+                usage_traces.append(
+                    MessageUsageTrace(
+                        source=message.source,
+                        destination=message.destination,
+                        created_step=int(message.created_step),
+                        message_age_steps=message_age,
+                        used=False,
+                        reason="STALE",
+                    )
+                )
                 continue
 
             valid_messages += 1
+            usage_traces.append(
+                MessageUsageTrace(
+                    source=message.source,
+                    destination=message.destination,
+                    created_step=int(message.created_step),
+                    message_age_steps=message_age,
+                    used=True,
+                )
+            )
             self._apply_message_adjustment(adjusted_scores, message)
 
         return CooperativeAdjustmentResult(
             phase_scores=MappingProxyType(adjusted_scores),
             valid_messages=valid_messages,
             stale_messages=stale_messages,
+            messages_fresh=valid_messages,
+            messages_stale=stale_messages,
+            average_message_age=(sum(observed_ages) / len(observed_ages) if observed_ages else 0.0),
+            max_observed_message_age=max(observed_ages, default=0),
             invalid_messages=invalid_messages,
             rejected_messages=rejected_messages,
+            message_usage_traces=tuple(usage_traces),
         )
 
     def _parse_message(
@@ -330,7 +382,11 @@ class CooperativeCompactController:
             message_bus=replace(
                 self.config.message_bus,
                 delay_steps=scenario_config.communication.delay_steps,
+                drop_probability=scenario_config.communication.drop_probability,
+                rng_seed=scenario_config.communication.rng_seed,
+                simulation_seed=scenario_config.seed,
             ),
+            max_message_age_steps=scenario_config.communication.max_message_age_steps,
         )
         self._sensor_provider = None
         self._runtime_by_intersection.clear()
@@ -485,7 +541,7 @@ class CooperativeCompactController:
             "communication_message": "CompactNeighborMessage",
             "message_bus_delay_steps": self.config.message_bus.delay_steps,
             "message_bus_drop_probability": self.config.message_bus.drop_probability,
-            "stale_after_steps": self.config.stale_after_steps,
+            "max_message_age_steps": self.config.max_message_age_steps,
             "projected_incoming_weight": self.config.projected_incoming_weight,
             "directed_pressure_weight": self.config.directed_pressure_weight,
             "downstream_congestion_weight": self.config.downstream_congestion_weight,

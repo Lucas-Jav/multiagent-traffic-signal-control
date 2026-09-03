@@ -220,16 +220,15 @@ def test_message_uses_simulation_step_instead_of_wall_clock_timestamp() -> None:
     assert not hasattr(message, "timestamp")
 
 
-def test_stale_messages_are_discarded_without_delivery() -> None:
-    bus = MessageBus(
-        destinations=("A1", "A2"),
-        config=MessageBusConfig(stale_after_steps=1),
-    )
-    bus.publish(source="A1", destination="A2", created_step=0, payload={"queue": 3})
+def test_bus_delivers_old_messages_without_classifying_staleness() -> None:
+    bus = MessageBus(destinations=("A1", "A2"))
+    published = bus.publish(source="A1", destination="A2", created_step=0, payload={"queue": 3})
 
-    assert bus.receive(destination="A2", current_step=2) == ()
-    assert bus.metrics.messages_delivered == 0
-    assert bus.metrics.stale_messages == 1
+    assert bus.receive(destination="A2", current_step=2) == (
+        published.model_copy(update={"delivered_step": 2}),
+    )
+    assert bus.metrics.messages_delivered == 1
+    assert bus.metrics.stale_messages == 0
 
 
 def test_drop_probability_zero_loses_no_messages() -> None:
