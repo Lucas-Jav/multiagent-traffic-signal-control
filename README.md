@@ -212,6 +212,17 @@ A comunicacao do MVP1 usa `CompactNeighborMessage` e `MessageBus`.
 
 A communication topology define quais agentes podem trocar mensagens. Ela nao altera a traffic topology e nao cria novas conexoes fisicas na rede SUMO.
 
+O atraso de comunicacao e configurado no cenario:
+
+```yaml
+communication:
+  delay_steps: 0
+```
+
+O tempo de entrega usa apenas simulation step. O `MessageBus` nao usa relogio de parede para entrega cientifica de mensagens. Uma mensagem criada no step `t` e agendada para `t + delay_steps`. Em cada simulation step, o controlador cooperativo publica as mensagens locais, chama `receive(...)` e so depois decide a fase; portanto, uma mensagem agendada para o step `s` fica disponivel antes da decisao tomada no proprio step `s`. Com `delay_steps: 0`, isso preserva o comportamento atual: uma mensagem criada no step corrente pode ser usada na decisao do mesmo step.
+
+Cada mensagem registra `created_step`, `scheduled_delivery_step` e `delivered_step`. O bus mantem mensagens internamente por delivery step e preserva ordenacao deterministica por `delivery_step`, `created_step`, `sequence`, `source` e `destination`. As metricas de comunicacao incluem `messages_sent`, `messages_delivered`, `message_delay_steps`, `average_message_delay` e `max_message_delay`. Esses atrasos medem o atraso observado entre criacao e entrega; eles nao sao misturados com stale age, que continua sendo a idade usada pelo controlador para rejeitar informacao antiga.
+
 ## 12. Running a Simulation
 
 Headless:

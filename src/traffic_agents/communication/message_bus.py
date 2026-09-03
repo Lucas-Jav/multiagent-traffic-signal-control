@@ -46,6 +46,9 @@ class MessageBusConfig:
 class MessageBusMetrics:
     messages_sent: int = 0
     messages_delivered: int = 0
+    message_delay_steps: int = 0
+    average_message_delay: float = 0.0
+    max_message_delay: int = 0
     serialized_bytes: int = 0
     messages_dropped: int = 0
     stale_messages: int = 0
@@ -53,12 +56,20 @@ class MessageBusMetrics:
 
 @dataclass(frozen=True)
 class _QueuedMessage:
-    deliver_at_step: int
+    delivery_step: int
     message: CommunicationMessage
 
 
 @dataclass
 class MessageBus:
+    """Deterministic in-memory bus driven by simulation steps.
+
+    Messages created at step t are scheduled for t + delay_steps. A call to
+    receive(destination=..., current_step=s) happens before that destination's
+    controller decision for simulation step s, so a message scheduled for s can
+    influence the decision taken in the same step.
+    """
+
     destinations: Iterable[IntersectionId]
     config: MessageBusConfig = field(default_factory=MessageBusConfig)
     topology: CommunicationTopology | None = None
@@ -73,8 +84,8 @@ class MessageBus:
         init=False,
         repr=False,
     )
-    _queues_by_destination: dict[IntersectionId, list[_QueuedMessage]] = field(
-        default_factory=dict,
+    _scheduled_by_delivery_step: dict[int, list[_QueuedMessage]] = field(
+        default_factory=lambda: defaultdict(list),
         init=False,
         repr=False,
     )
@@ -94,7 +105,7 @@ class MessageBus:
             raise ValueError(msg)
         self._destinations = destination_set
         self._sequence_by_source = defaultdict(int)
-        self._queues_by_destination = {destination: [] for destination in destination_set}
+        self._scheduled_by_delivery_step = defaultdict(list)
         self._metrics = MessageBusMetrics()
 
     @property
@@ -119,11 +130,14 @@ class MessageBus:
             created_step=created_step,
         )
         sequence = self._next_sequence(source)
+        scheduled_delivery_step = created_step + self.config.delay_steps
         message = NeighborMessage(
             message_id=f"{source}:{sequence}",
             source=source,
             destination=destination,
             created_step=created_step,
+            scheduled_delivery_step=scheduled_delivery_step,
+            delivered_step=None,
             sequence=sequence,
             payload=dict(payload),
         )
@@ -133,9 +147,9 @@ class MessageBus:
             self._record_dropped()
             return message
 
-        self._queues_by_destination[destination].append(
+        self._scheduled_by_delivery_step[scheduled_delivery_step].append(
             _QueuedMessage(
-                deliver_at_step=created_step + self.config.delay_steps,
+                delivery_step=scheduled_delivery_step,
                 message=message,
             )
         )
@@ -147,19 +161,26 @@ class MessageBus:
             destination=message.destination,
             created_step=message.created_step,
         )
-        self._record_sent(message)
+        scheduled_delivery_step = message.created_step + self.config.delay_steps
+        scheduled_message = message.model_copy(
+            update={
+                "scheduled_delivery_step": scheduled_delivery_step,
+                "delivered_step": None,
+            }
+        )
+        self._record_sent(scheduled_message)
 
         if self._should_drop():
             self._record_dropped()
-            return message
+            return scheduled_message
 
-        self._queues_by_destination[message.destination].append(
+        self._scheduled_by_delivery_step[scheduled_delivery_step].append(
             _QueuedMessage(
-                deliver_at_step=message.created_step + self.config.delay_steps,
-                message=message,
+                delivery_step=scheduled_delivery_step,
+                message=scheduled_message,
             )
         )
-        return message
+        return scheduled_message
 
     def receive(
         self,
@@ -174,33 +195,60 @@ class MessageBus:
             msg = f"invalid message destination: {destination}"
             raise MessageBusError(msg)
 
-        queue = self._queues_by_destination[destination]
         deliverable: list[_QueuedMessage] = []
-        pending: list[_QueuedMessage] = []
         stale_count = 0
-        for queued in queue:
-            if self._is_stale(queued.message, current_step):
-                stale_count += 1
-                continue
-            if queued.deliver_at_step <= current_step:
+        delivery_steps = sorted(
+            delivery_step
+            for delivery_step in self._scheduled_by_delivery_step
+            if delivery_step <= current_step
+        )
+        for delivery_step in delivery_steps:
+            queue = self._scheduled_by_delivery_step[delivery_step]
+            pending: list[_QueuedMessage] = []
+            for queued in queue:
+                if queued.message.destination != destination:
+                    pending.append(queued)
+                    continue
+                if self._is_stale(queued.message, current_step):
+                    stale_count += 1
+                    continue
                 deliverable.append(queued)
-            else:
-                pending.append(queued)
 
-        self._queues_by_destination[destination] = pending
+            if pending:
+                self._scheduled_by_delivery_step[delivery_step] = pending
+            else:
+                del self._scheduled_by_delivery_step[delivery_step]
+
         deliverable.sort(
             key=lambda queued: (
-                queued.deliver_at_step,
+                queued.delivery_step,
                 queued.message.created_step,
                 queued.message.sequence,
                 queued.message.source,
                 queued.message.destination,
             )
         )
-        messages = tuple(queued.message for queued in deliverable)
+        messages = tuple(
+            _mark_delivered(queued.message, delivered_step=current_step) for queued in deliverable
+        )
+        delivered_delays = tuple(
+            message.delivered_step - message.created_step
+            for message in messages
+            if message.delivered_step is not None
+        )
+        total_delay_steps = self._metrics.message_delay_steps + sum(delivered_delays)
+        messages_delivered = self._metrics.messages_delivered + len(messages)
         self._metrics = MessageBusMetrics(
             messages_sent=self._metrics.messages_sent,
-            messages_delivered=self._metrics.messages_delivered + len(messages),
+            messages_delivered=messages_delivered,
+            message_delay_steps=total_delay_steps,
+            average_message_delay=(
+                total_delay_steps / messages_delivered if messages_delivered > 0 else 0.0
+            ),
+            max_message_delay=max(
+                (self._metrics.max_message_delay, *delivered_delays),
+                default=0,
+            ),
             serialized_bytes=self._metrics.serialized_bytes,
             messages_dropped=self._metrics.messages_dropped,
             stale_messages=self._metrics.stale_messages + stale_count,
@@ -212,8 +260,13 @@ class MessageBus:
             if destination not in self._destinations:
                 msg = f"invalid message destination: {destination}"
                 raise MessageBusError(msg)
-            return len(self._queues_by_destination[destination])
-        return sum(len(queue) for queue in self._queues_by_destination.values())
+            return sum(
+                1
+                for queue in self._scheduled_by_delivery_step.values()
+                for queued in queue
+                if queued.message.destination == destination
+            )
+        return sum(len(queue) for queue in self._scheduled_by_delivery_step.values())
 
     def _next_sequence(self, source: IntersectionId) -> int:
         sequence = self._sequence_by_source[source]
@@ -247,6 +300,9 @@ class MessageBus:
         self._metrics = MessageBusMetrics(
             messages_sent=self._metrics.messages_sent + 1,
             messages_delivered=self._metrics.messages_delivered,
+            message_delay_steps=self._metrics.message_delay_steps,
+            average_message_delay=self._metrics.average_message_delay,
+            max_message_delay=self._metrics.max_message_delay,
             serialized_bytes=self._metrics.serialized_bytes + serialized_bytes,
             messages_dropped=self._metrics.messages_dropped,
             stale_messages=self._metrics.stale_messages,
@@ -256,6 +312,9 @@ class MessageBus:
         self._metrics = MessageBusMetrics(
             messages_sent=self._metrics.messages_sent,
             messages_delivered=self._metrics.messages_delivered,
+            message_delay_steps=self._metrics.message_delay_steps,
+            average_message_delay=self._metrics.average_message_delay,
+            max_message_delay=self._metrics.max_message_delay,
             serialized_bytes=self._metrics.serialized_bytes,
             messages_dropped=self._metrics.messages_dropped + 1,
             stale_messages=self._metrics.stale_messages,
@@ -284,6 +343,14 @@ def serialize_message(message: CommunicationMessage) -> bytes:
         ensure_ascii=True,
     )
     return encoded.encode("utf-8")
+
+
+def _mark_delivered(
+    message: CommunicationMessage,
+    *,
+    delivered_step: int,
+) -> CommunicationMessage:
+    return message.model_copy(update={"delivered_step": delivered_step})
 
 
 def freeze_payload(payload: Mapping[str, Any]) -> Mapping[str, Any]:

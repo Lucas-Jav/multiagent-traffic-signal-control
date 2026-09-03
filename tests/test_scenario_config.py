@@ -64,6 +64,7 @@ def test_load_valid_scenario_config(tmp_path: Path) -> None:
     assert scenario.traffic.turning_ratios.straight == 0.60
     assert scenario.traffic.turning_ratios.left == 0.20
     assert scenario.traffic.turning_ratios.right == 0.20
+    assert scenario.communication.delay_steps == 0
     assert scenario.traffic.flows[0].rate_for("MEDIUM") == 600
     assert scenario.intersections[0].intersection_id == "junction_1_1"
 
@@ -132,4 +133,21 @@ def test_scenario_config_rejects_warmup_equal_to_duration() -> None:
     payload["warmup_seconds"] = 300
 
     with pytest.raises(ValidationError, match="warmup_seconds must be lower"):
+        ScenarioConfig.model_validate(payload)
+
+
+def test_scenario_config_accepts_communication_delay_steps() -> None:
+    payload = valid_payload()
+    payload["communication"] = {"delay_steps": 3}
+
+    scenario = ScenarioConfig.model_validate(payload)
+
+    assert scenario.communication.delay_steps == 3
+
+
+def test_scenario_config_rejects_negative_communication_delay_steps() -> None:
+    payload = valid_payload()
+    payload["communication"] = {"delay_steps": -1}
+
+    with pytest.raises(ValidationError, match="delay_steps"):
         ScenarioConfig.model_validate(payload)

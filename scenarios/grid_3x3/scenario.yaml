@@ -122,6 +122,8 @@ traffic:
         LOW: 80
         MEDIUM: 150
         HIGH: 220
+communication:
+  delay_steps: 0
 intersections:
   - intersection_id: A1
     incoming_lanes:

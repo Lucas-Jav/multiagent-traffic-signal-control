@@ -103,6 +103,8 @@ def test_agent_observation_decision_and_simulation_step() -> None:
         source="intersection-b",
         destination="intersection-a",
         created_step=10,
+        scheduled_delivery_step=11,
+        delivered_step=11,
         sequence=0,
         payload={"state": neighbor_state.model_dump()},
     )
@@ -125,4 +127,31 @@ def test_agent_observation_decision_and_simulation_step() -> None:
 
     assert step.observations[0].state == local_state
     assert step.observations[0].messages[0].source == "intersection-b"
+    assert step.observations[0].messages[0].scheduled_delivery_step == 11
+    assert step.observations[0].messages[0].delivered_step == 11
     assert step.decisions[0].action.kind == TrafficLightActionKind.KEEP_PHASE
+
+
+def test_neighbor_message_rejects_inconsistent_delivery_steps() -> None:
+    with pytest.raises(ValidationError, match="scheduled_delivery_step"):
+        NeighborMessage(
+            message_id="intersection-b:0",
+            source="intersection-b",
+            destination="intersection-a",
+            created_step=10,
+            scheduled_delivery_step=9,
+            sequence=0,
+            payload={},
+        )
+
+    with pytest.raises(ValidationError, match="delivered_step"):
+        NeighborMessage(
+            message_id="intersection-b:0",
+            source="intersection-b",
+            destination="intersection-a",
+            created_step=10,
+            scheduled_delivery_step=12,
+            delivered_step=11,
+            sequence=0,
+            payload={},
+        )

@@ -248,6 +248,8 @@ def test_compact_message_serialized_bytes_are_recorded_by_bus() -> None:
         sequence=0,
     )
 
-    bus.publish_compact(message)
+    scheduled_message = bus.publish_compact(message)
 
-    assert bus.metrics.serialized_bytes == len(serialize_message(message))
+    assert scheduled_message.scheduled_delivery_step == 42
+    assert scheduled_message.delivered_step is None
+    assert bus.metrics.serialized_bytes == len(serialize_message(scheduled_message))

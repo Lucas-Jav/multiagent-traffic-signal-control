@@ -90,6 +90,10 @@ class TrafficDemandConfig(ConfigModel):
     flows: Annotated[tuple[FlowDefinitionConfig, ...], Field(min_length=1)]
 
 
+class CommunicationConfig(ConfigModel):
+    delay_steps: NonNegativeInt = 0
+
+
 class IntersectionConfig(ConfigModel):
     intersection_id: IntersectionId
     incoming_lanes: Annotated[tuple[LaneId, ...], Field(min_length=1)]
@@ -113,6 +117,7 @@ class ScenarioConfig(ConfigModel):
     seed: NonNegativeInt
     controller_id: ControllerId
     traffic: TrafficDemandConfig
+    communication: CommunicationConfig = Field(default_factory=CommunicationConfig)
     intersections: Annotated[tuple[IntersectionConfig, ...], Field(min_length=1)]
 
     @model_validator(mode="after")

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, ClassVar, Protocol, cast
@@ -325,6 +325,13 @@ class CooperativeCompactController:
     def configure(self, *, scenario_config: Any, scenario_dir: Path) -> None:
         self._scenario_config = scenario_config
         self._scenario_dir = scenario_dir
+        self.config = replace(
+            self.config,
+            message_bus=replace(
+                self.config.message_bus,
+                delay_steps=scenario_config.communication.delay_steps,
+            ),
+        )
         self._sensor_provider = None
         self._runtime_by_intersection.clear()
         self._message_bus = None

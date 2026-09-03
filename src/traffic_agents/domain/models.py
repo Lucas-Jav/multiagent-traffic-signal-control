@@ -92,14 +92,35 @@ class NeighborMessage(DomainModel):
     source: IntersectionId
     destination: IntersectionId
     created_step: NonNegativeInt
+    scheduled_delivery_step: NonNegativeInt | None = None
+    delivered_step: NonNegativeInt | None = None
     sequence: NonNegativeInt
     payload: dict[str, Any]
+
+    @model_validator(mode="after")
+    def validate_delivery_steps(self) -> Self:
+        if (
+            self.scheduled_delivery_step is not None
+            and self.scheduled_delivery_step < self.created_step
+        ):
+            msg = "scheduled_delivery_step must be greater than or equal to created_step"
+            raise ValueError(msg)
+        if self.delivered_step is not None:
+            if self.scheduled_delivery_step is None:
+                msg = "scheduled_delivery_step is required when delivered_step is set"
+                raise ValueError(msg)
+            if self.delivered_step < self.scheduled_delivery_step:
+                msg = "delivered_step must be greater than or equal to scheduled_delivery_step"
+                raise ValueError(msg)
+        return self
 
 
 class CompactNeighborMessage(DomainModel):
     source: IntersectionId
     destination: IntersectionId
     created_step: NonNegativeInt
+    scheduled_delivery_step: NonNegativeInt | None = None
+    delivered_step: NonNegativeInt | None = None
     sequence: NonNegativeInt
     source_timestamp: NonNegativeFloat
     outgoing_pressure: float
@@ -107,6 +128,23 @@ class CompactNeighborMessage(DomainModel):
     arrival_trend: NonNegativeFloat
     downstream_occupancy: Occupancy
     active_phase_group: Annotated[str, Field(min_length=1)]
+
+    @model_validator(mode="after")
+    def validate_delivery_steps(self) -> Self:
+        if (
+            self.scheduled_delivery_step is not None
+            and self.scheduled_delivery_step < self.created_step
+        ):
+            msg = "scheduled_delivery_step must be greater than or equal to created_step"
+            raise ValueError(msg)
+        if self.delivered_step is not None:
+            if self.scheduled_delivery_step is None:
+                msg = "scheduled_delivery_step is required when delivered_step is set"
+                raise ValueError(msg)
+            if self.delivered_step < self.scheduled_delivery_step:
+                msg = "delivered_step must be greater than or equal to scheduled_delivery_step"
+                raise ValueError(msg)
+        return self
 
 
 class AgentObservation(DomainModel):

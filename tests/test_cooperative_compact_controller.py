@@ -7,6 +7,7 @@ from typing import Any, cast
 import pytest
 
 from traffic_agents.communication import grid_3x3_communication_topology
+from traffic_agents.config import CommunicationConfig, load_scenario_config
 from traffic_agents.controllers import (
     COOPERATIVE_COMPACT_CONTROLLER_ID,
     COOPERATIVE_COMPACT_CONTROLLER_VERSION,
@@ -472,6 +473,20 @@ def test_runtime_message_bus_uses_explicit_communication_topology() -> None:
 
     assert topology.can_communicate("A1", "A2")
     assert not topology.can_communicate("A1", "A9")
+
+
+def test_configure_uses_scenario_communication_delay_steps() -> None:
+    scenario = load_scenario_config(Path("scenarios/grid_3x3/scenario.yaml")).model_copy(
+        update={"communication": CommunicationConfig(delay_steps=3)}
+    )
+    controller = CooperativeCompactController()
+
+    controller.configure(
+        scenario_config=scenario,
+        scenario_dir=Path("scenarios/grid_3x3"),
+    )
+
+    assert controller.config.message_bus.delay_steps == 3
 
 
 @pytest.mark.parametrize(
