@@ -5,13 +5,14 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Any, ClassVar, Protocol, cast
+from typing import TYPE_CHECKING, Any, Literal, Protocol, cast
 
 from pydantic import ValidationError
 
 from traffic_agents.communication import (
     CommunicationMessage,
     CompactNeighborMessageFactory,
+    ExpandedNeighborMessageFactory,
     MessageBus,
     MessageBusConfig,
     grid_3x3_communication_topology,
@@ -37,6 +38,7 @@ from traffic_agents.domain import (
     AgentObservation,
     CompactNeighborMessage,
     ControllerDecision,
+    ExpandedNeighborMessage,
     IntersectionId,
     MovementId,
     NeighborMessage,
@@ -61,7 +63,10 @@ if TYPE_CHECKING:
 
 COOPERATIVE_COMPACT_CONTROLLER_ID = "C1_COOPERATIVE_COMPACT"
 COOPERATIVE_COMPACT_CONTROLLER_VERSION = "0.1.0"
+COOPERATIVE_EXPANDED_CONTROLLER_ID = "C2_COOPERATIVE_EXPANDED"
+COOPERATIVE_EXPANDED_CONTROLLER_VERSION = "0.1.0"
 FULL_OCCUPANCY = 1.0
+CooperativeMessageSchema = Literal["compact", "expanded"]
 
 
 class CooperativeCompactSensorConnection(Protocol):
@@ -72,6 +77,7 @@ class CooperativeCompactSensorConnection(Protocol):
 class CooperativePressureConfig:
     local_pressure: LocalPressureConfig = field(default_factory=LocalPressureConfig)
     message_bus: MessageBusConfig = field(default_factory=MessageBusConfig)
+    message_schema: CooperativeMessageSchema = "compact"
     max_message_age_steps: int = 1
     stale_after_steps: int | None = None
     projected_incoming_weight: float = 1.0
@@ -89,6 +95,9 @@ class CooperativePressureConfig:
             object.__setattr__(self, "max_message_age_steps", self.stale_after_steps)
         if self.max_message_age_steps < 0:
             msg = "max_message_age_steps must be non-negative"
+            raise ValueError(msg)
+        if self.message_schema not in {"compact", "expanded"}:
+            msg = f"unsupported message_schema: {self.message_schema}"
             raise ValueError(msg)
         for field_name, value in (
             ("projected_incoming_weight", self.projected_incoming_weight),
@@ -253,21 +262,26 @@ class CooperativePressureAdjustment:
     def _parse_message(
         self,
         message: CommunicationMessage,
-    ) -> CompactNeighborMessage | None:
-        if isinstance(message, CompactNeighborMessage):
+    ) -> CompactNeighborMessage | ExpandedNeighborMessage | None:
+        if isinstance(message, CompactNeighborMessage | ExpandedNeighborMessage):
             return message
         if isinstance(message, NeighborMessage):
-            try:
-                return CompactNeighborMessage.model_validate(message.payload)
-            except ValidationError:
-                return None
+            for message_model in (ExpandedNeighborMessage, CompactNeighborMessage):
+                try:
+                    return message_model.model_validate(message.payload)
+                except ValidationError:
+                    continue
         return None
 
     def _apply_message_adjustment(
         self,
         adjusted_scores: dict[str, float],
-        message: CompactNeighborMessage,
+        message: CompactNeighborMessage | ExpandedNeighborMessage,
     ) -> None:
+        if isinstance(message, ExpandedNeighborMessage):
+            self._apply_expanded_message_adjustment(adjusted_scores, message)
+            return
+
         incoming_edge_id = self._edge_id_between(message.source, message.destination)
         projected_demand = sum(message.outgoing_queue_summary.values()) + message.arrival_trend
         pressure_bonus = max(message.outgoing_pressure, 0.0) * self.config.directed_pressure_weight
@@ -286,6 +300,46 @@ class CooperativePressureAdjustment:
         outgoing_edge_id = self._edge_id_between(message.destination, message.source)
         congestion_penalty = self.config.downstream_congestion_weight * min(
             message.downstream_occupancy, FULL_OCCUPANCY
+        )
+        downstream_phase_ids = {
+            phase_id
+            for movement in self.movements_by_outgoing_edge.get(outgoing_edge_id, ())
+            for phase_id in self.phase_ids_by_movement_id.get(movement.movement_id, ())
+        }
+        for phase_id in downstream_phase_ids:
+            if phase_id in adjusted_scores:
+                adjusted_scores[phase_id] -= congestion_penalty
+
+    def _apply_expanded_message_adjustment(
+        self,
+        adjusted_scores: dict[str, float],
+        message: ExpandedNeighborMessage,
+    ) -> None:
+        incoming_edge_id = self._edge_id_between(message.source, message.destination)
+        expanded_projected_demand = sum(message.queue_per_outgoing_movement.values()) + sum(
+            message.estimated_arrival_rate_per_relevant_movement.values()
+        )
+        pressure_bonus = max(message.outgoing_pressure, 0.0) * self.config.directed_pressure_weight
+        for movement in self.movements_by_incoming_edge.get(incoming_edge_id, ()):
+            self._add_to_movement_phases(
+                adjusted_scores,
+                movement.movement_id,
+                (
+                    self.config.projected_incoming_weight
+                    * expanded_projected_demand
+                    * self.config.turn_weight(movement.turn_type)
+                )
+                + (pressure_bonus * self.config.turn_weight(movement.turn_type)),
+            )
+
+        outgoing_edge_id = self._edge_id_between(message.destination, message.source)
+        downstream_occupancy = max(
+            message.occupancy_per_downstream_connection.values(),
+            default=0.0,
+        )
+        congestion_penalty = self.config.downstream_congestion_weight * min(
+            downstream_occupancy,
+            FULL_OCCUPANCY,
         )
         downstream_phase_ids = {
             phase_id
@@ -326,16 +380,15 @@ class _CooperativeIntersectionRuntime:
     phase_calculator: PhasePressureCalculator
     adjustment: CooperativePressureAdjustment
     safety: PhaseSafetyManager
-    message_factory: CompactNeighborMessageFactory
+    message_factory: CompactNeighborMessageFactory | ExpandedNeighborMessageFactory
 
 
 @dataclass
 class CooperativeCompactController:
-    controller_id: ClassVar[str] = COOPERATIVE_COMPACT_CONTROLLER_ID
-    controller_version: ClassVar[str] = COOPERATIVE_COMPACT_CONTROLLER_VERSION
-
     config: CooperativePressureConfig = field(default_factory=CooperativePressureConfig)
     local_core: LocalPressureController = field(default_factory=LocalPressureController)
+    controller_id: str = COOPERATIVE_COMPACT_CONTROLLER_ID
+    controller_version: str = COOPERATIVE_COMPACT_CONTROLLER_VERSION
     phase_calculator: PhasePressureCalculator | None = None
     adjustment: CooperativePressureAdjustment | None = None
     safety: PhaseSafetyManager | None = None
@@ -538,7 +591,8 @@ class CooperativeCompactController:
             "controller_version": self.controller_version,
             "adaptive_adjustments_enabled": True,
             "communication_enabled": True,
-            "communication_message": "CompactNeighborMessage",
+            "communication_message": _message_name(self.config.message_schema),
+            "communication_message_schema": self.config.message_schema,
             "message_bus_delay_steps": self.config.message_bus.delay_steps,
             "message_bus_drop_probability": self.config.message_bus.drop_probability,
             "max_message_age_steps": self.config.max_message_age_steps,
@@ -638,9 +692,24 @@ def _build_cooperative_runtime_by_intersection(
                 traffic_model=traffic_model,
                 topology=topology,
                 traffic_light_ids_by_intersection=traffic_light_ids,
+            )
+            if config.message_schema == "compact"
+            else ExpandedNeighborMessageFactory(
+                traffic_model=traffic_model,
+                topology=topology,
+                traffic_light_ids_by_intersection=traffic_light_ids,
             ),
         )
     return runtime_by_intersection
+
+
+def _message_name(message_schema: CooperativeMessageSchema) -> str:
+    if message_schema == "compact":
+        return "CompactNeighborMessage"
+    if message_schema == "expanded":
+        return "ExpandedNeighborMessage"
+    msg = f"unsupported message_schema: {message_schema}"
+    raise ValueError(msg)
 
 
 def _group_movements_by_edge(

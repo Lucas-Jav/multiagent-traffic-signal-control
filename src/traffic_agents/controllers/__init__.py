@@ -3,8 +3,11 @@
 from traffic_agents.controllers.cooperative_compact import (
     COOPERATIVE_COMPACT_CONTROLLER_ID,
     COOPERATIVE_COMPACT_CONTROLLER_VERSION,
+    COOPERATIVE_EXPANDED_CONTROLLER_ID,
+    COOPERATIVE_EXPANDED_CONTROLLER_VERSION,
     CooperativeAdjustmentResult,
     CooperativeCompactController,
+    CooperativeMessageSchema,
     CooperativePressureAdjustment,
     CooperativePressureConfig,
     MessageUsageTrace,
@@ -44,6 +47,8 @@ from traffic_agents.controllers.phase_safety import (
 __all__ = [
     "COOPERATIVE_COMPACT_CONTROLLER_ID",
     "COOPERATIVE_COMPACT_CONTROLLER_VERSION",
+    "COOPERATIVE_EXPANDED_CONTROLLER_ID",
+    "COOPERATIVE_EXPANDED_CONTROLLER_VERSION",
     "FIXED_TIME_CONTROLLER_ID",
     "FIXED_TIME_CONTROLLER_VERSION",
     "LOCAL_ADAPTIVE_CONTROLLER_ID",
@@ -52,6 +57,7 @@ __all__ = [
     "LOCAL_PRESSURE_CONTROLLER_VERSION",
     "CooperativeAdjustmentResult",
     "CooperativeCompactController",
+    "CooperativeMessageSchema",
     "CooperativePressureAdjustment",
     "CooperativePressureConfig",
     "FixedTimeController",

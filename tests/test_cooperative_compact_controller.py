@@ -15,6 +15,7 @@ from traffic_agents.config import CommunicationConfig, load_scenario_config
 from traffic_agents.controllers import (
     COOPERATIVE_COMPACT_CONTROLLER_ID,
     COOPERATIVE_COMPACT_CONTROLLER_VERSION,
+    COOPERATIVE_EXPANDED_CONTROLLER_ID,
     CooperativeCompactController,
     CooperativePressureAdjustment,
     CooperativePressureConfig,
@@ -31,6 +32,7 @@ from traffic_agents.domain import (
     AgentObservation,
     CompactNeighborMessage,
     ControllerDecision,
+    ExpandedNeighborMessage,
     IntersectionState,
     NeighborMessage,
     TrafficLightActionKind,
@@ -184,7 +186,7 @@ def make_observation(
     a2_queue: int = 0,
     a4_queue: int = 0,
     a1a2_occupancy: float = 0.0,
-    messages: tuple[CompactNeighborMessage | NeighborMessage, ...] = (),
+    messages: tuple[CompactNeighborMessage | ExpandedNeighborMessage | NeighborMessage, ...] = (),
 ) -> AgentObservation:
     return AgentObservation(
         state=IntersectionState(
@@ -243,6 +245,38 @@ def make_message(
     )
 
 
+def make_expanded_message(
+    *,
+    source: str = "A2",
+    destination: str = "A1",
+    created_step: int = 20,
+    downstream_occupancy: float = 0.0,
+    queue_by_movement: dict[str, float] | None = None,
+    arrival_by_movement: dict[str, float] | None = None,
+) -> ExpandedNeighborMessage:
+    queue = queue_by_movement or {"A2:north_to_south": 10.0}
+    arrivals = arrival_by_movement or {"A2:north_to_south": 5.0}
+    return ExpandedNeighborMessage(
+        source=source,
+        destination=destination,
+        created_step=created_step,
+        sequence=0,
+        source_timestamp=float(created_step),
+        outgoing_pressure=sum(queue.values()) + sum(arrivals.values()),
+        outgoing_queue_summary={"straight": sum(queue.values())},
+        arrival_trend=sum(arrivals.values()),
+        downstream_occupancy=downstream_occupancy,
+        queue_per_outgoing_movement=queue,
+        occupancy_per_downstream_connection={
+            movement_id: downstream_occupancy for movement_id in queue
+        },
+        estimated_arrival_rate_per_relevant_movement=arrivals,
+        directional_demand_summary={"straight": sum(queue.values()) + sum(arrivals.values())},
+        active_phase_group="phase_0",
+        phase_elapsed=3.0,
+    )
+
+
 def make_c1(
     config: CooperativePressureConfig | None = None,
 ) -> CooperativeCompactController:
@@ -273,6 +307,19 @@ def test_build_controller_registers_c1_cooperative_compact() -> None:
     assert controller.manifest_metadata()["local_pressure_controller_id"] == "B2_LOCAL_PRESSURE"
 
 
+def test_build_controller_registers_c2_cooperative_expanded_with_shared_core() -> None:
+    c1 = build_controller(COOPERATIVE_COMPACT_CONTROLLER_ID)
+    c2 = build_controller(COOPERATIVE_EXPANDED_CONTROLLER_ID)
+
+    assert isinstance(c1, CooperativeCompactController)
+    assert isinstance(c2, CooperativeCompactController)
+    assert type(c2) is type(c1)
+    assert c2.controller_id == "C2_COOPERATIVE_EXPANDED"
+    assert c2.config.message_schema == "expanded"
+    assert c2.manifest_metadata()["communication_message"] == "ExpandedNeighborMessage"
+    assert c2.manifest_metadata()["communication_message_schema"] == "expanded"
+
+
 def test_without_valid_messages_c1_matches_b2() -> None:
     config = LocalPressureConfig(switch_score_margin=0.0)
     observation = make_observation(current_phase="phase_0", a2_queue=1, a4_queue=4)
@@ -280,6 +327,29 @@ def test_without_valid_messages_c1_matches_b2() -> None:
     assert make_c1(CooperativePressureConfig(local_pressure=config)).decide(observation) == make_b2(
         config
     ).decide(observation)
+
+
+def test_without_messages_c2_matches_b2() -> None:
+    config = LocalPressureConfig(switch_score_margin=0.0)
+    observation = make_observation(current_phase="phase_0", a2_queue=1, a4_queue=4)
+
+    c2 = CooperativeCompactController(
+        config=CooperativePressureConfig(
+            local_pressure=config,
+            message_schema="expanded",
+        ),
+        controller_id=COOPERATIVE_EXPANDED_CONTROLLER_ID,
+        phase_calculator=make_phase_calculator(config),
+        adjustment=make_adjustment(
+            CooperativePressureConfig(
+                local_pressure=config,
+                message_schema="expanded",
+            )
+        ),
+        safety=make_safety(),
+    )
+
+    assert c2.decide(observation) == make_b2(config).decide(observation)
 
 
 def test_downstream_neighbor_saturation_reduces_corresponding_phase_score() -> None:
@@ -389,6 +459,45 @@ def test_stale_message_is_ignored() -> None:
     assert result.max_observed_message_age == 2
     assert result.message_usage_traces[0].used is False
     assert result.message_usage_traces[0].reason == "STALE"
+
+
+def test_stale_expanded_message_is_ignored() -> None:
+    adjustment = make_adjustment(CooperativePressureConfig(max_message_age_steps=1))
+
+    result = adjustment.adjust(
+        local_phase_scores={"phase_0": 0.0, "phase_3": 0.0},
+        observation=make_observation(
+            messages=(make_expanded_message(created_step=18),),
+        ),
+        current_step=20,
+    )
+
+    assert result.phase_scores["phase_0"] == pytest.approx(0.0)
+    assert result.messages_fresh == 0
+    assert result.messages_stale == 1
+    assert result.message_usage_traces[0].reason == "STALE"
+
+
+def test_fresh_expanded_message_is_used() -> None:
+    adjustment = make_adjustment(
+        CooperativePressureConfig(
+            max_message_age_steps=1,
+            directed_pressure_weight=0.0,
+            downstream_congestion_weight=0.0,
+        )
+    )
+
+    result = adjustment.adjust(
+        local_phase_scores={"phase_0": 0.0, "phase_3": 0.0},
+        observation=make_observation(
+            messages=(make_expanded_message(created_step=19),),
+        ),
+        current_step=20,
+    )
+
+    assert result.phase_scores["phase_0"] == pytest.approx(15.0)
+    assert result.messages_fresh == 1
+    assert result.messages_stale == 0
 
 
 def test_missing_messages_keep_local_scores_without_exception() -> None:
@@ -570,7 +679,7 @@ def test_c1_uses_phase_safety_manager_for_min_green_and_clearance() -> None:
     assert command.phase_id == "phase_0"
 
 
-def test_c1_never_uses_global_state_or_raw_signal_commands() -> None:
+def test_cooperative_core_never_uses_global_state_or_raw_signal_commands() -> None:
     tree = ast.parse(
         Path("src/traffic_agents/controllers/cooperative_compact.py").read_text(encoding="utf-8")
     )

@@ -16,6 +16,9 @@ type OccupancyByLane = dict[LaneId, Occupancy]
 type SpeedByLane = dict[LaneId, NonNegativeFloat]
 type ArrivalRateByEdge = dict[EdgeId, NonNegativeFloat]
 type QueueSummary = dict[str, NonNegativeFloat]
+type QueueByMovement = dict[MovementId, NonNegativeFloat]
+type OccupancyByConnection = dict[str, Occupancy]
+type ArrivalRateByMovement = dict[MovementId, NonNegativeFloat]
 
 
 class DomainModel(BaseModel):
@@ -147,10 +150,49 @@ class CompactNeighborMessage(DomainModel):
         return self
 
 
+class ExpandedNeighborMessage(DomainModel):
+    source: IntersectionId
+    destination: IntersectionId
+    created_step: NonNegativeInt
+    scheduled_delivery_step: NonNegativeInt | None = None
+    delivered_step: NonNegativeInt | None = None
+    sequence: NonNegativeInt
+    source_timestamp: NonNegativeFloat
+    outgoing_pressure: float
+    outgoing_queue_summary: QueueSummary
+    arrival_trend: NonNegativeFloat
+    downstream_occupancy: Occupancy
+    queue_per_outgoing_movement: QueueByMovement
+    occupancy_per_downstream_connection: OccupancyByConnection
+    estimated_arrival_rate_per_relevant_movement: ArrivalRateByMovement
+    directional_demand_summary: QueueSummary
+    active_phase_group: Annotated[str, Field(min_length=1)]
+    phase_elapsed: NonNegativeFloat
+
+    @model_validator(mode="after")
+    def validate_delivery_steps(self) -> Self:
+        if (
+            self.scheduled_delivery_step is not None
+            and self.scheduled_delivery_step < self.created_step
+        ):
+            msg = "scheduled_delivery_step must be greater than or equal to created_step"
+            raise ValueError(msg)
+        if self.delivered_step is not None:
+            if self.scheduled_delivery_step is None:
+                msg = "scheduled_delivery_step is required when delivered_step is set"
+                raise ValueError(msg)
+            if self.delivered_step < self.scheduled_delivery_step:
+                msg = "delivered_step must be greater than or equal to scheduled_delivery_step"
+                raise ValueError(msg)
+        return self
+
+
 class AgentObservation(DomainModel):
     state: IntersectionState
     neighbor_states: tuple[NeighborState, ...] = Field(default_factory=tuple)
-    messages: tuple[NeighborMessage | CompactNeighborMessage, ...] = Field(default_factory=tuple)
+    messages: tuple[NeighborMessage | CompactNeighborMessage | ExpandedNeighborMessage, ...] = (
+        Field(default_factory=tuple)
+    )
 
 
 class ControllerDecision(DomainModel):

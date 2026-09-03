@@ -13,9 +13,14 @@ from traffic_agents.communication.topology import (
     CommunicationTopologyError,
 )
 from traffic_agents.communication_seed import derive_communication_rng_seed
-from traffic_agents.domain import CompactNeighborMessage, IntersectionId, NeighborMessage
+from traffic_agents.domain import (
+    CompactNeighborMessage,
+    ExpandedNeighborMessage,
+    IntersectionId,
+    NeighborMessage,
+)
 
-type CommunicationMessage = NeighborMessage | CompactNeighborMessage
+type CommunicationMessage = NeighborMessage | CompactNeighborMessage | ExpandedNeighborMessage
 
 
 class MessageBusError(ValueError):
@@ -174,7 +179,10 @@ class MessageBus:
         )
         return message
 
-    def publish_compact(self, message: CompactNeighborMessage) -> CompactNeighborMessage:
+    def publish_compact(
+        self,
+        message: CompactNeighborMessage | ExpandedNeighborMessage,
+    ) -> CompactNeighborMessage | ExpandedNeighborMessage:
         self._validate_envelope(
             source=message.source,
             destination=message.destination,

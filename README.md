@@ -202,13 +202,15 @@ B2
 informacao compacta dos vizinhos
 ```
 
+`C2_COOPERATIVE_EXPANDED`: controlador cooperativo expandido. Ele reutiliza o mesmo nucleo cooperativo do `C1_COOPERATIVE_COMPACT`, incluindo calculo de pressao, ajuste cooperativo, seguranca de fase e fallback local. A diferenca experimental principal e a informacao disponivel: C1 troca `CompactNeighborMessage`, enquanto C2 troca `ExpandedNeighborMessage`.
+
 Quando mensagens de vizinhos nao estao disponiveis, o comportamento volta para a decisao local.
 
 ## 11. Multi-Agent Communication
 
 A comunicacao do MVP1 usa `CompactNeighborMessage` e `MessageBus`.
 
-`CompactNeighborMessage` carrega informacao compacta sobre o estado local relevante para um vizinho. `MessageBus` entrega mensagens entre agentes respeitando a communication topology configurada para a rede 3x3.
+`CompactNeighborMessage` carrega informacao compacta sobre o estado local relevante para um vizinho. `ExpandedNeighborMessage` carrega os campos compactos e informacao destination-specific adicional, como filas por movimento de saida relevante, ocupacao por conexao downstream, taxa estimada de chegada por movimento relevante, resumo direcional de demanda, phase group e phase elapsed. Ela nao inclui lista de veiculos, estado global, dados de agentes terceiros nem informacao local sem relacao com o destino. `MessageBus` entrega mensagens entre agentes respeitando a communication topology configurada para a rede 3x3.
 
 A communication topology define quais agentes podem trocar mensagens. Ela nao altera a traffic topology e nao cria novas conexoes fisicas na rede SUMO.
 
@@ -258,7 +260,7 @@ uv run traffic-agents simulation run --scenario scenarios/grid_3x3/scenario.yaml
 
 ## 13. Running an Experiment
 
-O experimento MVP1 esta em `experiments/configs/mvp1.yaml`. Ele executa os controladores `B0_FIXED`, `B1_LOCAL_ADAPTIVE`, `B2_LOCAL_PRESSURE` e `C1_COOPERATIVE_COMPACT` com seed 42 e `max_steps: 300`.
+O experimento MVP1 esta em `experiments/configs/mvp1.yaml`. Ele executa os controladores `B0_FIXED`, `B1_LOCAL_ADAPTIVE`, `B2_LOCAL_PRESSURE`, `C1_COOPERATIVE_COMPACT` e `C2_COOPERATIVE_EXPANDED` com seed 42 e `max_steps: 300`.
 
 ```powershell
 uv run traffic-agents experiment run --config experiments/configs/mvp1.yaml
