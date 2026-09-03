@@ -2,65 +2,99 @@
 
 [![CI](https://github.com/Lucas-Jav/multiagent-traffic-signal-control/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Lucas-Jav/multiagent-traffic-signal-control/actions/workflows/ci.yml)
 
-Bootstrap Python para um projeto de controle semaforico multiagente.
+## 1. Project Overview
 
-O projeto ja possui uma primeira execucao real com Eclipse SUMO, usando uma rede
-sintetica 3x3 e demanda sintetica reproduzivel. O baseline `B0_FIXED` formaliza a
-execucao fixed-time: ele nao aplica ajustes adaptativos e deixa as fases definidas no
-arquivo SUMO.
+MVP1 implementa um ambiente reproduzivel para controle semaforico multiagente em uma rede sintetica 3x3 no Eclipse SUMO. O projeto executa simulacoes headless via TraCI, controladores locais e cooperativos, experimentos pequenos declarados em YAML e coleta de artifacts por run.
 
-## Requisitos
+O SUMO-GUI continua sendo usado localmente para debugging e demonstracao com `--gui`. O container Docker do MVP1 e headless e nao executa GUI.
 
-- Python 3.12
-- uv
-- Eclipse SUMO 1.27.1
+## 2. Scientific Question
 
-No Windows, se o comando `uv` nao for encontrado, adicione o diretorio do executavel ao
-`PATH` do usuario:
+Em uma rede urbana simulada, a troca local de informações entre controladores semafóricos descentralizados melhora o desempenho da rede em comparação com estratégias sem cooperação, e qual é o custo e a robustez dessa comunicação?
 
-```powershell
-$uvPath = "$env:APPDATA\Python\Python313\Scripts"
-$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+O MVP1 executa a infraestrutura experimental para investigar essa pergunta. Ele nao afirma uma resposta.
 
-if ($userPath -notlike "*$uvPath*") {
-    [Environment]::SetEnvironmentVariable("Path", "$uvPath;$userPath", "User")
-}
+## 3. Architecture
+
+Fluxo principal de simulacao:
+
+```text
+SUMO
+ ↓
+TraCI
+ ↓
+SensorProvider
+ ↓
+IntersectionState
+ ↓
+TrafficAgent
+ ↓
+Controller
+ ↓
+PhaseSafetyManager
+ ↓
+SUMO
 ```
 
-Depois feche e abra o terminal novamente.
+Fluxo de cooperacao local:
 
-## Setup Inicial
-
-```powershell
-uv sync
+```text
+Agent
+ ↓
+CompactNeighborMessage
+ ↓
+MessageBus
+ ↓
+Neighbor Agent
 ```
 
-Confira se o SUMO esperado esta disponivel:
+A execucao usa o mesmo `TraCISimulationRunner`, os mesmos controladores, o mesmo `MessageBus` e o mesmo `ExperimentRunner` em ambiente local e no container.
+
+## 4. Requirements
+
+- Python 3.12.
+- `uv`.
+- Eclipse SUMO 1.27.1 para execucao local.
+- Docker e Docker Compose para execucao containerizada.
+
+As dependencias Python sao controladas por `pyproject.toml` e `uv.lock`. `traci` e `sumolib` sao dependencias explicitas do ambiente Python.
+
+## 5. Project Setup
+
+Quickstart local:
+
+```powershell
+uv sync --frozen
+uv run python scripts/check_sumo.py
+uv run traffic-agents simulation run --scenario scenarios/grid_3x3/scenario.yaml --controller B0_FIXED --seed 42 --max-steps 300
+uv run traffic-agents simulation run --scenario scenarios/grid_3x3/scenario.yaml --controller B0_FIXED --seed 42 --gui --step-delay-ms 40 --max-steps 900
+uv run traffic-agents experiment run --config experiments/configs/mvp1.yaml
+```
+
+`scripts/check_sumo.py` valida que o SUMO local encontrado e a versao esperada pelo projeto.
+
+Alternativa equivalente para GUI usando o script diretamente no Windows, depois de ativar a `.venv`:
+
+```powershell
+.venv\Scripts\activate
+python scripts\run_simulation.py --scenario scenarios\grid_3x3\scenario.yaml --gui --step-delay-ms 40 --max-steps 900
+```
+
+## 6. Local Development
+
+Validar SUMO:
 
 ```powershell
 uv run python scripts/check_sumo.py
 ```
 
-Saida esperada:
-
-```text
-SUMO detected
-version=1.27.1
-binary=<path>
-```
-
-## Gerar Artefatos Do Cenario
-
-A rede 3x3 e as rotas ja estao versionadas, mas podem ser regeneradas de forma
-idempotente.
-
-Gerar rede:
+Gerar novamente a rede 3x3 versionada:
 
 ```powershell
 uv run python scripts/generate_grid.py
 ```
 
-Gerar demanda sintetica `S1_BALANCED`:
+Gerar novamente as rotas do cenario:
 
 ```powershell
 uv run python scripts/generate_routes.py scenarios/grid_3x3/scenario.yaml
@@ -72,36 +106,15 @@ Validar o YAML do cenario:
 uv run python scripts/validate_scenario.py scenarios/grid_3x3/scenario.yaml
 ```
 
-## Executar Simulacao
-
-Execucao headless:
+Executar o entrypoint do pacote:
 
 ```powershell
-uv run python scripts/run_simulation.py --scenario scenarios/grid_3x3/scenario.yaml
+uv run traffic-agents
 ```
 
-Smoke explicito do baseline inicial:
+## 7. Docker
 
-```powershell
-uv run python scripts/run_simulation.py --scenario scenarios/grid_3x3/scenario.yaml --controller-id B0_FIXED --max-steps 300
-```
-
-Execucao visual com `sumo-gui`:
-
-```powershell
-uv run python scripts/run_simulation.py --scenario scenarios/grid_3x3/scenario.yaml --gui --step-delay-ms 40 --max-steps 900
-```
-
-Use `--step-delay-ms` para desacelerar a visualizacao e `--max-steps` para limitar uma
-execucao curta. Para rodar o cenario inteiro no GUI, remova `--max-steps`.
-
-Cada execucao grava `artifacts/runs/<run_id>/manifest.json`, exceto quando usada a flag
-`--no-manifest`.
-
-## Container Headless
-
-O container usa a imagem oficial versionada do Eclipse SUMO `ghcr.io/eclipse-sumo/sumo:v1_27_1`
-e instala as dependencias Python a partir de `pyproject.toml` e `uv.lock`.
+O container usa a imagem base versionada `ghcr.io/eclipse-sumo/sumo:v1_27_1`, com SUMO 1.27.1. A imagem instala Python 3.12 via `uv`, usa `uv.lock` com `--frozen`, roda como usuario non-root e grava artifacts em `/app/artifacts`.
 
 Build:
 
@@ -109,62 +122,223 @@ Build:
 docker compose build
 ```
 
-Verificar SUMO:
+Verificar SUMO dentro do container:
 
 ```powershell
 docker compose run --rm simulator sumo --version
 ```
 
-Smoke:
+Executar simulacao headless:
 
 ```powershell
 docker compose run --rm simulator traffic-agents simulation run --scenario scenarios/grid_3x3/scenario.yaml --controller B0_FIXED --seed 42 --max-steps 300
 ```
 
-Experimento MVP:
+Executar experimento MVP1:
 
 ```powershell
 docker compose run --rm simulator traffic-agents experiment run --config experiments/configs/mvp1.yaml
 ```
 
-Os volumes `scenarios`, `experiments` e `artifacts` sao montados no container; `docs` e montado
-como somente leitura. A imagem roda com usuario nao-root.
+Volumes declarados no Compose:
 
-## Execucao Do Package
+- `./scenarios:/app/scenarios`
+- `./experiments:/app/experiments`
+- `./artifacts:/app/artifacts`
+- `./docs:/app/docs:ro`
 
-```powershell
-uv run python -m traffic_agents
-```
+SUMO-GUI nao e necessario para experimentos headless. Para visualizacao, use a execucao local com `--gui`.
 
-Saida esperada:
+## 8. Traffic Model
+
+O modelo de trafego do MVP1 representa as intersecoes `A1` a `A9`. Cada intersecao possui movimentos derivados da rede SUMO, incluindo movimentos `straight`, `left` e `right`.
+
+O projeto constroi e valida uma matriz de conflitos de movimentos a partir da rede. Movimentos conflitantes nunca podem receber verde simultaneamente. Movimentos compativeis podem coexistir na mesma fase.
+
+O plano de fases inclui fases seguras, tempo minimo de verde, amarelo e all-red/clearance. O `PhaseSafetyManager` aplica restricoes de seguranca antes de enviar a fase ao SUMO. Veiculos que ja estao comprometidos com a junction podem concluir a travessia conforme a dinamica do SUMO.
+
+Os turning ratios sao parametros do cenario. No cenario 3x3 versionado, os valores sao:
+
+- `straight: 0.60`
+- `left: 0.20`
+- `right: 0.20`
+
+## 9. 3x3 Scenario
+
+O cenario principal esta em `scenarios/grid_3x3/scenario.yaml`.
+
+Arquivos versionados do cenario:
+
+- `network.net.xml`
+- `routes_s1_seed_42.rou.xml`
+- `metadata.json`
+- `viewsettings.xml`
+
+Configuracao atual:
+
+- `scenario_id: grid_3x3`
+- duracao de 3600 segundos
+- warmup de 300 segundos
+- `step_length: 1.0`
+- `seed: 42`
+- perfil de demanda `S1_BALANCED`
+- nivel de demanda `MEDIUM`
+
+Traffic topology e a topologia fisica da rede SUMO: lanes, edges, junctions, movimentos e conflitos de movimentos. Communication topology e a topologia logica de troca de mensagens entre agentes vizinhos. Elas sao conceitos separados.
+
+## 10. Controllers
+
+`B0_FIXED`: baseline fixed-time. Nao aplica decisao adaptativa e preserva o plano semaforico definido no SUMO.
+
+`B1_LOCAL_ADAPTIVE`: controlador local adaptativo. Usa estado local da intersecao e nao usa comunicacao.
+
+`B2_LOCAL_PRESSURE`: controlador local por pressao. Usa medidas locais de filas/pressao e nao usa comunicacao.
+
+`C1_COOPERATIVE_COMPACT`: controlador cooperativo compacto. Conceitualmente e:
 
 ```text
-Traffic Multi-Agent Control
-environment=development
+B2
++
+informacao compacta dos vizinhos
 ```
 
-## Validacao
+Quando mensagens de vizinhos nao estao disponiveis, o comportamento volta para a decisao local.
+
+## 11. Multi-Agent Communication
+
+A comunicacao do MVP1 usa `CompactNeighborMessage` e `MessageBus`.
+
+`CompactNeighborMessage` carrega informacao compacta sobre o estado local relevante para um vizinho. `MessageBus` entrega mensagens entre agentes respeitando a communication topology configurada para a rede 3x3.
+
+A communication topology define quais agentes podem trocar mensagens. Ela nao altera a traffic topology e nao cria novas conexoes fisicas na rede SUMO.
+
+## 12. Running a Simulation
+
+Headless:
 
 ```powershell
-uv run pytest
-uv run pytest -m "not sumo"
+uv run traffic-agents simulation run --scenario scenarios/grid_3x3/scenario.yaml --controller B0_FIXED --seed 42 --max-steps 300
+```
+
+Com SUMO-GUI local:
+
+```powershell
+uv run traffic-agents simulation run --scenario scenarios/grid_3x3/scenario.yaml --controller B0_FIXED --seed 42 --gui --step-delay-ms 40 --max-steps 900
+```
+
+Forma equivalente pelo script, com a `.venv` ativa:
+
+```powershell
+python scripts\run_simulation.py --scenario scenarios\grid_3x3\scenario.yaml --gui --step-delay-ms 40 --max-steps 900
+```
+
+Controlador alternativo:
+
+```powershell
+uv run traffic-agents simulation run --scenario scenarios/grid_3x3/scenario.yaml --controller B2_LOCAL_PRESSURE --seed 42 --max-steps 300
+```
+
+## 13. Running an Experiment
+
+O experimento MVP1 esta em `experiments/configs/mvp1.yaml`. Ele executa os controladores `B0_FIXED`, `B1_LOCAL_ADAPTIVE`, `B2_LOCAL_PRESSURE` e `C1_COOPERATIVE_COMPACT` com seed 42 e `max_steps: 300`.
+
+```powershell
+uv run traffic-agents experiment run --config experiments/configs/mvp1.yaml
+```
+
+Esse comando nao executa campanhas cientificas longas nem multiplas seeds.
+
+## 14. Artifacts
+
+Runs individuais gravam artifacts em:
+
+```text
+artifacts/runs/<run_id>/
+```
+
+Arquivos atualmente gerados por run:
+
+- `manifest.json`
+- `intersection_trace.csv`, quando o controlador emite telemetria por intersecao
+
+Experimentos gravam:
+
+```text
+artifacts/experiments/<experiment_id>/manifest.json
+artifacts/experiments/<experiment_id>/runs/<batch_id>/<run_id>/manifest.json
+```
+
+Os arquivos abaixo nao sao produzidos pelo codigo MVP1 atual:
+
+- `config.snapshot.yaml`
+- `results.parquet`
+- `summary.json`
+
+## 15. Reproducibility
+
+O `manifest.json` registra os principais dados de reproducibilidade da run:
+
+- seed
+- network hash
+- route hash
+- scenario hash
+- phase plan version
+- phase plan hash
+- movement model version
+- turning ratio config
+- controller version
+- SUMO version
+- Python version
+- communication topology hash
+- git SHA quando disponivel
+
+No container, o git SHA so fica disponivel se o contexto de execucao incluir metadados `.git`.
+
+## 16. Testing
+
+Quality gates locais:
+
+```powershell
 uv run ruff check .
+uv run ruff format --check .
 uv run mypy src
+uv run pytest -q
 ```
 
-O teste de integracao real com SUMO fica marcado com `sumo`:
+Se o Windows bloquear o diretorio temporario padrao do pytest, use um `basetemp` dentro do workspace:
 
 ```powershell
-uv run pytest -m sumo
+uv run pytest -q --basetemp artifacts/pytest-tmp -p no:cacheprovider
 ```
 
-## Configuracao
+Executar somente testes sem SUMO:
 
-As configuracoes iniciais sao lidas de variaveis de ambiente ou de um arquivo `.env` local:
+```powershell
+uv run pytest -q -m "not sumo"
+```
 
-- `APP_ENV`
-- `LOG_LEVEL`
-- `SUMO_BINARY`
-- `SUMO_HOME`
-- `ARTIFACTS_DIR`
-- `DEFAULT_SEED`
+Executar testes marcados como SUMO:
+
+```powershell
+uv run pytest -q -m sumo
+```
+
+Auditoria de dependencias usada no CI:
+
+```powershell
+uv run pip-audit --skip-editable --cache-dir .pip-audit-cache
+```
+
+O CI principal valida qualidade, testes nao-SUMO, auditoria Python e build Docker. Ele nao executa campanhas experimentais pesadas.
+
+## 17. Current Limitations
+
+- A rede e sintetica.
+- Nao ha sensores reais.
+- Nao ha hardware semaforico real.
+- Nao ha MARL no MVP1.
+- Resultados nao generalizam automaticamente para cidades reais.
+- Turning ratios sao parametros de cenario.
+- Sim-to-real permanece fora do MVP.
+- O container MVP1 e headless e nao executa SUMO-GUI.
+- `config.snapshot.yaml`, `results.parquet` e `summary.json` ainda nao sao artifacts gerados pelo codigo atual.

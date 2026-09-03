@@ -1,5 +1,7 @@
 """Experiment orchestration."""
 
+from typing import TYPE_CHECKING, Any
+
 from traffic_agents.experiments.run_invariants import (
     COMPARISON_INVARIANT_FIELDS,
     RunInvariantFingerprint,
@@ -15,12 +17,14 @@ from traffic_agents.experiments.run_invariants import (
     validate_phase_plan,
     validate_run_inputs,
 )
-from traffic_agents.experiments.runner import (
-    ExperimentConfig,
-    ExperimentRunner,
-    ExperimentRunSummary,
-    load_experiment_config,
-)
+
+if TYPE_CHECKING:
+    from traffic_agents.experiments.runner import (
+        ExperimentConfig,
+        ExperimentRunner,
+        ExperimentRunSummary,
+        load_experiment_config,
+    )
 
 __all__ = [
     "COMPARISON_INVARIANT_FIELDS",
@@ -41,3 +45,29 @@ __all__ = [
     "validate_phase_plan",
     "validate_run_inputs",
 ]
+
+
+def __getattr__(name: str) -> Any:
+    if name in {
+        "ExperimentConfig",
+        "ExperimentRunner",
+        "ExperimentRunSummary",
+        "load_experiment_config",
+    }:
+        from traffic_agents.experiments.runner import (
+            ExperimentConfig,
+            ExperimentRunner,
+            ExperimentRunSummary,
+            load_experiment_config,
+        )
+
+        exports: dict[str, Any] = {
+            "ExperimentConfig": ExperimentConfig,
+            "ExperimentRunner": ExperimentRunner,
+            "ExperimentRunSummary": ExperimentRunSummary,
+            "load_experiment_config": load_experiment_config,
+        }
+        return exports[name]
+
+    msg = f"module {__name__!r} has no attribute {name!r}"
+    raise AttributeError(msg)
