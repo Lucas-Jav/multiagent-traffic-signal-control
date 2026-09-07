@@ -20,7 +20,9 @@ from traffic_agents.experiments.run_invariants import (
 
 if TYPE_CHECKING:
     from traffic_agents.experiments.runner import (
+        ExperimentCommunicationMatrixConfig,
         ExperimentConfig,
+        ExperimentRunConfig,
         ExperimentRunner,
         ExperimentRunSummary,
         load_experiment_config,
@@ -28,7 +30,9 @@ if TYPE_CHECKING:
 
 __all__ = [
     "COMPARISON_INVARIANT_FIELDS",
+    "ExperimentCommunicationMatrixConfig",
     "ExperimentConfig",
+    "ExperimentRunConfig",
     "ExperimentRunSummary",
     "ExperimentRunner",
     "RunInvariantFingerprint",
@@ -50,19 +54,25 @@ __all__ = [
 def __getattr__(name: str) -> Any:
     if name in {
         "ExperimentConfig",
+        "ExperimentCommunicationMatrixConfig",
+        "ExperimentRunConfig",
         "ExperimentRunner",
         "ExperimentRunSummary",
         "load_experiment_config",
     }:
         from traffic_agents.experiments.runner import (
+            ExperimentCommunicationMatrixConfig,
             ExperimentConfig,
+            ExperimentRunConfig,
             ExperimentRunner,
             ExperimentRunSummary,
             load_experiment_config,
         )
 
         exports: dict[str, Any] = {
+            "ExperimentCommunicationMatrixConfig": ExperimentCommunicationMatrixConfig,
             "ExperimentConfig": ExperimentConfig,
+            "ExperimentRunConfig": ExperimentRunConfig,
             "ExperimentRunner": ExperimentRunner,
             "ExperimentRunSummary": ExperimentRunSummary,
             "load_experiment_config": load_experiment_config,
