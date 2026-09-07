@@ -229,6 +229,7 @@ class LocalAdaptiveController:
             )
 
         for intersection in scenario_config.intersections:
+            is_warmup = scenario_config.is_warmup_step(self._step_index)
             runtime = self._runtime_by_intersection[intersection.intersection_id]
             state = self._sensor_provider.observe(intersection.intersection_id)
             observation = AgentObservation(state=state)
@@ -247,6 +248,7 @@ class LocalAdaptiveController:
             movement_queue_stats = self._movement_queue_tracker.update(
                 observation=observation,
                 traffic_model=runtime.traffic_model,
+                include_sample=not is_warmup,
             )
             self._telemetry_records.extend(
                 build_step_telemetry_records(
@@ -259,6 +261,7 @@ class LocalAdaptiveController:
                     turning_ratios=scenario_config.traffic.turning_ratios,
                     junction_metrics=junction_metrics,
                     movement_queue_stats=movement_queue_stats,
+                    is_warmup=is_warmup,
                 )
             )
             if command.kind == PhaseCommandKind.SET_PHASE:

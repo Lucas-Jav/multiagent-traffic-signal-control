@@ -141,6 +141,7 @@ def test_build_step_telemetry_records_contains_scientific_debug_fields() -> None
             "A1:left": MovementQueueStats(mean=7.5, max=10),
             "A1:right": MovementQueueStats(mean=2.5, max=5),
         },
+        is_warmup=True,
     )
 
     assert len(records) == 3
@@ -166,6 +167,7 @@ def test_build_step_telemetry_records_contains_scientific_debug_fields() -> None
     assert abs(first.turn_completion_count - (6 / 9)) < 0.000001
     assert first.movement_queue_mean == 7.5
     assert first.movement_queue_max == 10
+    assert first.is_warmup is True
 
 
 def test_junction_flow_tracker_counts_entries_and_exits_without_logging_vehicle_positions() -> None:
@@ -248,6 +250,29 @@ def test_movement_queue_tracker_reports_running_mean_and_max() -> None:
     assert updated["A1:right"].max == 9
 
 
+def test_movement_queue_tracker_excludes_warmup_samples_from_running_stats() -> None:
+    traffic_model = make_traffic_model()
+    tracker = MovementQueueTracker()
+    warmup = tracker.update(
+        observation=make_observation(),
+        traffic_model=traffic_model,
+        include_sample=False,
+    )
+    measurement = tracker.update(
+        observation=AgentObservation(
+            state=make_observation().state.model_copy(
+                update={"incoming_queue": {"north_in_0": 4, "east_in_0": 9}}
+            )
+        ),
+        traffic_model=traffic_model,
+    )
+
+    assert warmup["A1:straight"].mean == 10.0
+    assert warmup["A1:straight"].max == 10
+    assert measurement["A1:straight"].mean == 4.0
+    assert measurement["A1:straight"].max == 4
+
+
 def test_append_step_telemetry_writes_csv_without_vehicle_position_columns(tmp_path: Path) -> None:
     path = tmp_path / "intersection_trace.csv"
     append_step_telemetry(
@@ -277,6 +302,7 @@ def test_append_step_telemetry_writes_csv_without_vehicle_position_columns(tmp_p
                 turn_completion_count=0.0,
                 movement_queue_mean=2.0,
                 movement_queue_max=2,
+                is_warmup=True,
             ),
         ),
     )
@@ -286,5 +312,6 @@ def test_append_step_telemetry_writes_csv_without_vehicle_position_columns(tmp_p
 
     assert rows[0]["movement_id"] == "m1"
     assert rows[0]["safety_override"] == "True"
+    assert rows[0]["is_warmup"] == "True"
     assert "vehicle_id" not in rows[0]
     assert "vehicle_position" not in rows[0]

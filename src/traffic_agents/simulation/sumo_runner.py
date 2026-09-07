@@ -51,6 +51,12 @@ class SimulationRunSummary:
     vehicles_departed: int
     vehicles_arrived: int
     wall_time_seconds: float
+    measurement_start_step: int = 0
+    measurement_end_step: int = 0
+    total_simulation_steps: int = 0
+    measurement_steps_executed: int = 0
+    total_vehicles_departed: int = 0
+    total_vehicles_arrived: int = 0
 
 
 class SimulationRunner(Protocol):
@@ -138,6 +144,9 @@ class TraCISimulationRunner:
         self._steps_executed = 0
         self._vehicles_departed = 0
         self._vehicles_arrived = 0
+        self._measurement_steps_executed = 0
+        self._total_vehicles_departed = 0
+        self._total_vehicles_arrived = 0
 
     def start(self) -> None:
         if self._started:
@@ -159,9 +168,16 @@ class TraCISimulationRunner:
         self._controller.before_simulation_step(connection)
         connection.simulationStep()
         simulation = connection.simulation
+        step_index = self._steps_executed
+        departed = int(simulation.getDepartedNumber())
+        arrived = int(simulation.getArrivedNumber())
         self._steps_executed += 1
-        self._vehicles_departed += int(simulation.getDepartedNumber())
-        self._vehicles_arrived += int(simulation.getArrivedNumber())
+        self._total_vehicles_departed += departed
+        self._total_vehicles_arrived += arrived
+        if self._scenario_config.is_measurement_step(step_index):
+            self._measurement_steps_executed += 1
+            self._vehicles_departed += departed
+            self._vehicles_arrived += arrived
         self._controller.after_simulation_step(connection)
         self._write_step_telemetry()
 
@@ -208,6 +224,12 @@ class TraCISimulationRunner:
             vehicles_departed=self._vehicles_departed,
             vehicles_arrived=self._vehicles_arrived,
             wall_time_seconds=wall_time_seconds,
+            measurement_start_step=self._scenario_config.measurement_start_step,
+            measurement_end_step=self._scenario_config.measurement_end_step,
+            total_simulation_steps=self._scenario_config.total_simulation_steps,
+            measurement_steps_executed=self._measurement_steps_executed,
+            total_vehicles_departed=self._total_vehicles_departed,
+            total_vehicles_arrived=self._total_vehicles_arrived,
         )
         if self._write_manifest:
             return self._write_run_manifest(summary)
@@ -258,9 +280,7 @@ class TraCISimulationRunner:
         return command
 
     def _target_steps(self) -> int:
-        scenario_steps = int(
-            self._scenario_config.duration_seconds / self._scenario_config.step_length
-        )
+        scenario_steps = self._scenario_config.total_simulation_steps
         if self._max_steps is None:
             return scenario_steps
         return min(scenario_steps, self._max_steps)
@@ -298,6 +318,12 @@ class TraCISimulationRunner:
             vehicles_departed=summary.vehicles_departed,
             vehicles_arrived=summary.vehicles_arrived,
             wall_time_seconds=summary.wall_time_seconds,
+            measurement_start_step=summary.measurement_start_step,
+            measurement_end_step=summary.measurement_end_step,
+            total_simulation_steps=summary.total_simulation_steps,
+            measurement_steps_executed=summary.measurement_steps_executed,
+            total_vehicles_departed=summary.total_vehicles_departed,
+            total_vehicles_arrived=summary.total_vehicles_arrived,
         )
         manifest_path.write_text(
             json.dumps(
@@ -373,16 +399,32 @@ def _manifest_payload(
         "started_at": summary.started_at,
         "ended_at": summary.ended_at,
         "controller": controller.manifest_metadata(),
+        "warmup_seconds": float(scenario_config.warmup_seconds),
+        "measurement_start_step": int(scenario_config.measurement_start_step),
+        "measurement_end_step": int(scenario_config.measurement_end_step),
+        "total_simulation_steps": int(scenario_config.total_simulation_steps),
         "communication": {
             "delay_steps": int(scenario_config.communication.delay_steps),
             "drop_probability": float(scenario_config.communication.drop_probability),
             "rng_seed": scenario_config.communication.resolved_rng_seed(int(scenario_config.seed)),
             "max_message_age_steps": int(scenario_config.communication.max_message_age_steps),
         },
+        "measurement": {
+            "warmup_seconds": float(scenario_config.warmup_seconds),
+            "measurement_duration_seconds": float(
+                scenario_config.measurement_duration_seconds
+            ),
+            "measurement_start_step": int(scenario_config.measurement_start_step),
+            "measurement_end_step": int(scenario_config.measurement_end_step),
+            "total_simulation_steps": int(scenario_config.total_simulation_steps),
+        },
         "simulation": {
             "steps_executed": summary.steps_executed,
+            "measurement_steps_executed": summary.measurement_steps_executed,
             "vehicles_departed": summary.vehicles_departed,
             "vehicles_arrived": summary.vehicles_arrived,
+            "total_vehicles_departed": summary.total_vehicles_departed,
+            "total_vehicles_arrived": summary.total_vehicles_arrived,
             "wall_time_seconds": summary.wall_time_seconds,
         },
         "metrics_finalized": False,

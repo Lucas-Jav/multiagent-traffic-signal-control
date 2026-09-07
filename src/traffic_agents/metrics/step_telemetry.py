@@ -41,6 +41,7 @@ class StepTelemetryRecord:
     turn_completion_count: float
     movement_queue_mean: float
     movement_queue_max: int
+    is_warmup: bool = False
 
 
 @dataclass(frozen=True)
@@ -100,10 +101,17 @@ class MovementQueueTracker:
         *,
         observation: AgentObservation,
         traffic_model: IntersectionTrafficModel,
+        include_sample: bool = True,
     ) -> dict[str, MovementQueueStats]:
         stats: dict[str, MovementQueueStats] = {}
         for movement in traffic_model.movements:
             queue = observation.state.incoming_queue.get(movement.incoming_lane_id, 0)
+            if not include_sample:
+                stats[movement.movement_id] = self._current_stats(
+                    movement_id=movement.movement_id,
+                    queue=queue,
+                )
+                continue
             self._total_by_movement[movement.movement_id] = (
                 self._total_by_movement.get(movement.movement_id, 0) + queue
             )
@@ -123,6 +131,15 @@ class MovementQueueTracker:
             )
         return stats
 
+    def _current_stats(self, *, movement_id: str, queue: int) -> MovementQueueStats:
+        samples = self._samples_by_movement.get(movement_id, 0)
+        if samples <= 0:
+            return MovementQueueStats(mean=float(queue), max=queue)
+        return MovementQueueStats(
+            mean=self._total_by_movement[movement_id] / samples,
+            max=self._max_by_movement[movement_id],
+        )
+
 
 def build_step_telemetry_records(
     *,
@@ -135,6 +152,7 @@ def build_step_telemetry_records(
     turning_ratios: TurningRatiosConfig,
     junction_metrics: JunctionStepMetrics,
     movement_queue_stats: Mapping[str, MovementQueueStats] | None = None,
+    is_warmup: bool = False,
 ) -> tuple[StepTelemetryRecord, ...]:
     state = observation.state
     requested_phase = requested_phase_id(observation, action, safety)
@@ -187,6 +205,7 @@ def build_step_telemetry_records(
                 movement.movement_id,
                 state.incoming_queue.get(movement.incoming_lane_id, 0),
             ).max,
+            is_warmup=is_warmup,
         )
         for movement in traffic_model.movements
     )

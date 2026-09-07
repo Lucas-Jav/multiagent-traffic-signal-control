@@ -68,7 +68,9 @@ def _run_simulation(args: argparse.Namespace) -> int:
     if args.controller_id is not None:
         updates["controller_id"] = args.controller_id
     if args.seed is not None:
-        updates["seed"] = args.seed
+        updates["simulation"] = scenario_config.simulation.model_copy(
+            update={"seed": args.seed},
+        )
     if updates:
         scenario_config = scenario_config.model_copy(update=updates)
 
@@ -92,8 +94,11 @@ def _run_simulation(args: argparse.Namespace) -> int:
     print(f"demand_profile={summary.demand_profile}")
     print(f"seed={summary.seed}")
     print(f"steps_executed={summary.steps_executed}")
+    print(f"measurement_steps_executed={summary.measurement_steps_executed}")
     print(f"vehicles_departed={summary.vehicles_departed}")
     print(f"vehicles_arrived={summary.vehicles_arrived}")
+    print(f"total_vehicles_departed={summary.total_vehicles_departed}")
+    print(f"total_vehicles_arrived={summary.total_vehicles_arrived}")
     print(f"wall_time_seconds={summary.wall_time_seconds:.3f}")
     if summary.manifest_path is not None:
         print(f"manifest={summary.manifest_path}")

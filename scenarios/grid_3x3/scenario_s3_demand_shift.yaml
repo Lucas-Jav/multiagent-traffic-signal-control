@@ -1,10 +1,11 @@
-scenario_id: grid_3x3
+﻿scenario_id: grid_3x3
 network_file: network.net.xml
 route_file: routes_s3_seed_42.rou.xml
-duration_seconds: 3600
-warmup_seconds: 300
-step_length: 1.0
-seed: 42
+simulation:
+  warmup_seconds: 300
+  measurement_duration_seconds: 3900
+  step_length: 1.0
+  seed: 42
 controller_id: B0_FIXED
 traffic:
   demand_profile: S3_DEMAND_SHIFT
@@ -16,18 +17,18 @@ traffic:
   schedule:
     - window_id: north_south_peak
       begin_seconds: 0
-      end_seconds: 1800
+      end_seconds: 1950
       description: North-south demand dominates the first simulation half.
     - window_id: east_west_peak
-      begin_seconds: 1800
-      end_seconds: 3600
+      begin_seconds: 1950
+      end_seconds: 3900
       description: East-west demand dominates the second simulation half.
   flows:
     - flow_id: s3_w1_west_to_east_middle
       origin_edge_id: left1A1
       destination_edge_id: C1right1
       begin_seconds: 0
-      end_seconds: 1800
+      end_seconds: 1950
       vehicles_per_hour:
         LOW: 97
         MEDIUM: 193
@@ -36,7 +37,7 @@ traffic:
       origin_edge_id: right1C1
       destination_edge_id: A1left1
       begin_seconds: 0
-      end_seconds: 1800
+      end_seconds: 1950
       vehicles_per_hour:
         LOW: 97
         MEDIUM: 193
@@ -45,7 +46,7 @@ traffic:
       origin_edge_id: top1B2
       destination_edge_id: B0bottom1
       begin_seconds: 0
-      end_seconds: 1800
+      end_seconds: 1950
       vehicles_per_hour:
         LOW: 303
         MEDIUM: 605
@@ -54,7 +55,7 @@ traffic:
       origin_edge_id: bottom1B0
       destination_edge_id: B2top1
       begin_seconds: 0
-      end_seconds: 1800
+      end_seconds: 1950
       vehicles_per_hour:
         LOW: 303
         MEDIUM: 605
@@ -63,7 +64,7 @@ traffic:
       origin_edge_id: left1A1
       destination_edge_id: B2top1
       begin_seconds: 0
-      end_seconds: 1800
+      end_seconds: 1950
       vehicles_per_hour:
         LOW: 44
         MEDIUM: 88
@@ -72,7 +73,7 @@ traffic:
       origin_edge_id: left1A1
       destination_edge_id: B0bottom1
       begin_seconds: 0
-      end_seconds: 1800
+      end_seconds: 1950
       vehicles_per_hour:
         LOW: 35
         MEDIUM: 69
@@ -81,7 +82,7 @@ traffic:
       origin_edge_id: right1C1
       destination_edge_id: B2top1
       begin_seconds: 0
-      end_seconds: 1800
+      end_seconds: 1950
       vehicles_per_hour:
         LOW: 35
         MEDIUM: 69
@@ -90,7 +91,7 @@ traffic:
       origin_edge_id: right1C1
       destination_edge_id: B0bottom1
       begin_seconds: 0
-      end_seconds: 1800
+      end_seconds: 1950
       vehicles_per_hour:
         LOW: 44
         MEDIUM: 88
@@ -99,7 +100,7 @@ traffic:
       origin_edge_id: top1B2
       destination_edge_id: A1left1
       begin_seconds: 0
-      end_seconds: 1800
+      end_seconds: 1950
       vehicles_per_hour:
         LOW: 138
         MEDIUM: 275
@@ -108,7 +109,7 @@ traffic:
       origin_edge_id: top1B2
       destination_edge_id: C1right1
       begin_seconds: 0
-      end_seconds: 1800
+      end_seconds: 1950
       vehicles_per_hour:
         LOW: 110
         MEDIUM: 220
@@ -117,7 +118,7 @@ traffic:
       origin_edge_id: bottom1B0
       destination_edge_id: A1left1
       begin_seconds: 0
-      end_seconds: 1800
+      end_seconds: 1950
       vehicles_per_hour:
         LOW: 138
         MEDIUM: 275
@@ -126,7 +127,7 @@ traffic:
       origin_edge_id: bottom1B0
       destination_edge_id: C1right1
       begin_seconds: 0
-      end_seconds: 1800
+      end_seconds: 1950
       vehicles_per_hour:
         LOW: 110
         MEDIUM: 220
@@ -134,8 +135,8 @@ traffic:
     - flow_id: s3_w2_west_to_east_middle
       origin_edge_id: left1A1
       destination_edge_id: C1right1
-      begin_seconds: 1800
-      end_seconds: 3600
+      begin_seconds: 1950
+      end_seconds: 3900
       vehicles_per_hour:
         LOW: 303
         MEDIUM: 605
@@ -143,8 +144,8 @@ traffic:
     - flow_id: s3_w2_east_to_west_middle
       origin_edge_id: right1C1
       destination_edge_id: A1left1
-      begin_seconds: 1800
-      end_seconds: 3600
+      begin_seconds: 1950
+      end_seconds: 3900
       vehicles_per_hour:
         LOW: 303
         MEDIUM: 605
@@ -152,8 +153,8 @@ traffic:
     - flow_id: s3_w2_north_to_south_middle
       origin_edge_id: top1B2
       destination_edge_id: B0bottom1
-      begin_seconds: 1800
-      end_seconds: 3600
+      begin_seconds: 1950
+      end_seconds: 3900
       vehicles_per_hour:
         LOW: 97
         MEDIUM: 193
@@ -161,8 +162,8 @@ traffic:
     - flow_id: s3_w2_south_to_north_middle
       origin_edge_id: bottom1B0
       destination_edge_id: B2top1
-      begin_seconds: 1800
-      end_seconds: 3600
+      begin_seconds: 1950
+      end_seconds: 3900
       vehicles_per_hour:
         LOW: 97
         MEDIUM: 193
@@ -170,8 +171,8 @@ traffic:
     - flow_id: s3_w2_west_to_north_turn
       origin_edge_id: left1A1
       destination_edge_id: B2top1
-      begin_seconds: 1800
-      end_seconds: 3600
+      begin_seconds: 1950
+      end_seconds: 3900
       vehicles_per_hour:
         LOW: 138
         MEDIUM: 275
@@ -179,8 +180,8 @@ traffic:
     - flow_id: s3_w2_west_to_south_turn
       origin_edge_id: left1A1
       destination_edge_id: B0bottom1
-      begin_seconds: 1800
-      end_seconds: 3600
+      begin_seconds: 1950
+      end_seconds: 3900
       vehicles_per_hour:
         LOW: 110
         MEDIUM: 220
@@ -188,8 +189,8 @@ traffic:
     - flow_id: s3_w2_east_to_north_turn
       origin_edge_id: right1C1
       destination_edge_id: B2top1
-      begin_seconds: 1800
-      end_seconds: 3600
+      begin_seconds: 1950
+      end_seconds: 3900
       vehicles_per_hour:
         LOW: 110
         MEDIUM: 220
@@ -197,8 +198,8 @@ traffic:
     - flow_id: s3_w2_east_to_south_turn
       origin_edge_id: right1C1
       destination_edge_id: B0bottom1
-      begin_seconds: 1800
-      end_seconds: 3600
+      begin_seconds: 1950
+      end_seconds: 3900
       vehicles_per_hour:
         LOW: 138
         MEDIUM: 275
@@ -206,8 +207,8 @@ traffic:
     - flow_id: s3_w2_north_to_west_turn
       origin_edge_id: top1B2
       destination_edge_id: A1left1
-      begin_seconds: 1800
-      end_seconds: 3600
+      begin_seconds: 1950
+      end_seconds: 3900
       vehicles_per_hour:
         LOW: 44
         MEDIUM: 88
@@ -215,8 +216,8 @@ traffic:
     - flow_id: s3_w2_north_to_east_turn
       origin_edge_id: top1B2
       destination_edge_id: C1right1
-      begin_seconds: 1800
-      end_seconds: 3600
+      begin_seconds: 1950
+      end_seconds: 3900
       vehicles_per_hour:
         LOW: 35
         MEDIUM: 69
@@ -224,8 +225,8 @@ traffic:
     - flow_id: s3_w2_south_to_west_turn
       origin_edge_id: bottom1B0
       destination_edge_id: A1left1
-      begin_seconds: 1800
-      end_seconds: 3600
+      begin_seconds: 1950
+      end_seconds: 3900
       vehicles_per_hour:
         LOW: 44
         MEDIUM: 88
@@ -233,8 +234,8 @@ traffic:
     - flow_id: s3_w2_south_to_east_turn
       origin_edge_id: bottom1B0
       destination_edge_id: C1right1
-      begin_seconds: 1800
-      end_seconds: 3600
+      begin_seconds: 1950
+      end_seconds: 3900
       vehicles_per_hour:
         LOW: 35
         MEDIUM: 69
@@ -371,3 +372,4 @@ intersections:
     phases:
       - north_south
       - east_west
+

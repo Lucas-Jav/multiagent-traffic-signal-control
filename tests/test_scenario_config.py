@@ -67,6 +67,14 @@ def test_load_valid_scenario_config(tmp_path: Path) -> None:
 
     assert scenario.scenario_id == "grid_3x3"
     assert scenario.simulation.seed == 42
+    assert scenario.simulation.measurement_duration_seconds == 3600
+    assert scenario.simulation.warmup_seconds == 300
+    assert scenario.measurement_start_step == 300
+    assert scenario.measurement_end_step == 3900
+    assert scenario.total_simulation_steps == 3900
+    assert scenario.is_warmup_step(299) is True
+    assert scenario.is_warmup_step(300) is False
+    assert scenario.is_measurement_step(300) is True
     assert scenario.traffic.demand_profile == "S1_BALANCED"
     assert scenario.traffic.demand_level == "MEDIUM"
     assert scenario.traffic.turning_ratios.straight == 0.60
@@ -107,7 +115,7 @@ def test_scenario_config_rejects_missing_field() -> None:
     payload = valid_payload()
     del payload["duration_seconds"]
 
-    with pytest.raises(ValidationError, match="duration_seconds"):
+    with pytest.raises(ValidationError, match="simulation"):
         ScenarioConfig.model_validate(payload)
 
 
@@ -117,6 +125,23 @@ def test_scenario_config_rejects_invalid_duration() -> None:
 
     with pytest.raises(ValidationError, match="duration_seconds"):
         ScenarioConfig.model_validate(payload)
+
+
+def test_scenario_config_accepts_nested_simulation_window() -> None:
+    payload = valid_payload()
+    payload["simulation"] = {
+        "warmup_seconds": payload.pop("warmup_seconds"),
+        "measurement_duration_seconds": payload.pop("duration_seconds"),
+        "step_length": payload.pop("step_length"),
+        "seed": payload.pop("seed"),
+    }
+
+    scenario = ScenarioConfig.model_validate(payload)
+
+    assert scenario.simulation.measurement_duration_seconds == 3600
+    assert scenario.total_duration_seconds == 3900
+    assert scenario.measurement_start_step == 300
+    assert scenario.measurement_end_step == 3900
 
 
 def test_scenario_config_rejects_invalid_seed() -> None:
@@ -177,7 +202,7 @@ def test_scenario_config_rejects_schedule_windows_outside_duration() -> None:
         {
             "window_id": "too_long",
             "begin_seconds": 0,
-            "end_seconds": 3601,
+            "end_seconds": 3901,
             "description": "Invalid window.",
         }
     ]
@@ -188,19 +213,22 @@ def test_scenario_config_rejects_schedule_windows_outside_duration() -> None:
 
 def test_scenario_config_rejects_flows_outside_duration() -> None:
     payload = valid_payload()
-    payload["traffic"]["flows"][0]["end_seconds"] = 3601
+    payload["traffic"]["flows"][0]["end_seconds"] = 3901
 
     with pytest.raises(ValidationError, match="traffic flow end_seconds"):
         ScenarioConfig.model_validate(payload)
 
 
-def test_scenario_config_rejects_warmup_equal_to_duration() -> None:
+def test_scenario_config_allows_warmup_equal_to_measurement_duration() -> None:
     payload = valid_payload()
     payload["duration_seconds"] = 300
     payload["warmup_seconds"] = 300
+    payload["traffic"]["flows"][0]["end_seconds"] = 600
 
-    with pytest.raises(ValidationError, match="warmup_seconds must be lower"):
-        ScenarioConfig.model_validate(payload)
+    scenario = ScenarioConfig.model_validate(payload)
+
+    assert scenario.measurement_start_step == 300
+    assert scenario.measurement_end_step == 600
 
 
 def test_scenario_config_accepts_communication_delay_steps() -> None:

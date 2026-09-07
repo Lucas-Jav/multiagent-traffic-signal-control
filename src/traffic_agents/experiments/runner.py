@@ -100,7 +100,9 @@ class ExperimentRunner:
                 run_config = scenario_config.model_copy(
                     update={
                         "controller_id": run.controller_id,
-                        "seed": int(run.seed),
+                        "simulation": scenario_config.simulation.model_copy(
+                            update={"seed": int(run.seed)}
+                        ),
                         "communication": run.communication,
                     },
                 )
@@ -122,7 +124,12 @@ class ExperimentRunner:
             for controller_id in self._config.controllers:
                 for seed in self._config.seeds:
                     run_config = scenario_config.model_copy(
-                        update={"controller_id": controller_id, "seed": int(seed)},
+                        update={
+                            "controller_id": controller_id,
+                            "simulation": scenario_config.simulation.model_copy(
+                                update={"seed": int(seed)}
+                            ),
+                        },
                     )
                     summary = TraCISimulationRunner(
                         scenario_config=run_config,

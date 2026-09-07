@@ -11,6 +11,25 @@ from traffic_agents.experiments.runner import ExperimentRunner, load_experiment_
 from traffic_agents.simulation import SimulationRunSummary
 
 
+class FakeSimulationConfig:
+    def __init__(self) -> None:
+        self.updates: list[dict[str, object]] = []
+
+    def model_copy(self, *, update: dict[str, object]) -> FakeSimulationConfig:
+        self.updates.append(update)
+        return self
+
+
+class FakeScenarioConfig:
+    def __init__(self) -> None:
+        self.simulation = FakeSimulationConfig()
+        self.updates: list[dict[str, object]] = []
+
+    def model_copy(self, *, update: dict[str, object]) -> FakeScenarioConfig:
+        self.updates.append(update)
+        return self
+
+
 def test_load_experiment_config_resolves_relative_scenario_path(tmp_path: Path) -> None:
     config_path = tmp_path / "configs" / "experiment.yaml"
     config_path.parent.mkdir()
@@ -84,15 +103,10 @@ max_steps: 10
     )
     config = load_experiment_config(config_path)
 
+    scenario_config = FakeScenarioConfig()
     monkeypatch.setattr(
         "traffic_agents.experiments.runner.load_scenario_config",
-        lambda _path: type(
-            "FakeScenarioConfig",
-            (),
-            {
-                "model_copy": lambda self, *, update: self,
-            },
-        )(),
+        lambda _path: scenario_config,
     )
 
     class FakeRunner:
@@ -123,6 +137,7 @@ max_steps: 10
     manifest = json.loads(summary.manifest_path.read_text(encoding="utf-8"))
     assert manifest["experiment_id"] == "smoke"
     assert manifest["runs"][0]["controller_id"] == "B0_FIXED"
+    assert scenario_config.simulation.updates == [{"seed": 42}]
 
 
 def test_experiment_runner_applies_explicit_run_communication(
@@ -152,16 +167,11 @@ runs:
         encoding="utf-8",
     )
     config = load_experiment_config(config_path)
-    updates: list[dict[str, object]] = []
 
-    class FakeScenarioConfig:
-        def model_copy(self, *, update: dict[str, object]) -> FakeScenarioConfig:
-            updates.append(update)
-            return self
-
+    scenario_config = FakeScenarioConfig()
     monkeypatch.setattr(
         "traffic_agents.experiments.runner.load_scenario_config",
-        lambda _path: FakeScenarioConfig(),
+        lambda _path: scenario_config,
     )
 
     class FakeRunner:
@@ -192,10 +202,11 @@ runs:
     summary = ExperimentRunner(config=config, artifacts_dir=tmp_path / "artifacts").run()
 
     manifest = json.loads(summary.manifest_path.read_text(encoding="utf-8"))
-    communication = cast(CommunicationConfig, updates[0]["communication"])
+    communication = cast(CommunicationConfig, scenario_config.updates[0]["communication"])
     assert communication.delay_steps == 3
     assert communication.drop_probability == 0.10
     assert communication.max_message_age_steps == 1
+    assert scenario_config.simulation.updates == [{"seed": 42}]
     assert manifest["runs"][0]["config_run_id"] == "s5_c1_delay3_drop010"
     assert manifest["runs"][0]["configured_communication"] == {
         "delay_steps": 3,
