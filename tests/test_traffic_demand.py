@@ -127,7 +127,12 @@ def test_traffic_demand_generator_writes_routes_and_metadata(
     assert metadata["flows"]
     assert metadata["flows"][0]["vehicles_per_hour"] == 600
     assert metadata["turning_ratios"] == {"straight": 0.6, "left": 0.2, "right": 0.2}
+    assert metadata["schedule"] == []
     assert metadata["config_hash"]
+    assert metadata["scenario_hash"] == generated.scenario_hash
+    assert metadata["route_hash"] == generated.route_hash
+    assert len(metadata["scenario_hash"]) == 64
+    assert len(metadata["route_hash"]) == 64
     assert "--seed" in calls[0]
     assert "42" in calls[0]
 
@@ -232,3 +237,22 @@ def test_apply_visual_vehicle_style_colors_known_flows(tmp_path: Path) -> None:
     west_route = west_flow.find("route")
     assert west_route is not None
     assert west_route.attrib["color"] == "#1971c2"
+
+
+def test_apply_visual_vehicle_style_colors_windowed_known_flows(tmp_path: Path) -> None:
+    route_path = tmp_path / "routes.rou.xml"
+    route_path.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
+<routes>
+    <flow id="s3_w1_west_to_east_middle" begin="0" end="10" route="route0"/>
+</routes>
+""",
+        encoding="utf-8",
+    )
+
+    apply_visual_vehicle_style(route_path)
+
+    root = ET.parse(route_path).getroot()
+    flow = root.find("./flow[@id='s3_w1_west_to_east_middle']")
+    assert flow is not None
+    assert flow.attrib["color"] == "#1971c2"

@@ -126,7 +126,7 @@ def make_scenario_config(duration_seconds: int = 2) -> ScenarioConfig:
                     "origin_edge_id": "left1A1",
                     "destination_edge_id": "C1right1",
                     "begin_seconds": 0,
-                    "end_seconds": 2,
+                    "end_seconds": duration_seconds,
                     "vehicles_per_hour": {
                         "LOW": 1,
                         "MEDIUM": 2,

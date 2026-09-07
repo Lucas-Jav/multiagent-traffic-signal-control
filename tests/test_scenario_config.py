@@ -8,6 +8,13 @@ from pydantic import ValidationError
 from traffic_agents.communication_seed import derive_communication_rng_seed
 from traffic_agents.config import ScenarioConfig, load_scenario_config
 
+VERSIONED_SCENARIOS = (
+    Path("scenarios/grid_3x3/scenario.yaml"),
+    Path("scenarios/grid_3x3/scenario_s2_directional_peak.yaml"),
+    Path("scenarios/grid_3x3/scenario_s3_demand_shift.yaml"),
+    Path("scenarios/grid_3x3/scenario_s4_local_saturation.yaml"),
+)
+
 
 def valid_payload() -> dict[str, Any]:
     return {
@@ -79,6 +86,23 @@ def test_versioned_grid_3x3_scenario_is_valid() -> None:
     assert scenario.scenario_id == "grid_3x3"
 
 
+@pytest.mark.parametrize("scenario_path", VERSIONED_SCENARIOS)
+def test_versioned_experimental_scenario_is_valid(scenario_path: Path) -> None:
+    scenario = load_scenario_config(scenario_path)
+
+    assert scenario.scenario_id == "grid_3x3"
+    assert scenario.network_file == Path("network.net.xml")
+    assert scenario.seed == 42
+    assert scenario.traffic.turning_ratios.straight > 0
+    assert scenario.traffic.turning_ratios.left > 0
+    assert scenario.traffic.turning_ratios.right > 0
+    assert any(
+        "middle" in flow.flow_id or "straight" in flow.flow_id for flow in scenario.traffic.flows
+    )
+    assert any("turn" in flow.flow_id for flow in scenario.traffic.flows)
+    assert scenario.traffic.schedule
+
+
 def test_scenario_config_rejects_missing_field() -> None:
     payload = valid_payload()
     del payload["duration_seconds"]
@@ -128,6 +152,45 @@ def test_scenario_config_rejects_invalid_turning_ratios() -> None:
     }
 
     with pytest.raises(ValidationError, match="turning ratios must sum"):
+        ScenarioConfig.model_validate(payload)
+
+
+def test_scenario_config_accepts_schedule_windows() -> None:
+    payload = valid_payload()
+    payload["traffic"]["schedule"] = [
+        {
+            "window_id": "full_run",
+            "begin_seconds": 0,
+            "end_seconds": 3600,
+            "description": "Single stationary demand window.",
+        }
+    ]
+
+    scenario = ScenarioConfig.model_validate(payload)
+
+    assert scenario.traffic.schedule[0].window_id == "full_run"
+
+
+def test_scenario_config_rejects_schedule_windows_outside_duration() -> None:
+    payload = valid_payload()
+    payload["traffic"]["schedule"] = [
+        {
+            "window_id": "too_long",
+            "begin_seconds": 0,
+            "end_seconds": 3601,
+            "description": "Invalid window.",
+        }
+    ]
+
+    with pytest.raises(ValidationError, match="schedule window end_seconds"):
+        ScenarioConfig.model_validate(payload)
+
+
+def test_scenario_config_rejects_flows_outside_duration() -> None:
+    payload = valid_payload()
+    payload["traffic"]["flows"][0]["end_seconds"] = 3601
+
+    with pytest.raises(ValidationError, match="traffic flow end_seconds"):
         ScenarioConfig.model_validate(payload)
 
 

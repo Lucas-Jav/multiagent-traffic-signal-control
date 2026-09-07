@@ -52,6 +52,8 @@ class GeneratedTrafficDemandInfo:
     seed: int
     demand_profile: DemandProfileId
     config_hash: str
+    scenario_hash: str
+    route_hash: str
     flow_count: int
 
 
@@ -99,6 +101,7 @@ class TrafficDemandGenerator:
         route_path.parent.mkdir(parents=True, exist_ok=True)
         selected_flows = self._selected_flows()
         config_hash = self._config_hash(selected_flows)
+        scenario_hash = self._scenario_hash()
 
         with tempfile.TemporaryDirectory() as temp_dir:
             flow_input_path = Path(temp_dir) / "demand.flows.xml"
@@ -109,7 +112,8 @@ class TrafficDemandGenerator:
         normalize_generated_route_header(route_path)
         apply_visual_vehicle_style(route_path)
         _validate_route_file(route_path)
-        self._write_metadata(metadata_path, selected_flows, config_hash)
+        route_hash = _file_sha256(route_path)
+        self._write_metadata(metadata_path, selected_flows, config_hash, scenario_hash, route_hash)
 
         return GeneratedTrafficDemandInfo(
             route_path=route_path,
@@ -117,6 +121,8 @@ class TrafficDemandGenerator:
             seed=self._seed,
             demand_profile=self._demand_profile,
             config_hash=config_hash,
+            scenario_hash=scenario_hash,
+            route_hash=route_hash,
             flow_count=len(selected_flows),
         )
 
@@ -209,11 +215,21 @@ class TrafficDemandGenerator:
         encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
         return hashlib.sha256(encoded).hexdigest()
 
+    def _scenario_hash(self) -> str:
+        encoded = json.dumps(
+            self._scenario_config.model_dump(mode="json"),
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+        return hashlib.sha256(encoded).hexdigest()
+
     def _write_metadata(
         self,
         metadata_path: Path,
         selected_flows: tuple[SelectedFlow, ...],
         config_hash: str,
+        scenario_hash: str,
+        route_hash: str,
     ) -> None:
         generated_at = _existing_generated_at(metadata_path, config_hash)
         if generated_at is None:
@@ -226,8 +242,13 @@ class TrafficDemandGenerator:
             "demand_profile": self._demand_profile,
             "demand_level": self._scenario_config.traffic.demand_level,
             "turning_ratios": self._scenario_config.traffic.turning_ratios.model_dump(),
+            "schedule": [
+                window.model_dump(mode="json") for window in self._scenario_config.traffic.schedule
+            ],
             "generated_at": generated_at,
             "config_hash": config_hash,
+            "scenario_hash": scenario_hash,
+            "route_hash": route_hash,
             "flows": [flow.__dict__ for flow in selected_flows],
         }
         metadata_path.write_text(
@@ -293,6 +314,10 @@ def _metadata_path_for(route_path: Path) -> Path:
     return route_path.with_suffix(".metadata.json")
 
 
+def _file_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 def _remove_duarouter_alternatives(route_path: Path) -> None:
     alternatives_path = route_path.with_suffix(".alt.xml")
     if alternatives_path.exists():
@@ -348,4 +373,9 @@ def _format_number(value: float) -> str:
 
 
 def _flow_color(flow_id: str) -> str:
-    return FLOW_VISUAL_COLORS.get(flow_id, DEFAULT_FLOW_COLOR)
+    if flow_id in FLOW_VISUAL_COLORS:
+        return FLOW_VISUAL_COLORS[flow_id]
+    for known_flow_id, color in FLOW_VISUAL_COLORS.items():
+        if flow_id.endswith(known_flow_id):
+            return color
+    return DEFAULT_FLOW_COLOR

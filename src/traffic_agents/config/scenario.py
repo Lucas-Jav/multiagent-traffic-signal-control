@@ -18,7 +18,12 @@ from traffic_agents.communication_seed import derive_communication_rng_seed
 from traffic_agents.domain import EdgeId, IntersectionId, LaneId
 
 DemandLevel = Literal["LOW", "MEDIUM", "HIGH"]
-DemandProfileId = Literal["S1_BALANCED"]
+DemandProfileId = Literal[
+    "S1_BALANCED",
+    "S2_DIRECTIONAL_PEAK",
+    "S3_DEMAND_SHIFT",
+    "S4_LOCAL_SATURATION",
+]
 ControllerId = Annotated[str, Field(min_length=1)]
 PhaseId = Annotated[str, Field(min_length=1)]
 type VehicleRateByDemandLevel = dict[DemandLevel, PositiveFloat]
@@ -70,6 +75,20 @@ class FlowDefinitionConfig(ConfigModel):
         return self.vehicles_per_hour[demand_level]
 
 
+class DemandScheduleWindowConfig(ConfigModel):
+    window_id: Annotated[str, Field(min_length=1)]
+    begin_seconds: NonNegativeFloat
+    end_seconds: PositiveFloat
+    description: Annotated[str, Field(min_length=1)]
+
+    @model_validator(mode="after")
+    def validate_time_window(self) -> Self:
+        if self.end_seconds <= self.begin_seconds:
+            msg = "schedule window end_seconds must be greater than begin_seconds"
+            raise ValueError(msg)
+        return self
+
+
 class TurningRatiosConfig(ConfigModel):
     straight: NonNegativeFloat = 0.60
     left: NonNegativeFloat = 0.20
@@ -88,6 +107,7 @@ class TrafficDemandConfig(ConfigModel):
     demand_profile: DemandProfileId
     demand_level: DemandLevel
     turning_ratios: TurningRatiosConfig = Field(default_factory=TurningRatiosConfig)
+    schedule: tuple[DemandScheduleWindowConfig, ...] = ()
     flows: Annotated[tuple[FlowDefinitionConfig, ...], Field(min_length=1)]
 
 
@@ -141,6 +161,21 @@ class ScenarioConfig(ConfigModel):
             step_length=self.step_length,
             seed=self.seed,
         )
+        return self
+
+    @model_validator(mode="after")
+    def validate_traffic_windows(self) -> Self:
+        for flow in self.traffic.flows:
+            if flow.end_seconds > self.duration_seconds:
+                msg = "traffic flow end_seconds must be lower than or equal to duration_seconds"
+                raise ValueError(msg)
+        for window in self.traffic.schedule:
+            if window.end_seconds > self.duration_seconds:
+                msg = (
+                    "traffic schedule window end_seconds must be lower than or "
+                    "equal to duration_seconds"
+                )
+                raise ValueError(msg)
         return self
 
     @property

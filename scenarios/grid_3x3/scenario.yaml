@@ -13,6 +13,11 @@ traffic:
     straight: 0.60
     left: 0.20
     right: 0.20
+  schedule:
+    - window_id: full_run
+      begin_seconds: 0
+      end_seconds: 3600
+      description: Stationary balanced demand across the full simulation.
   flows:
     - flow_id: west_to_east_middle
       origin_edge_id: left1A1
