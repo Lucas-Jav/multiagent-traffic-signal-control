@@ -6,6 +6,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from traffic_agents.config import get_settings, load_scenario_config
+from traffic_agents.demo import DemoConfig, run_demo
 from traffic_agents.experiments.report import (
     generate_experiment_report,
     generate_experiment_summary,
@@ -37,6 +38,19 @@ def _print_application_info() -> None:
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="traffic-agents")
     subparsers = parser.add_subparsers(dest="command", required=True)
+
+    demo_parser = subparsers.add_parser("demo")
+    demo_parser.add_argument("--scenario", required=True)
+    demo_controller_group = demo_parser.add_mutually_exclusive_group(required=True)
+    demo_controller_group.add_argument("--controller", dest="controller_id")
+    demo_controller_group.add_argument("--controller-id", dest="controller_id")
+    demo_parser.add_argument("--seed", type=int, required=True)
+    demo_parser.add_argument("--focus-agent", default=None)
+    demo_parser.add_argument("--speed-factor", type=float, default=25.0)
+    demo_parser.add_argument("--max-steps", type=int, default=None)
+    demo_parser.add_argument("--write-artifact", action="store_true")
+    demo_parser.add_argument("--console-interval-steps", type=int, default=10)
+    demo_parser.set_defaults(handler=_run_demo)
 
     simulation_parser = subparsers.add_parser("simulation")
     simulation_subparsers = simulation_parser.add_subparsers(
@@ -112,6 +126,33 @@ def _run_simulation(args: argparse.Namespace) -> int:
     print(f"total_vehicles_departed={summary.total_vehicles_departed}")
     print(f"total_vehicles_arrived={summary.total_vehicles_arrived}")
     print(f"wall_time_seconds={summary.wall_time_seconds:.3f}")
+    if summary.manifest_path is not None:
+        print(f"manifest={summary.manifest_path}")
+    return 0
+
+
+def _run_demo(args: argparse.Namespace) -> int:
+    print("demo start")
+    result = run_demo(
+        DemoConfig(
+            scenario=args.scenario,
+            controller_id=args.controller_id,
+            seed=args.seed,
+            focus_agent=args.focus_agent,
+            speed_factor=args.speed_factor,
+            max_steps=args.max_steps,
+            write_artifact=args.write_artifact,
+            console_interval_steps=args.console_interval_steps,
+        )
+    )
+    summary = result.summary
+    print("demo end")
+    print(f"scenario={result.scenario_path}")
+    print(f"controller_id={summary.controller_id}")
+    print(f"demand_profile={summary.demand_profile}")
+    print(f"seed={summary.seed}")
+    print(f"steps_executed={summary.steps_executed}")
+    print("run_mode=DEMO")
     if summary.manifest_path is not None:
         print(f"manifest={summary.manifest_path}")
     return 0

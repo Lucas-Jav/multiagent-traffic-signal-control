@@ -114,6 +114,7 @@ class ExperimentRunner:
                     ),
                     controller_id=run.controller_id,
                     artifacts_dir=runs_dir,
+                    run_mode="EXPERIMENT",
                 ).run()
                 summaries.append(summary)
                 records.append((run.run_id, run, summary))
@@ -137,6 +138,7 @@ class ExperimentRunner:
                         max_steps=self._config.max_steps,
                         controller_id=controller_id,
                         artifacts_dir=runs_dir,
+                        run_mode="EXPERIMENT",
                     ).run()
                     summaries.append(summary)
                     records.append((f"{controller_id}_seed_{int(seed)}", None, summary))

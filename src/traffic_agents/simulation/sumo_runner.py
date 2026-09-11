@@ -6,11 +6,11 @@ import os
 import platform
 import sys
 import time
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Protocol, cast
+from typing import Literal, Protocol, cast
 from uuid import uuid4
 
 from traffic_agents.config import ScenarioConfig, get_settings
@@ -109,6 +109,8 @@ class TraCISimulationRunner:
         controller_id: str | None = None,
         artifacts_dir: Path | None = None,
         write_manifest: bool = True,
+        run_mode: Literal["SIMULATION", "EXPERIMENT", "DEMO"] = "SIMULATION",
+        step_telemetry_consumer: Callable[[tuple[StepTelemetryRecord, ...]], None] | None = None,
     ) -> None:
         if step_delay_seconds < 0:
             msg = "step_delay_seconds must be non-negative"
@@ -135,6 +137,8 @@ class TraCISimulationRunner:
         self._max_steps = max_steps
         self._artifacts_dir = artifacts_dir
         self._write_manifest = write_manifest
+        self._run_mode = run_mode
+        self._step_telemetry_consumer = step_telemetry_consumer
         self._active_run_dir: Path | None = None
         self._telemetry_path: Path | None = None
         self._run_invariant_fingerprint: RunInvariantFingerprint | None = None
@@ -247,6 +251,10 @@ class TraCISimulationRunner:
             step_length=self._scenario_config.step_length,
         )
 
+    @property
+    def controller(self) -> object:
+        return self._controller
+
     def _sumo_command(self) -> list[str]:
         network_path = self._scenario_dir / self._scenario_config.network_file
         route_path = self._scenario_dir / self._scenario_config.route_file
@@ -333,6 +341,7 @@ class TraCISimulationRunner:
                     self._scenario_config,
                     self._scenario_dir,
                     self._sumo_info,
+                    self._run_mode,
                     self._run_invariant_fingerprint,
                     self._telemetry_path.name
                     if self._telemetry_path is not None and self._telemetry_path.exists()
@@ -359,14 +368,17 @@ class TraCISimulationRunner:
         self._telemetry_path = self._active_run_dir / "intersection_trace.csv"
 
     def _write_step_telemetry(self) -> None:
-        if self._telemetry_path is None:
+        if self._telemetry_path is None and self._step_telemetry_consumer is None:
             return
         producer = self._controller
         pop_records = getattr(producer, "pop_step_telemetry_records", None)
         if not callable(pop_records):
             return
         records = cast(_TelemetryProducer, producer).pop_step_telemetry_records()
-        append_step_telemetry(self._telemetry_path, records)
+        if self._step_telemetry_consumer is not None:
+            self._step_telemetry_consumer(records)
+        if self._telemetry_path is not None:
+            append_step_telemetry(self._telemetry_path, records)
 
 
 def _manifest_payload(
@@ -380,6 +392,7 @@ def _manifest_payload(
     scenario_config: ScenarioConfig,
     scenario_dir: Path,
     sumo_info: SumoEnvironmentInfo,
+    run_mode: Literal["SIMULATION", "EXPERIMENT", "DEMO"] = "SIMULATION",
     run_invariant_fingerprint: RunInvariantFingerprint | None = None,
     intersection_trace_file: str | None = None,
 ) -> dict[str, object]:
@@ -392,6 +405,7 @@ def _manifest_payload(
         "scenario_id": summary.scenario_id,
         "demand_profile": summary.demand_profile,
         "seed": summary.seed,
+        "run_mode": run_mode,
         "python_version": platform.python_version(),
         "sumo_version": sumo_info.version,
         "git_sha": _detect_git_sha(Path.cwd()),

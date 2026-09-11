@@ -641,6 +641,7 @@ def test_traci_runner_writes_run_manifest(
     assert manifest["controller"]["controller_id"] == "B0_FIXED"
     assert manifest["demand_profile"] == "S1_BALANCED"
     assert manifest["seed"] == 42
+    assert manifest["run_mode"] == "SIMULATION"
     assert manifest["python_version"]
     assert manifest["sumo_version"] == "1.27.1"
     assert manifest["git_sha"] is None or isinstance(manifest["git_sha"], str)
@@ -680,6 +681,66 @@ def test_traci_runner_writes_run_manifest(
     assert len(manifest["network_sha256"]) == 64
     assert len(manifest["route_sha256"]) == 64
     assert len(manifest["communication_topology_sha256"]) == 64
+
+
+def test_traci_runner_writes_demo_run_mode_to_manifest(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_traci = FakeTraCI()
+    monkeypatch.setenv("SUMO_HOME", "")
+    monkeypatch.setattr(
+        "traffic_agents.simulation.sumo_runner.importlib.import_module",
+        lambda module_name: fake_traci if module_name == "traci" else None,
+    )
+
+    runner = TraCISimulationRunner(
+        scenario_config=make_scenario_config(duration_seconds=1),
+        scenario_dir=make_scenario_dir(tmp_path),
+        sumo_info=make_sumo_info(tmp_path),
+        label="test-demo-simulation",
+        artifacts_dir=tmp_path / "artifacts" / "demos",
+        run_mode="DEMO",
+    )
+
+    summary = runner.run()
+
+    assert summary.manifest_path is not None
+    manifest = json.loads(summary.manifest_path.read_text(encoding="utf-8"))
+    assert manifest["run_mode"] == "DEMO"
+
+
+def test_traci_runner_can_stream_step_telemetry_without_manifest(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_traci = FakeTraCI(departed_numbers=[0], arrived_numbers=[0])
+    consumed_records: list[tuple[StepTelemetryRecord, ...]] = []
+    monkeypatch.setenv("SUMO_HOME", "")
+    monkeypatch.setattr(
+        "traffic_agents.simulation.sumo_runner.importlib.import_module",
+        lambda module_name: fake_traci if module_name == "traci" else None,
+    )
+    monkeypatch.setattr(
+        sumo_runner,
+        "build_controller",
+        lambda _controller_id: FakeTelemetryController(),
+    )
+
+    runner = TraCISimulationRunner(
+        scenario_config=make_scenario_config(duration_seconds=1),
+        scenario_dir=make_scenario_dir(tmp_path),
+        sumo_info=make_sumo_info(tmp_path),
+        label="test-demo-telemetry",
+        write_manifest=False,
+        step_telemetry_consumer=consumed_records.append,
+    )
+
+    summary = runner.run()
+
+    assert summary.manifest_path is None
+    assert len(consumed_records) == 1
+    assert consumed_records[0][0].intersection_id == "A1"
 
 
 def test_traci_runner_writes_intersection_trace_for_telemetry_controller(

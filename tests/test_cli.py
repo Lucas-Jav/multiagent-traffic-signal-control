@@ -4,6 +4,7 @@ import pytest
 
 from traffic_agents.__main__ import main
 from traffic_agents.config import get_settings
+from traffic_agents.demo import DemoConfig
 from traffic_agents.simulation import SimulationRunSummary
 
 
@@ -73,6 +74,75 @@ def test_simulation_run_subcommand_invokes_runner(
     assert call["controller_id"] == "B0_FIXED"
     assert call["max_steps"] == 10
     assert f"manifest={Path('artifacts/runs/run-1/manifest.json')}" in capsys.readouterr().out
+
+
+def test_demo_subcommand_invokes_demo_runner(
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    demo_calls: list[DemoConfig] = []
+
+    def fake_run_demo(config: DemoConfig) -> object:
+        demo_calls.append(config)
+        return type(
+            "FakeDemoResult",
+            (),
+            {
+                "scenario_path": Path("scenarios/grid_3x3/scenario.yaml"),
+                "summary": SimulationRunSummary(
+                    started_at="2026-01-01T00:00:00Z",
+                    ended_at="2026-01-01T00:00:01Z",
+                    run_id="demo-run",
+                    manifest_path=None,
+                    scenario_id="grid_3x3",
+                    controller_id="C1_COOPERATIVE_COMPACT",
+                    controller_version="0.1.0",
+                    demand_profile="S2_DIRECTIONAL_PEAK",
+                    seed=42,
+                    steps_executed=10,
+                    vehicles_departed=1,
+                    vehicles_arrived=1,
+                    wall_time_seconds=0.1,
+                ),
+            },
+        )()
+
+    monkeypatch.setattr("traffic_agents.__main__.run_demo", fake_run_demo)
+
+    exit_code = main(
+        [
+            "demo",
+            "--scenario",
+            "S2_DIRECTIONAL_PEAK",
+            "--controller",
+            "C1_COOPERATIVE_COMPACT",
+            "--seed",
+            "42",
+            "--focus-agent",
+            "A5",
+            "--speed-factor",
+            "20",
+            "--max-steps",
+            "10",
+            "--write-artifact",
+        ]
+    )
+
+    assert exit_code == 0
+    assert demo_calls == [
+        DemoConfig(
+            scenario="S2_DIRECTIONAL_PEAK",
+            controller_id="C1_COOPERATIVE_COMPACT",
+            seed=42,
+            focus_agent="A5",
+            speed_factor=20.0,
+            max_steps=10,
+            write_artifact=True,
+        )
+    ]
+    output = capsys.readouterr().out
+    assert "demo start" in output
+    assert "run_mode=DEMO" in output
 
 
 def test_experiment_run_subcommand_invokes_runner(
