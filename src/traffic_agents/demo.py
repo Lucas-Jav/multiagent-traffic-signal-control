@@ -149,6 +149,7 @@ def _focus_agent_line(records: Sequence[StepTelemetryRecord], controller: object
         f"requested_phase={first.requested_phase}",
         f"actual_phase={first.actual_phase}",
         f"safety={safety_status}",
+        f"neighbors_used={_neighbors_used(controller, first.intersection_id)}",
     ]
     parts.extend(_cooperative_console_parts(controller))
     return "demo " + " ".join(parts)
@@ -182,3 +183,15 @@ def _cooperative_console_parts(controller: object) -> list[str]:
             ]
         )
     return parts
+
+
+def _neighbors_used(controller: object | None, focus_agent: str) -> str:
+    runtime_by_intersection = getattr(controller, "_runtime_by_intersection", None)
+    if not isinstance(runtime_by_intersection, Mapping):
+        return "-"
+    runtime = runtime_by_intersection.get(focus_agent)
+    adjustment = getattr(runtime, "adjustment", None)
+    neighbor_ids = getattr(adjustment, "neighbor_ids", ())
+    if not neighbor_ids:
+        return "-"
+    return ",".join(str(neighbor_id) for neighbor_id in neighbor_ids)

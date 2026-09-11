@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -10,6 +11,7 @@ from traffic_agents.controllers import build_controller
 from traffic_agents.controllers.cooperative_compact import CooperativeCompactController
 from traffic_agents.controllers.fixed_time import FixedTimeController
 from traffic_agents.controllers.local_pressure import LocalPressureController
+from traffic_agents.metrics import StepTelemetryRecord
 from traffic_agents.simulation import SimulationRunSummary
 
 
@@ -195,6 +197,69 @@ def test_demo_module_has_no_alternate_decision_logic() -> None:
     assert "build_controller" not in source
     assert ".decide(" not in source
     assert "PhaseSafetyManager" not in source
+
+
+def test_focus_agent_console_line_reports_neighbors_from_existing_runtime() -> None:
+    controller = SimpleNamespace(
+        controller_id="C1_COOPERATIVE_COMPACT",
+        _runtime_by_intersection={
+            "A5": SimpleNamespace(
+                adjustment=SimpleNamespace(neighbor_ids=("A2", "A4", "A6", "A8"))
+            )
+        },
+        _message_bus=SimpleNamespace(
+            metrics=SimpleNamespace(
+                messages_delivered=12,
+                messages_sent=16,
+                messages_dropped=1,
+            )
+        ),
+        last_adjustment_result=SimpleNamespace(
+            messages_fresh=4,
+            messages_stale=1,
+            average_message_age=0.5,
+            max_observed_message_age=2,
+        ),
+    )
+    records = (
+        StepTelemetryRecord(
+            step_index=20,
+            timestamp=20.0,
+            intersection_id="A5",
+            movement_id="A5:north_to_south",
+            approach_id="top1A5",
+            queue=3,
+            occupancy=0.4,
+            speed=2.0,
+            current_phase="north_south",
+            phase_elapsed=7.0,
+            requested_phase="east_west",
+            actual_phase="yellow_ns_to_ew",
+            safety_override=True,
+            turn_count_straight=0.6,
+            turn_count_left=0.2,
+            turn_count_right=0.2,
+            junction_entries=2,
+            junction_exits=1,
+            junction_blocking_events=0,
+            clearance_violations=0,
+            turn_completion_count=1.0,
+            movement_queue_mean=3.0,
+            movement_queue_max=3,
+            is_warmup=False,
+        ),
+    )
+
+    line = demo._focus_agent_line(records, controller)
+
+    assert "step=20" in line
+    assert "controller=C1_COOPERATIVE_COMPACT" in line
+    assert "agent=A5" in line
+    assert "queue_total=3" in line
+    assert "safety=override" in line
+    assert "neighbors_used=A2,A4,A6,A8" in line
+    assert "messages_received=12" in line
+    assert "avg_message_age=0.5" in line
 
 
 def test_run_demo_rejects_invalid_gui_speed_factor() -> None:
