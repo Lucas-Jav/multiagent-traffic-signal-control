@@ -3,6 +3,8 @@ from __future__ import annotations
 # ruff: noqa: I001
 
 import math
+import json
+import statistics
 from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
@@ -16,6 +18,15 @@ from matplotlib import pyplot as plt
 
 import pyarrow.parquet as pq  # type: ignore[import-untyped]
 
+BANNED_SUMMARY_TERMS = (
+    "better",
+    "superior",
+    "winning",
+    "provou ser superior",
+    "resolveu congestionamento",
+    "metodo e eficiente",
+    "método é eficiente",
+)
 
 TRAFFIC_METRIC_FIGURES: Mapping[str, tuple[str, ...]] = {
     "waiting_time_by_controller.png": (
@@ -59,6 +70,19 @@ COMMUNICATION_BYTE_METRICS = (
     "serialized_bytes",
     "message_bytes",
 )
+COMMUNICATION_METRICS = (
+    *COMMUNICATION_MESSAGE_METRICS,
+    *COMMUNICATION_BYTE_METRICS,
+    "messages_dropped",
+    "observed_drop_rate",
+    "message_delay_steps",
+    "average_message_delay",
+    "max_message_delay",
+    "messages_fresh",
+    "messages_stale",
+    "average_message_age",
+    "max_observed_message_age",
+)
 SENSITIVITY_TRAFFIC_METRICS = (
     "waiting_time",
     "mean_waiting_time",
@@ -86,6 +110,12 @@ class FigureReport:
     experiment_folder: Path
     figures_dir: Path
     generated_files: tuple[Path, ...]
+
+
+@dataclass(frozen=True)
+class SummaryReport:
+    experiment_folder: Path
+    summary_path: Path
 
 
 def generate_experiment_report(experiment_folder: Path) -> FigureReport:
@@ -159,8 +189,42 @@ def generate_experiment_report(experiment_folder: Path) -> FigureReport:
     )
 
 
+def generate_experiment_summary(experiment_folder: Path) -> SummaryReport:
+    manifest_path = experiment_folder / "manifest.json"
+    combined_path = experiment_folder / "combined_metrics.parquet"
+    analysis_path = experiment_folder / "analysis.parquet"
+    analysis_json_path = experiment_folder / "analysis.json"
+    for path in (manifest_path, combined_path, analysis_path, analysis_json_path):
+        _require_file(path)
+
+    manifest = _read_json_object(manifest_path)
+    combined = _normalize_summary_metrics(_read_parquet(combined_path))
+    analysis_rows = _normalize_analysis(_read_parquet(analysis_path))
+    analysis_json = _read_json_object(analysis_json_path)
+
+    summary_path = experiment_folder / "summary.md"
+    content = _summary_markdown(
+        experiment_folder=experiment_folder,
+        manifest=manifest,
+        combined=combined,
+        analysis_rows=analysis_rows,
+        analysis_json=analysis_json,
+    )
+    _assert_summary_language(content)
+    summary_path.write_text(content, encoding="utf-8")
+    return SummaryReport(experiment_folder=experiment_folder, summary_path=summary_path)
+
+
 def _read_parquet(path: Path) -> list[dict[str, Any]]:
     return [dict(row) for row in pq.read_table(path).to_pylist()]
+
+
+def _read_json_object(path: Path) -> dict[str, Any]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        msg = f"JSON result must be an object: {path}"
+        raise ReportGenerationError(msg)
+    return payload
 
 
 def _normalize_combined_metrics(records: Iterable[Mapping[str, Any]]) -> list[dict[str, Any]]:
@@ -187,6 +251,66 @@ def _normalize_combined_metrics(records: Iterable[Mapping[str, Any]]) -> list[di
             "turn_type": _first_present(record, ("turn_type", "turning_movement"), required=False),
         }
         normalized.append(row)
+    return normalized
+
+
+def _normalize_summary_metrics(records: Iterable[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    normalized: list[dict[str, Any]] = []
+    for index, record in enumerate(records):
+        metric = _first_present(record, ("metric", "metric_name"), required=True)
+        value = _first_present(record, ("value", "metric_value"), required=False)
+        failed = _is_failed_status(
+            _first_present(record, ("status", "run_status"), required=False)
+        ) or _is_failed_success(_first_present(record, ("success", "succeeded"), required=False))
+        numeric_value = None if failed or value is None else _finite_float(value, row_index=index)
+        normalized.append(
+            {
+                "_row_index": index,
+                "run_id": _first_present(record, ("run_id",), required=False),
+                "scenario": _first_present(record, ("scenario", "scenario_id"), required=False),
+                "controller": _canonical_controller(
+                    _first_present(record, ("controller", "controller_id"), required=True),
+                ),
+                "metric": str(metric),
+                "value": numeric_value,
+                "seed": _first_present(record, ("seed", "simulation_seed"), required=False),
+                "status": _first_present(record, ("status", "run_status"), required=False),
+                "success": _first_present(record, ("success", "succeeded"), required=False),
+                "failed": failed,
+                "git_sha": _first_present(record, ("git_sha",), required=False),
+                "sumo_version": _first_present(record, ("sumo_version",), required=False),
+                "network_hash": _first_present(
+                    record,
+                    ("network_hash", "network_sha256"),
+                    required=False,
+                ),
+                "route_hash": _first_present(
+                    record,
+                    ("route_hash", "route_sha256"),
+                    required=False,
+                ),
+                "scenario_hash": _first_present(
+                    record,
+                    ("scenario_hash", "scenario_sha256"),
+                    required=False,
+                ),
+                "experiment_config_hash": _first_present(
+                    record,
+                    ("experiment_config_hash", "experiment_config_sha256", "config_hash"),
+                    required=False,
+                ),
+                "phase_plan_version": _first_present(
+                    record,
+                    ("phase_plan_version",),
+                    required=False,
+                ),
+                "movement_model_version": _first_present(
+                    record,
+                    ("movement_model_version",),
+                    required=False,
+                ),
+            }
+        )
     return normalized
 
 
@@ -218,6 +342,342 @@ def _validate_combined_metrics(records: Sequence[Mapping[str, Any]]) -> None:
             f"rows={row_indexes}"
         )
         raise ReportGenerationError(msg)
+
+
+def _summary_markdown(
+    *,
+    experiment_folder: Path,
+    manifest: Mapping[str, Any],
+    combined: Sequence[Mapping[str, Any]],
+    analysis_rows: Sequence[Mapping[str, Any]],
+    analysis_json: Mapping[str, Any],
+) -> str:
+    experiment_id = _first_non_empty(
+        (manifest.get("experiment_id"), experiment_folder.name),
+        default="not recorded",
+    )
+    completed_runs, failed_runs = _run_counts(manifest, combined)
+    controllers = _controllers(manifest, combined)
+    seeds = _seeds(manifest, combined)
+    experiment_config_hash = _metadata_value(manifest, combined, "experiment_config_hash")
+    network_hash = _metadata_value(manifest, combined, "network_hash")
+    scenario_hash = _metadata_value(manifest, combined, "scenario_hash")
+    route_hashes = ", ".join(_route_hashes(manifest, combined)) or "not recorded"
+    phase_plan_version = _metadata_value(manifest, combined, "phase_plan_version")
+    movement_model_version = _metadata_value(manifest, combined, "movement_model_version")
+    scenario_info = str(manifest.get("scenario") or _metadata_value(manifest, combined, "scenario"))
+    bootstrap_seed = str(_nested_value(analysis_json, ("bootstrap", "seed")) or "not recorded")
+    bootstrap_resamples = str(
+        _nested_value(analysis_json, ("bootstrap", "resamples")) or "not recorded"
+    )
+
+    lines = [
+        f"# Experiment Summary: {experiment_id}",
+        "",
+        "## Experiment Metadata",
+        "",
+        "| Field | Value |",
+        "| --- | --- |",
+        f"| Experiment ID | {_escape_md(experiment_id)} |",
+        f"| Git SHA | {_escape_md(_metadata_value(manifest, combined, 'git_sha'))} |",
+        f"| SUMO version | {_escape_md(_metadata_value(manifest, combined, 'sumo_version'))} |",
+        f"| Experiment config hash | {_escape_md(experiment_config_hash)} |",
+        f"| Network hash | {_escape_md(network_hash)} |",
+        f"| Scenario hash | {_escape_md(scenario_hash)} |",
+        f"| Route hashes | {_escape_md(route_hashes)} |",
+        f"| Phase plan version | {_escape_md(phase_plan_version)} |",
+        f"| Movement model version | {_escape_md(movement_model_version)} |",
+        f"| Controllers | {_escape_md(', '.join(controllers) or 'not recorded')} |",
+        f"| Seeds | {_escape_md(', '.join(seeds) or 'not recorded')} |",
+        f"| Completed runs | {completed_runs} |",
+        f"| Failed runs | {failed_runs} |",
+        "",
+        "## Route And Scenario Info",
+        "",
+        "| Field | Value |",
+        "| --- | --- |",
+        f"| Scenario | {_escape_md(scenario_info)} |",
+        f"| Batch ID | {_escape_md(str(manifest.get('batch_id') or 'not recorded'))} |",
+        f"| Manifest runs | {len(_manifest_runs(manifest))} |",
+        "",
+        "## Traffic Metrics",
+        "",
+        *_metric_table_lines(combined, include_communication=False),
+        "",
+        "## Communication Metrics",
+        "",
+        *_metric_table_lines(combined, include_communication=True),
+        "",
+        "## Pairwise Comparisons And Confidence Intervals",
+        "",
+        *_pairwise_table_lines(analysis_rows),
+        "",
+        *_pairwise_observation_lines(analysis_rows),
+        "",
+        "## Figures",
+        "",
+        *_figure_link_lines(experiment_folder),
+        "",
+        "## Analysis Provenance",
+        "",
+        "| Field | Value |",
+        "| --- | --- |",
+        f"| Bootstrap seed | {_escape_md(bootstrap_seed)} |",
+        f"| Bootstrap resamples | {_escape_md(bootstrap_resamples)} |",
+        f"| Analysis input | {_escape_md(str(analysis_json.get('input') or 'not recorded'))} |",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def _run_counts(
+    manifest: Mapping[str, Any],
+    combined: Sequence[Mapping[str, Any]],
+) -> tuple[int, int]:
+    status_by_run: dict[tuple[Any, ...], bool] = {}
+    for row in combined:
+        key = _summary_run_key(row)
+        status_by_run[key] = status_by_run.get(key, False) or bool(row.get("failed"))
+    for index, run in enumerate(_manifest_runs(manifest)):
+        key = _manifest_run_key(run, index)
+        status_by_run[key] = status_by_run.get(key, False) or _manifest_run_failed(run)
+    if status_by_run:
+        failed = sum(1 for is_failed in status_by_run.values() if is_failed)
+        completed = len(status_by_run) - failed
+        return completed, failed
+
+    runs = _manifest_runs(manifest)
+    return len(runs), 0
+
+
+def _summary_run_key(row: Mapping[str, Any]) -> tuple[Any, ...]:
+    run_id = row.get("run_id")
+    if run_id is not None:
+        return ("run_id", run_id)
+    return (
+        row.get("scenario"),
+        row.get("controller"),
+        row.get("seed"),
+    )
+
+
+def _manifest_run_key(run: Mapping[str, Any], index: int) -> tuple[Any, ...]:
+    run_id = run.get("run_id")
+    if run_id is not None:
+        return ("run_id", run_id)
+    return ("manifest", index)
+
+
+def _metric_table_lines(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    include_communication: bool,
+) -> list[str]:
+    values: dict[tuple[str, str], list[float]] = defaultdict(list)
+    for row in rows:
+        metric = str(row["metric"])
+        is_communication = metric in COMMUNICATION_METRICS
+        if include_communication != is_communication:
+            continue
+        value = row.get("value")
+        if value is None:
+            continue
+        values[(metric, str(row["controller"]))].append(float(value))
+
+    if not values:
+        return ["No observed completed-run metrics available."]
+
+    lines = [
+        "| Metric | Controller | N | Mean | Median | Min | Max |",
+        "| --- | --- | ---: | ---: | ---: | ---: | ---: |",
+    ]
+    for (metric, controller), samples in sorted(values.items()):
+        lines.append(
+            "| "
+            f"{_escape_md(_metric_label(metric))} | "
+            f"{_escape_md(controller)} | "
+            f"{len(samples)} | "
+            f"{_format_number(statistics.fmean(samples))} | "
+            f"{_format_number(statistics.median(samples))} | "
+            f"{_format_number(min(samples))} | "
+            f"{_format_number(max(samples))} |"
+        )
+    return lines
+
+
+def _pairwise_table_lines(analysis_rows: Sequence[Mapping[str, Any]]) -> list[str]:
+    usable_rows = [
+        row
+        for row in analysis_rows
+        if _has_numeric_fields(row, ("n_pairs", "mean_difference", "ci95_low", "ci95_high"))
+    ]
+    if not usable_rows:
+        return ["No pairwise comparisons available."]
+
+    lines = [
+        "| Metric | Controller A | Controller B | N pairs | Mean difference | "
+        "Median difference | CI95 low | CI95 high | Relative difference |",
+        "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ]
+    for row in usable_rows:
+        relative = row.get("relative_difference")
+        lines.append(
+            "| "
+            f"{_escape_md(_metric_label(str(row['metric'])))} | "
+            f"{_escape_md(str(row.get('controller_a') or 'not recorded'))} | "
+            f"{_escape_md(str(row.get('controller_b') or 'not recorded'))} | "
+            f"{int(float(row['n_pairs']))} | "
+            f"{_format_number(float(row['mean_difference']))} | "
+            f"{_format_optional_number(row.get('median_difference'))} | "
+            f"{_format_number(float(row['ci95_low']))} | "
+            f"{_format_number(float(row['ci95_high']))} | "
+            f"{_format_optional_number(relative)} |"
+        )
+    return lines
+
+
+def _pairwise_observation_lines(analysis_rows: Sequence[Mapping[str, Any]]) -> list[str]:
+    usable_rows = [
+        row
+        for row in analysis_rows
+        if _has_numeric_fields(row, ("n_pairs", "mean_difference", "ci95_low", "ci95_high"))
+    ]
+    if not usable_rows:
+        return []
+    lines = ["Observed pairwise differences:"]
+    for row in usable_rows:
+        lines.append(
+            "- "
+            f"{_escape_md(str(row.get('controller_b') or 'Controller B'))} apresentou "
+            f"diferenca media de {_format_number(float(row['mean_difference']))} em relacao a "
+            f"{_escape_md(str(row.get('controller_a') or 'Controller A'))} para "
+            f"{_escape_md(_metric_label(str(row['metric'])))}; "
+            f"IC95 [{_format_number(float(row['ci95_low']))}, "
+            f"{_format_number(float(row['ci95_high']))}], "
+            f"N={int(float(row['n_pairs']))}."
+        )
+    return lines
+
+
+def _figure_link_lines(experiment_folder: Path) -> list[str]:
+    figures_dir = experiment_folder / "figures"
+    if not figures_dir.exists():
+        return ["No figures directory found."]
+    figures = sorted(path for path in figures_dir.glob("*.png") if path.is_file())
+    if not figures:
+        return ["No figure files found."]
+    return [f"- [{path.name}](figures/{path.name})" for path in figures]
+
+
+def _metadata_value(
+    manifest: Mapping[str, Any],
+    combined: Sequence[Mapping[str, Any]],
+    field: str,
+) -> str:
+    manifest_value = manifest.get(field)
+    if manifest_value is not None:
+        return str(manifest_value)
+    values = sorted({str(row[field]) for row in combined if row.get(field) is not None})
+    if not values:
+        return "not recorded"
+    return ", ".join(values)
+
+
+def _route_hashes(manifest: Mapping[str, Any], combined: Sequence[Mapping[str, Any]]) -> list[str]:
+    values = {str(row["route_hash"]) for row in combined if row.get("route_hash") is not None}
+    for run in _manifest_runs(manifest):
+        route_hash = run.get("route_hash") or run.get("route_sha256")
+        if route_hash is not None:
+            values.add(str(route_hash))
+    return sorted(values)
+
+
+def _controllers(manifest: Mapping[str, Any], combined: Sequence[Mapping[str, Any]]) -> list[str]:
+    values = {str(row["controller"]) for row in combined if row.get("controller") is not None}
+    manifest_controllers = manifest.get("controllers")
+    if isinstance(manifest_controllers, list):
+        values.update(str(controller) for controller in manifest_controllers)
+    for run in _manifest_runs(manifest):
+        controller = run.get("controller_id") or run.get("configured_controller_id")
+        if controller is not None:
+            values.add(str(controller))
+    return sorted(values)
+
+
+def _seeds(manifest: Mapping[str, Any], combined: Sequence[Mapping[str, Any]]) -> list[str]:
+    values = {str(row["seed"]) for row in combined if row.get("seed") is not None}
+    manifest_seeds = manifest.get("seeds")
+    if isinstance(manifest_seeds, list):
+        values.update(str(seed) for seed in manifest_seeds)
+    for run in _manifest_runs(manifest):
+        seed = run.get("seed")
+        if seed is not None:
+            values.add(str(seed))
+    return sorted(values, key=_numeric_sort_key)
+
+
+def _manifest_runs(manifest: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    runs = manifest.get("runs")
+    if not isinstance(runs, list):
+        return []
+    return [run for run in runs if isinstance(run, Mapping)]
+
+
+def _manifest_run_failed(run: Mapping[str, Any]) -> bool:
+    status = run["status"] if "status" in run else run.get("run_status")
+    success = run["success"] if "success" in run else run.get("succeeded")
+    return _is_failed_status(status) or _is_failed_success(success)
+
+
+def _first_non_empty(values: Iterable[Any], *, default: str) -> str:
+    for value in values:
+        if value is not None and str(value):
+            return str(value)
+    return default
+
+
+def _nested_value(payload: Mapping[str, Any], path: Sequence[str]) -> Any:
+    current: Any = payload
+    for part in path:
+        if not isinstance(current, Mapping):
+            return None
+        current = current.get(part)
+    return current
+
+
+def _format_optional_number(value: Any) -> str:
+    if value is None:
+        return "not computed"
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return _escape_md(str(value))
+    if not math.isfinite(numeric):
+        return "not computed"
+    return _format_number(numeric)
+
+
+def _format_number(value: float) -> str:
+    return f"{value:.6g}"
+
+
+def _escape_md(value: str) -> str:
+    return value.replace("|", "\\|")
+
+
+def _numeric_sort_key(value: str) -> tuple[int, float | str]:
+    try:
+        return (0, float(value))
+    except ValueError:
+        return (1, value)
+
+
+def _assert_summary_language(content: str) -> None:
+    lowered = content.lower()
+    for term in BANNED_SUMMARY_TERMS:
+        if term in lowered:
+            msg = f"summary contains disallowed interpretive language: {term}"
+            raise ReportGenerationError(msg)
 
 
 def _plot_metric_by_controller(

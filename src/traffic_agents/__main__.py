@@ -6,7 +6,10 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from traffic_agents.config import get_settings, load_scenario_config
-from traffic_agents.experiments.report import generate_experiment_report
+from traffic_agents.experiments.report import (
+    generate_experiment_report,
+    generate_experiment_summary,
+)
 from traffic_agents.experiments.runner import ExperimentRunner, load_experiment_config
 from traffic_agents.simulation import TraCISimulationRunner
 
@@ -63,6 +66,10 @@ def _build_parser() -> argparse.ArgumentParser:
     experiment_report_parser = experiment_subparsers.add_parser("report")
     experiment_report_parser.add_argument("experiment_folder", type=Path)
     experiment_report_parser.set_defaults(handler=_generate_experiment_report)
+
+    experiment_summary_parser = experiment_subparsers.add_parser("summary")
+    experiment_summary_parser.add_argument("experiment_folder", type=Path)
+    experiment_summary_parser.set_defaults(handler=_generate_experiment_summary)
 
     return parser
 
@@ -125,9 +132,17 @@ def _run_experiment(args: argparse.Namespace) -> int:
 
 def _generate_experiment_report(args: argparse.Namespace) -> int:
     report = generate_experiment_report(args.experiment_folder)
+    summary = generate_experiment_summary(args.experiment_folder)
     print(f"figures_dir={report.figures_dir}")
     for path in report.generated_files:
         print(f"figure={path}")
+    print(f"summary={summary.summary_path}")
+    return 0
+
+
+def _generate_experiment_summary(args: argparse.Namespace) -> int:
+    summary = generate_experiment_summary(args.experiment_folder)
+    print(f"summary={summary.summary_path}")
     return 0
 
 

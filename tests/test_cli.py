@@ -139,6 +139,14 @@ def test_experiment_report_subcommand_invokes_report_generator(
         "traffic_agents.__main__.generate_experiment_report",
         fake_generate_experiment_report,
     )
+    monkeypatch.setattr(
+        "traffic_agents.__main__.generate_experiment_summary",
+        lambda _path: type(
+            "FakeSummary",
+            (),
+            {"summary_path": experiment_folder / "summary.md"},
+        )(),
+    )
 
     exit_code = main(["experiment", "report", str(experiment_folder)])
 
@@ -146,6 +154,33 @@ def test_experiment_report_subcommand_invokes_report_generator(
     output = capsys.readouterr().out
     assert f"figures_dir={experiment_folder / 'figures'}" in output
     assert f"figure={experiment_folder / 'figures' / 'waiting_time.png'}" in output
+    assert f"summary={experiment_folder / 'summary.md'}" in output
+
+
+def test_experiment_summary_subcommand_invokes_summary_generator(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    experiment_folder = tmp_path / "artifacts" / "experiments" / "smoke"
+
+    def fake_generate_experiment_summary(path: Path) -> object:
+        assert path == experiment_folder
+        return type(
+            "FakeSummary",
+            (),
+            {"summary_path": experiment_folder / "summary.md"},
+        )()
+
+    monkeypatch.setattr(
+        "traffic_agents.__main__.generate_experiment_summary",
+        fake_generate_experiment_summary,
+    )
+
+    exit_code = main(["experiment", "summary", str(experiment_folder)])
+
+    assert exit_code == 0
+    assert f"summary={experiment_folder / 'summary.md'}" in capsys.readouterr().out
 
 
 def _write_scenario(tmp_path: Path) -> Path:
