@@ -5,6 +5,7 @@ description = "Bootstrap for a multi-agent traffic signal control project."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+    "matplotlib>=3.9",
     "pydantic>=2.8",
     "pydantic-settings>=2.4",
     "pyarrow>=17.0",

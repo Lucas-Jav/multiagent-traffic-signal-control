@@ -117,6 +117,37 @@ max_steps: 10
     assert "experiment_id=smoke" in capsys.readouterr().out
 
 
+def test_experiment_report_subcommand_invokes_report_generator(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    experiment_folder = tmp_path / "artifacts" / "experiments" / "smoke"
+
+    def fake_generate_experiment_report(path: Path) -> object:
+        assert path == experiment_folder
+        return type(
+            "FakeReport",
+            (),
+            {
+                "figures_dir": experiment_folder / "figures",
+                "generated_files": (experiment_folder / "figures" / "waiting_time.png",),
+            },
+        )()
+
+    monkeypatch.setattr(
+        "traffic_agents.__main__.generate_experiment_report",
+        fake_generate_experiment_report,
+    )
+
+    exit_code = main(["experiment", "report", str(experiment_folder)])
+
+    assert exit_code == 0
+    output = capsys.readouterr().out
+    assert f"figures_dir={experiment_folder / 'figures'}" in output
+    assert f"figure={experiment_folder / 'figures' / 'waiting_time.png'}" in output
+
+
 def _write_scenario(tmp_path: Path) -> Path:
     scenario_path = tmp_path / "scenario.yaml"
     scenario_path.write_text(
