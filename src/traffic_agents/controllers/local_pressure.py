@@ -22,9 +22,12 @@ from traffic_agents.domain import (
     TrafficLightAction,
 )
 from traffic_agents.metrics import (
+    AgentDecisionTraceWriter,
+    DecisionTimer,
     JunctionFlowTracker,
     MovementQueueTracker,
     StepTelemetryRecord,
+    build_agent_decision_trace_record,
     build_step_telemetry_records,
     internal_lane_vehicle_reader,
 )
@@ -251,6 +254,11 @@ class LocalPressureController:
         init=False,
         repr=False,
     )
+    _trace_writer: AgentDecisionTraceWriter | None = field(
+        default=None,
+        init=False,
+        repr=False,
+    )
 
     def configure(self, *, scenario_config: ScenarioConfig, scenario_dir: Path) -> None:
         self._scenario_config = scenario_config
@@ -261,6 +269,13 @@ class LocalPressureController:
         self._movement_queue_tracker = MovementQueueTracker()
         self._step_index = 0
         self._telemetry_records.clear()
+        self._trace_writer = None
+
+    def configure_agent_decision_tracing(
+        self,
+        trace_writer: AgentDecisionTraceWriter | None,
+    ) -> None:
+        self._trace_writer = trace_writer
 
     def decide(self, observation: AgentObservation) -> TrafficLightAction:
         if self.phase_calculator is None or self.safety is None:
@@ -299,9 +314,21 @@ class LocalPressureController:
             runtime = self._runtime_by_intersection[intersection.intersection_id]
             state = self._sensor_provider.observe(intersection.intersection_id)
             observation = AgentObservation(state=state)
-            action = self._decide_action(
+            trace_enabled = self._trace_writer is not None and self._trace_writer.enabled_for(
+                intersection.intersection_id
+            )
+            timer = DecisionTimer.start() if trace_enabled else None
+            movement_pressures = runtime.phase_calculator.movement_pressure_calculator.calculate(
+                observation
+            )
+            phase_scores = {
+                phase.phase_id: runtime.phase_calculator.score_phase(phase, movement_pressures)
+                for phase in runtime.phase_calculator.phases
+                if phase.kind == PhaseKind.GREEN
+            }
+            action = self._decide_action_from_phase_scores(
                 observation,
-                runtime.phase_calculator,
+                phase_scores,
                 runtime.safety,
             )
             decision = ControllerDecision(
@@ -310,6 +337,21 @@ class LocalPressureController:
                 action=action,
             )
             command = runtime.safety.resolve(observation, decision)
+            if trace_enabled and self._trace_writer is not None and timer is not None:
+                self._trace_writer.append(
+                    build_agent_decision_trace_record(
+                        run_id=self._trace_writer.run_id,
+                        simulation_step=self._step_index,
+                        controller_id=self.controller_id,
+                        observation=observation,
+                        action=action,
+                        command=command,
+                        safety=runtime.safety,
+                        movement_pressure=movement_pressures,
+                        phase_scores=phase_scores,
+                        computation_ms=timer.elapsed_ms(),
+                    )
+                )
             junction_metrics = self._junction_flow_tracker.update(
                 intersection_id=intersection.intersection_id,
                 internal_lane_ids=runtime.internal_lane_ids,

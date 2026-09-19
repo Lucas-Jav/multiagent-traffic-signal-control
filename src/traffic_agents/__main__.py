@@ -12,6 +12,7 @@ from traffic_agents.experiments.report import (
     generate_experiment_summary,
 )
 from traffic_agents.experiments.runner import ExperimentRunner, load_experiment_config
+from traffic_agents.metrics import inspect_agent_trace
 from traffic_agents.simulation import TraCISimulationRunner
 
 
@@ -84,6 +85,15 @@ def _build_parser() -> argparse.ArgumentParser:
     experiment_summary_parser = experiment_subparsers.add_parser("summary")
     experiment_summary_parser.add_argument("experiment_folder", type=Path)
     experiment_summary_parser.set_defaults(handler=_generate_experiment_summary)
+
+    trace_parser = subparsers.add_parser("trace")
+    trace_subparsers = trace_parser.add_subparsers(dest="trace_command", required=True)
+    trace_inspect_parser = trace_subparsers.add_parser("inspect")
+    trace_inspect_parser.add_argument("--run", dest="run_id", required=True)
+    trace_inspect_parser.add_argument("--agent", dest="agent_id", required=True)
+    trace_inspect_parser.add_argument("--artifacts-dir", type=Path, default=None)
+    trace_inspect_parser.add_argument("--limit", type=int, default=20)
+    trace_inspect_parser.set_defaults(handler=_inspect_trace)
 
     return parser
 
@@ -184,6 +194,19 @@ def _generate_experiment_report(args: argparse.Namespace) -> int:
 def _generate_experiment_summary(args: argparse.Namespace) -> int:
     summary = generate_experiment_summary(args.experiment_folder)
     print(f"summary={summary.summary_path}")
+    return 0
+
+
+def _inspect_trace(args: argparse.Namespace) -> int:
+    artifacts_dir = args.artifacts_dir or get_settings().artifacts_dir
+    print(
+        inspect_agent_trace(
+            run_id=args.run_id,
+            agent_id=args.agent_id,
+            artifacts_dir=artifacts_dir,
+            limit=args.limit,
+        )
+    )
     return 0
 
 

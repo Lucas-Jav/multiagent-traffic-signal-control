@@ -27,7 +27,13 @@ from traffic_agents.experiments.run_invariants import (
     build_run_invariant_fingerprint,
     validate_run_inputs,
 )
-from traffic_agents.metrics import StepTelemetryRecord, append_step_telemetry
+from traffic_agents.metrics import (
+    AGENT_TRACE_FILE,
+    AgentDecisionTraceSettings,
+    AgentDecisionTraceWriter,
+    StepTelemetryRecord,
+    append_step_telemetry,
+)
 from traffic_agents.simulation.sumo_environment import SumoEnvironmentInfo, detect_sumo_environment
 from traffic_agents.simulation.traci_sensor_adapter import (
     TraCISensorAdapter,
@@ -141,6 +147,7 @@ class TraCISimulationRunner:
         self._step_telemetry_consumer = step_telemetry_consumer
         self._active_run_dir: Path | None = None
         self._telemetry_path: Path | None = None
+        self._agent_trace_path: Path | None = None
         self._run_invariant_fingerprint: RunInvariantFingerprint | None = None
         self._traci: _TraCIModule | None = None
         self._connection: _TraCIConnection | None = None
@@ -202,6 +209,7 @@ class TraCISimulationRunner:
     def run(self) -> SimulationRunSummary:
         run_id = self._build_run_id()
         self._prepare_run_artifacts(run_id)
+        self._configure_agent_decision_tracing(run_id)
         started_at = _utc_now()
         start_time = time.perf_counter()
         try:
@@ -346,6 +354,9 @@ class TraCISimulationRunner:
                     self._telemetry_path.name
                     if self._telemetry_path is not None and self._telemetry_path.exists()
                     else None,
+                    self._agent_trace_path.name
+                    if self._agent_trace_path is not None and self._agent_trace_path.exists()
+                    else None,
                 ),
                 indent=2,
             )
@@ -361,11 +372,36 @@ class TraCISimulationRunner:
     def _prepare_run_artifacts(self, run_id: str) -> None:
         self._active_run_dir = None
         self._telemetry_path = None
-        if not self._write_manifest:
+        self._agent_trace_path = None
+        trace_settings = AgentDecisionTraceSettings.from_config(
+            getattr(self._scenario_config, "tracing", None)
+        )
+        if not self._write_manifest and not trace_settings.enabled:
             return
         self._active_run_dir = self._manifest_dir(run_id)
         self._active_run_dir.mkdir(parents=True, exist_ok=True)
-        self._telemetry_path = self._active_run_dir / "intersection_trace.csv"
+        if self._write_manifest:
+            self._telemetry_path = self._active_run_dir / "intersection_trace.csv"
+        if trace_settings.enabled:
+            self._agent_trace_path = self._active_run_dir / AGENT_TRACE_FILE
+
+    def _configure_agent_decision_tracing(self, run_id: str) -> None:
+        configure_tracing = getattr(self._controller, "configure_agent_decision_tracing", None)
+        if not callable(configure_tracing):
+            return
+        trace_settings = AgentDecisionTraceSettings.from_config(
+            getattr(self._scenario_config, "tracing", None)
+        )
+        if not trace_settings.enabled or self._agent_trace_path is None:
+            configure_tracing(None)
+            return
+        configure_tracing(
+            AgentDecisionTraceWriter(
+                run_id=run_id,
+                path=self._agent_trace_path,
+                settings=trace_settings,
+            )
+        )
 
     def _write_step_telemetry(self) -> None:
         if self._telemetry_path is None and self._step_telemetry_consumer is None:
@@ -395,6 +431,7 @@ def _manifest_payload(
     run_mode: Literal["SIMULATION", "EXPERIMENT", "DEMO"] = "SIMULATION",
     run_invariant_fingerprint: RunInvariantFingerprint | None = None,
     intersection_trace_file: str | None = None,
+    agent_trace_file: str | None = None,
 ) -> dict[str, object]:
     fingerprint = run_invariant_fingerprint or build_run_invariant_fingerprint(
         scenario_config=scenario_config,
@@ -445,6 +482,8 @@ def _manifest_payload(
     }
     if intersection_trace_file is not None:
         payload["intersection_trace_file"] = intersection_trace_file
+    if agent_trace_file is not None:
+        payload["agent_trace_file"] = agent_trace_file
     return payload
 
 

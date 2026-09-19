@@ -45,9 +45,12 @@ from traffic_agents.domain import (
     TrafficLightAction,
 )
 from traffic_agents.metrics import (
+    AgentDecisionTraceWriter,
+    DecisionTimer,
     JunctionFlowTracker,
     MovementQueueTracker,
     StepTelemetryRecord,
+    build_agent_decision_trace_record,
     build_step_telemetry_records,
     internal_lane_vehicle_reader,
 )
@@ -422,6 +425,11 @@ class CooperativeCompactController:
         init=False,
         repr=False,
     )
+    _trace_writer: AgentDecisionTraceWriter | None = field(
+        default=None,
+        init=False,
+        repr=False,
+    )
     last_adjustment_result: CooperativeAdjustmentResult | None = field(default=None, init=False)
 
     def __post_init__(self) -> None:
@@ -449,6 +457,13 @@ class CooperativeCompactController:
         self._junction_flow_tracker = JunctionFlowTracker()
         self._movement_queue_tracker = MovementQueueTracker()
         self._telemetry_records.clear()
+        self._trace_writer = None
+
+    def configure_agent_decision_tracing(
+        self,
+        trace_writer: AgentDecisionTraceWriter | None,
+    ) -> None:
+        self._trace_writer = trace_writer
 
     def decide(self, observation: AgentObservation) -> TrafficLightAction:
         if self.phase_calculator is None or self.adjustment is None or self.safety is None:
@@ -529,12 +544,27 @@ class CooperativeCompactController:
                     current_step=self._step_index,
                 ),
             )
-            action, result = self._decide_action(
+            trace_enabled = self._trace_writer is not None and self._trace_writer.enabled_for(
+                intersection.intersection_id
+            )
+            timer = DecisionTimer.start() if trace_enabled else None
+            movement_pressures = runtime.phase_calculator.movement_pressure_calculator.calculate(
+                observation
+            )
+            local_phase_scores = {
+                phase.phase_id: runtime.phase_calculator.score_phase(phase, movement_pressures)
+                for phase in runtime.phase_calculator.phases
+                if phase.kind == PhaseKind.GREEN
+            }
+            result = runtime.adjustment.adjust(
+                local_phase_scores=local_phase_scores,
                 observation=observation,
-                phase_calculator=runtime.phase_calculator,
-                adjustment=runtime.adjustment,
-                safety=runtime.safety,
                 current_step=self._step_index,
+            )
+            action = self.local_core._decide_action_from_phase_scores(
+                observation,
+                result.phase_scores,
+                runtime.safety,
             )
             self.last_adjustment_result = result
             decision = ControllerDecision(
@@ -543,6 +573,41 @@ class CooperativeCompactController:
                 action=action,
             )
             command = runtime.safety.resolve(observation, decision)
+            if trace_enabled and self._trace_writer is not None and timer is not None:
+                self._trace_writer.append(
+                    build_agent_decision_trace_record(
+                        run_id=self._trace_writer.run_id,
+                        simulation_step=self._step_index,
+                        controller_id=self.controller_id,
+                        observation=observation,
+                        action=action,
+                        command=command,
+                        safety=runtime.safety,
+                        movement_pressure=movement_pressures,
+                        phase_scores=result.phase_scores,
+                        computation_ms=timer.elapsed_ms(),
+                        local_phase_scores=local_phase_scores,
+                        neighbor_message_count=len(observation.messages),
+                        messages_used=result.valid_messages,
+                        messages_ignored=(
+                            result.stale_messages
+                            + result.invalid_messages
+                            + result.rejected_messages
+                        ),
+                        message_age_summary={
+                            "average": round(result.average_message_age, 6),
+                            "max": result.max_observed_message_age,
+                        },
+                        stale_count=result.stale_messages,
+                        cooperative_adjustment={
+                            phase_id: (
+                                float(result.phase_scores.get(phase_id, 0.0))
+                                - float(local_phase_scores.get(phase_id, 0.0))
+                            )
+                            for phase_id in result.phase_scores
+                        },
+                    )
+                )
             junction_metrics = self._junction_flow_tracker.update(
                 intersection_id=intersection.intersection_id,
                 internal_lane_ids=runtime.internal_lane_ids,

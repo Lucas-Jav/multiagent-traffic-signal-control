@@ -180,6 +180,11 @@ class CommunicationConfig(ConfigModel):
         )
 
 
+class TracingConfig(ConfigModel):
+    agent_decisions: bool = False
+    agents: tuple[IntersectionId, ...] = ()
+
+
 class IntersectionConfig(ConfigModel):
     intersection_id: IntersectionId
     incoming_lanes: Annotated[tuple[LaneId, ...], Field(min_length=1)]
@@ -201,6 +206,7 @@ class ScenarioConfig(ConfigModel):
     controller_id: ControllerId
     traffic: TrafficDemandConfig
     communication: CommunicationConfig = Field(default_factory=CommunicationConfig)
+    tracing: TracingConfig = Field(default_factory=TracingConfig)
     intersections: Annotated[tuple[IntersectionConfig, ...], Field(min_length=1)]
 
     @model_validator(mode="before")

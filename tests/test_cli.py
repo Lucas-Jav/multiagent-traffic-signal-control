@@ -5,6 +5,7 @@ import pytest
 from traffic_agents.__main__ import main
 from traffic_agents.config import get_settings
 from traffic_agents.demo import DemoConfig
+from traffic_agents.metrics import AGENT_TRACE_FILE
 from traffic_agents.simulation import SimulationRunSummary
 
 
@@ -251,6 +252,42 @@ def test_experiment_summary_subcommand_invokes_summary_generator(
 
     assert exit_code == 0
     assert f"summary={experiment_folder / 'summary.md'}" in capsys.readouterr().out
+
+
+def test_trace_inspect_subcommand_prints_agent_trace(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    run_dir = tmp_path / "runs" / "run-1"
+    run_dir.mkdir(parents=True)
+    (run_dir / AGENT_TRACE_FILE).write_text(
+        (
+            '{"run_id":"run-1","simulation_step":520,"agent_id":"A5",'
+            '"controller_id":"B2_LOCAL_PRESSURE","current_phase":"NS_THROUGH",'
+            '"phase_elapsed":10.0,"movement_pressure":{"A5:EW":42.8},'
+            '"phase_scores":{"EW_THROUGH":42.8},"requested_phase":"EW_THROUGH",'
+            '"safety_decision":"WAIT_YELLOW","actual_phase":"NS_TO_YELLOW",'
+            '"computation_ms":0.1,"local_state_summary":{"incoming_queues":{},'
+            '"outgoing_occupancies":{},"arrival_rates":{}}}\n'
+        ),
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "trace",
+            "inspect",
+            "--run",
+            "run-1",
+            "--agent",
+            "A5",
+            "--artifacts-dir",
+            str(tmp_path),
+        ]
+    )
+
+    assert exit_code == 0
+    assert "STEP 520\nA5" in capsys.readouterr().out
 
 
 def _write_scenario(tmp_path: Path) -> Path:
