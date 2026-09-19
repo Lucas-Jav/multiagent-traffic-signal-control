@@ -675,6 +675,21 @@ def test_traci_runner_writes_run_manifest(
         "total_simulation_steps": 2,
     }
     assert manifest["simulation"]["measurement_steps_executed"] == 2
+    assert manifest["performance_file"] == "performance.json"
+    performance_path = summary.manifest_path.parent / manifest["performance_file"]
+    performance = json.loads(performance_path.read_text(encoding="utf-8"))
+    assert performance["run_id"] == summary.run_id
+    assert performance["controller"] == "B0_FIXED"
+    assert performance["simulation_steps"] == 2
+    assert performance["wall_time_seconds"] >= 0.0
+    assert performance["steps_per_second"] >= 0.0
+    assert performance["controller_decision_p50_ms"] == 0.0
+    assert performance["controller_decision_p95_ms"] == 0.0
+    assert performance["controller_decision_mean_ms"] == 0.0
+    assert performance["controller_decision_max_ms"] == 0.0
+    assert performance["message_bus_time_ms"] == 0.0
+    assert performance["trace_enabled"] is False
+    assert performance["sumo_mode"] == "headless"
     assert manifest["communication_topology_sha256"] == (
         grid_3x3_communication_topology().topology_hash
     )

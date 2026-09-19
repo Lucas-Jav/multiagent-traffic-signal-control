@@ -7,11 +7,6 @@ from pathlib import Path
 from typing import Protocol, cast
 
 from traffic_agents.config import TurningRatiosConfig
-from traffic_agents.controllers.phase_safety import (
-    PhaseCommand,
-    PhaseKind,
-    PhaseSafetyManager,
-)
 from traffic_agents.domain import AgentObservation, IntersectionId, TrafficLightAction
 from traffic_agents.traffic_model import IntersectionTrafficModel, TurnType
 
@@ -60,6 +55,27 @@ class MovementQueueStats:
 
 class InternalLaneVehicleReader(Protocol):
     def getLastStepVehicleIDs(self, lane_id: str) -> tuple[str, ...]: ...  # noqa: N802
+
+
+class _CommandLike(Protocol):
+    @property
+    def phase_id(self) -> str: ...
+
+
+class _PhaseLike(Protocol):
+    @property
+    def phase_id(self) -> str: ...
+
+    @property
+    def kind(self) -> object: ...
+
+
+class _SafetyLike(Protocol):
+    @property
+    def phases(self) -> tuple[_PhaseLike, ...]: ...
+
+    @property
+    def allowed_green_transitions(self) -> Mapping[str, tuple[str, ...]]: ...
 
 
 class JunctionFlowTracker:
@@ -146,8 +162,8 @@ def build_step_telemetry_records(
     step_index: int,
     observation: AgentObservation,
     action: TrafficLightAction,
-    command: PhaseCommand,
-    safety: PhaseSafetyManager,
+    command: _CommandLike,
+    safety: _SafetyLike,
     traffic_model: IntersectionTrafficModel,
     turning_ratios: TurningRatiosConfig,
     junction_metrics: JunctionStepMetrics,
@@ -214,10 +230,12 @@ def build_step_telemetry_records(
 def requested_phase_id(
     observation: AgentObservation,
     action: TrafficLightAction,
-    safety: PhaseSafetyManager,
+    safety: _SafetyLike,
 ) -> str:
     current_phase = next(
-        phase for phase in safety.phases if phase.phase_id == observation.state.current_phase
+        phase
+        for phase in safety.phases
+        if phase.phase_id == observation.state.current_phase
     )
     if action.kind == TrafficLightAction.KEEP_PHASE:
         return current_phase.phase_id
@@ -225,7 +243,7 @@ def requested_phase_id(
         return action.target_phase
     if (
         action.kind == TrafficLightAction.REQUEST_NEXT_PHASE
-        and current_phase.kind == PhaseKind.GREEN
+        and _phase_kind_value(current_phase) == "GREEN"
     ):
         return safety.allowed_green_transitions[current_phase.phase_id][0]
     return current_phase.phase_id
@@ -301,16 +319,25 @@ def _turn_completion_counts(
 
 def _clearance_violations(
     *,
-    command: PhaseCommand,
-    safety: PhaseSafetyManager,
+    command: _CommandLike,
+    safety: _SafetyLike,
     internal_vehicle_count: int,
 ) -> int:
     if internal_vehicle_count <= 0:
         return 0
-    actual_phase = next(phase for phase in safety.phases if phase.phase_id == command.phase_id)
-    if actual_phase.kind == PhaseKind.GREEN:
+    actual_phase = next(
+        phase for phase in safety.phases if phase.phase_id == command.phase_id
+    )
+    if _phase_kind_value(actual_phase) == "GREEN":
         return 1
     return 0
+
+
+def _phase_kind_value(phase: _PhaseLike) -> str:
+    kind = phase.kind
+    if hasattr(kind, "value"):
+        return str(kind.value)
+    return str(kind)
 
 
 def _movement_queue_stats(

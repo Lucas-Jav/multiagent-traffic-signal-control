@@ -29,10 +29,14 @@ from traffic_agents.experiments.run_invariants import (
 )
 from traffic_agents.metrics import (
     AGENT_TRACE_FILE,
+    PERFORMANCE_FILE,
     AgentDecisionTraceSettings,
     AgentDecisionTraceWriter,
+    ControllerPerformanceTimings,
     StepTelemetryRecord,
     append_step_telemetry,
+    build_performance_payload,
+    write_performance_json,
 )
 from traffic_agents.simulation.sumo_environment import SumoEnvironmentInfo, detect_sumo_environment
 from traffic_agents.simulation.traci_sensor_adapter import (
@@ -101,6 +105,10 @@ class _TelemetryProducer(Protocol):
     def pop_step_telemetry_records(self) -> tuple[StepTelemetryRecord, ...]: ...
 
 
+class _PerformanceTimingsProducer(Protocol):
+    def performance_timings(self) -> ControllerPerformanceTimings: ...
+
+
 class TraCISimulationRunner:
     def __init__(
         self,
@@ -148,6 +156,7 @@ class TraCISimulationRunner:
         self._active_run_dir: Path | None = None
         self._telemetry_path: Path | None = None
         self._agent_trace_path: Path | None = None
+        self._performance_path: Path | None = None
         self._run_invariant_fingerprint: RunInvariantFingerprint | None = None
         self._traci: _TraCIModule | None = None
         self._connection: _TraCIConnection | None = None
@@ -158,6 +167,7 @@ class TraCISimulationRunner:
         self._measurement_steps_executed = 0
         self._total_vehicles_departed = 0
         self._total_vehicles_arrived = 0
+        self._result_collector_time_ms = 0.0
 
     def start(self) -> None:
         if self._started:
@@ -243,6 +253,7 @@ class TraCISimulationRunner:
             total_vehicles_departed=self._total_vehicles_departed,
             total_vehicles_arrived=self._total_vehicles_arrived,
         )
+        self._write_performance(summary)
         if self._write_manifest:
             return self._write_run_manifest(summary)
         return summary
@@ -357,6 +368,9 @@ class TraCISimulationRunner:
                     self._agent_trace_path.name
                     if self._agent_trace_path is not None and self._agent_trace_path.exists()
                     else None,
+                    self._performance_path.name
+                    if self._performance_path is not None and self._performance_path.exists()
+                    else None,
                 ),
                 indent=2,
             )
@@ -373,6 +387,7 @@ class TraCISimulationRunner:
         self._active_run_dir = None
         self._telemetry_path = None
         self._agent_trace_path = None
+        self._performance_path = None
         trace_settings = AgentDecisionTraceSettings.from_config(
             getattr(self._scenario_config, "tracing", None)
         )
@@ -382,8 +397,10 @@ class TraCISimulationRunner:
         self._active_run_dir.mkdir(parents=True, exist_ok=True)
         if self._write_manifest:
             self._telemetry_path = self._active_run_dir / "intersection_trace.csv"
+            self._performance_path = self._active_run_dir / PERFORMANCE_FILE
         if trace_settings.enabled:
             self._agent_trace_path = self._active_run_dir / AGENT_TRACE_FILE
+            self._performance_path = self._active_run_dir / PERFORMANCE_FILE
 
     def _configure_agent_decision_tracing(self, run_id: str) -> None:
         configure_tracing = getattr(self._controller, "configure_agent_decision_tracing", None)
@@ -406,15 +423,43 @@ class TraCISimulationRunner:
     def _write_step_telemetry(self) -> None:
         if self._telemetry_path is None and self._step_telemetry_consumer is None:
             return
+        started_at = time.perf_counter()
         producer = self._controller
         pop_records = getattr(producer, "pop_step_telemetry_records", None)
         if not callable(pop_records):
             return
-        records = cast(_TelemetryProducer, producer).pop_step_telemetry_records()
-        if self._step_telemetry_consumer is not None:
-            self._step_telemetry_consumer(records)
-        if self._telemetry_path is not None:
-            append_step_telemetry(self._telemetry_path, records)
+        try:
+            records = cast(_TelemetryProducer, producer).pop_step_telemetry_records()
+            if self._step_telemetry_consumer is not None:
+                self._step_telemetry_consumer(records)
+            if self._telemetry_path is not None:
+                append_step_telemetry(self._telemetry_path, records)
+        finally:
+            self._result_collector_time_ms += (time.perf_counter() - started_at) * 1000
+
+    def _write_performance(self, summary: SimulationRunSummary) -> None:
+        if self._performance_path is None:
+            return
+        trace_settings = AgentDecisionTraceSettings.from_config(
+            getattr(self._scenario_config, "tracing", None)
+        )
+        payload = build_performance_payload(
+            run_id=summary.run_id,
+            controller=summary.controller_id,
+            simulation_steps=summary.steps_executed,
+            wall_time_seconds=summary.wall_time_seconds,
+            controller_timings=self._controller_performance_timings(),
+            trace_enabled=trace_settings.enabled,
+            result_collector_time_ms=self._result_collector_time_ms,
+            use_gui=self._use_gui,
+        )
+        write_performance_json(self._performance_path, payload)
+
+    def _controller_performance_timings(self) -> ControllerPerformanceTimings:
+        performance_timings = getattr(self._controller, "performance_timings", None)
+        if not callable(performance_timings):
+            return ControllerPerformanceTimings()
+        return cast(_PerformanceTimingsProducer, self._controller).performance_timings()
 
 
 def _manifest_payload(
@@ -432,6 +477,7 @@ def _manifest_payload(
     run_invariant_fingerprint: RunInvariantFingerprint | None = None,
     intersection_trace_file: str | None = None,
     agent_trace_file: str | None = None,
+    performance_file: str | None = None,
 ) -> dict[str, object]:
     fingerprint = run_invariant_fingerprint or build_run_invariant_fingerprint(
         scenario_config=scenario_config,
@@ -484,6 +530,8 @@ def _manifest_payload(
         payload["intersection_trace_file"] = intersection_trace_file
     if agent_trace_file is not None:
         payload["agent_trace_file"] = agent_trace_file
+    if performance_file is not None:
+        payload["performance_file"] = performance_file
     return payload
 
 

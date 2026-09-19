@@ -4,6 +4,7 @@ import json
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
+from time import perf_counter
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, ClassVar, Protocol, cast
 
@@ -22,6 +23,7 @@ from traffic_agents.domain import (
     TrafficLightAction,
 )
 from traffic_agents.metrics import (
+    ControllerPerformanceTimings,
     JunctionFlowTracker,
     MovementQueueTracker,
     StepTelemetryRecord,
@@ -185,6 +187,11 @@ class LocalAdaptiveController:
         init=False,
         repr=False,
     )
+    _decision_timings_ms: list[float] = field(
+        default_factory=list,
+        init=False,
+        repr=False,
+    )
 
     def configure(self, *, scenario_config: ScenarioConfig, scenario_dir: Path) -> None:
         self._scenario_config = scenario_config
@@ -195,6 +202,7 @@ class LocalAdaptiveController:
         self._movement_queue_tracker = MovementQueueTracker()
         self._step_index = 0
         self._telemetry_records.clear()
+        self._decision_timings_ms.clear()
 
     def before_simulation_step(self, connection: Any) -> None:
         from traffic_agents.simulation.traci_sensor_adapter import (
@@ -233,6 +241,7 @@ class LocalAdaptiveController:
             runtime = self._runtime_by_intersection[intersection.intersection_id]
             state = self._sensor_provider.observe(intersection.intersection_id)
             observation = AgentObservation(state=state)
+            decision_started_at = perf_counter()
             action = runtime.policy.decide(observation)
             decision = ControllerDecision(
                 intersection_id=intersection.intersection_id,
@@ -240,6 +249,7 @@ class LocalAdaptiveController:
                 action=action,
             )
             command = runtime.safety.resolve(observation, decision)
+            self._decision_timings_ms.append((perf_counter() - decision_started_at) * 1000)
             junction_metrics = self._junction_flow_tracker.update(
                 intersection_id=intersection.intersection_id,
                 internal_lane_ids=runtime.internal_lane_ids,
@@ -284,6 +294,11 @@ class LocalAdaptiveController:
         records = tuple(self._telemetry_records)
         self._telemetry_records.clear()
         return records
+
+    def performance_timings(self) -> ControllerPerformanceTimings:
+        return ControllerPerformanceTimings(
+            decision_timings_ms=tuple(self._decision_timings_ms),
+        )
 
     def manifest_metadata(self) -> dict[str, str | int | float | bool]:
         return {

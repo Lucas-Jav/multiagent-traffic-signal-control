@@ -17,6 +17,7 @@ from traffic_agents.controllers.local_pressure import (
     LOCAL_PRESSURE_CONTROLLER_ID,
     LocalPressureController,
 )
+from traffic_agents.metrics import ControllerPerformanceTimings
 
 FIXED_TIME_CONTROLLER_ID = "B0_FIXED"
 FIXED_TIME_CONTROLLER_VERSION = "0.1.0"
@@ -45,6 +46,9 @@ class FixedTimeController:
             "controller_version": self.controller_version,
             "adaptive_adjustments_enabled": False,
         }
+
+    def performance_timings(self) -> ControllerPerformanceTimings:
+        return ControllerPerformanceTimings()
 
 
 def build_controller(

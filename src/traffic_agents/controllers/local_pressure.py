@@ -4,6 +4,7 @@ import json
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
+from time import perf_counter
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, ClassVar, Protocol, cast
 
@@ -23,6 +24,7 @@ from traffic_agents.domain import (
 )
 from traffic_agents.metrics import (
     AgentDecisionTraceWriter,
+    ControllerPerformanceTimings,
     DecisionTimer,
     JunctionFlowTracker,
     MovementQueueTracker,
@@ -259,6 +261,11 @@ class LocalPressureController:
         init=False,
         repr=False,
     )
+    _decision_timings_ms: list[float] = field(
+        default_factory=list,
+        init=False,
+        repr=False,
+    )
 
     def configure(self, *, scenario_config: ScenarioConfig, scenario_dir: Path) -> None:
         self._scenario_config = scenario_config
@@ -270,6 +277,7 @@ class LocalPressureController:
         self._step_index = 0
         self._telemetry_records.clear()
         self._trace_writer = None
+        self._decision_timings_ms.clear()
 
     def configure_agent_decision_tracing(
         self,
@@ -318,6 +326,7 @@ class LocalPressureController:
                 intersection.intersection_id
             )
             timer = DecisionTimer.start() if trace_enabled else None
+            decision_started_at = perf_counter()
             movement_pressures = runtime.phase_calculator.movement_pressure_calculator.calculate(
                 observation
             )
@@ -337,6 +346,7 @@ class LocalPressureController:
                 action=action,
             )
             command = runtime.safety.resolve(observation, decision)
+            self._decision_timings_ms.append((perf_counter() - decision_started_at) * 1000)
             if trace_enabled and self._trace_writer is not None and timer is not None:
                 self._trace_writer.append(
                     build_agent_decision_trace_record(
@@ -396,6 +406,11 @@ class LocalPressureController:
         records = tuple(self._telemetry_records)
         self._telemetry_records.clear()
         return records
+
+    def performance_timings(self) -> ControllerPerformanceTimings:
+        return ControllerPerformanceTimings(
+            decision_timings_ms=tuple(self._decision_timings_ms),
+        )
 
     def manifest_metadata(self) -> dict[str, str | int | float | bool]:
         return {

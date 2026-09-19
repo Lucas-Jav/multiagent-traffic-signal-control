@@ -4,6 +4,7 @@ from collections import defaultdict
 from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
 from pathlib import Path
+from time import perf_counter
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Literal, Protocol, cast
 
@@ -46,6 +47,7 @@ from traffic_agents.domain import (
 )
 from traffic_agents.metrics import (
     AgentDecisionTraceWriter,
+    ControllerPerformanceTimings,
     DecisionTimer,
     JunctionFlowTracker,
     MovementQueueTracker,
@@ -430,6 +432,11 @@ class CooperativeCompactController:
         init=False,
         repr=False,
     )
+    _decision_timings_ms: list[float] = field(
+        default_factory=list,
+        init=False,
+        repr=False,
+    )
     last_adjustment_result: CooperativeAdjustmentResult | None = field(default=None, init=False)
 
     def __post_init__(self) -> None:
@@ -458,6 +465,7 @@ class CooperativeCompactController:
         self._movement_queue_tracker = MovementQueueTracker()
         self._telemetry_records.clear()
         self._trace_writer = None
+        self._decision_timings_ms.clear()
 
     def configure_agent_decision_tracing(
         self,
@@ -548,6 +556,7 @@ class CooperativeCompactController:
                 intersection.intersection_id
             )
             timer = DecisionTimer.start() if trace_enabled else None
+            decision_started_at = perf_counter()
             movement_pressures = runtime.phase_calculator.movement_pressure_calculator.calculate(
                 observation
             )
@@ -573,6 +582,7 @@ class CooperativeCompactController:
                 action=action,
             )
             command = runtime.safety.resolve(observation, decision)
+            self._decision_timings_ms.append((perf_counter() - decision_started_at) * 1000)
             if trace_enabled and self._trace_writer is not None and timer is not None:
                 self._trace_writer.append(
                     build_agent_decision_trace_record(
@@ -652,6 +662,18 @@ class CooperativeCompactController:
         records = tuple(self._telemetry_records)
         self._telemetry_records.clear()
         return records
+
+    def performance_timings(self) -> ControllerPerformanceTimings:
+        bus_metrics = self._message_bus.metrics if self._message_bus is not None else None
+        return ControllerPerformanceTimings(
+            decision_timings_ms=tuple(self._decision_timings_ms),
+            message_bus_publish_time_ms=(
+                float(bus_metrics.publish_time_ms) if bus_metrics is not None else 0.0
+            ),
+            message_bus_receive_time_ms=(
+                float(bus_metrics.receive_time_ms) if bus_metrics is not None else 0.0
+            ),
+        )
 
     def manifest_metadata(self) -> dict[str, str | int | float | bool]:
         return {

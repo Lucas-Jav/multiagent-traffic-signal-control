@@ -34,6 +34,7 @@ def test_publish_records_message_and_metrics() -> None:
     assert bus.metrics.messages_delivered == 0
     assert bus.metrics.messages_dropped == 0
     assert bus.metrics.observed_drop_rate == 0.0
+    assert bus.metrics.publish_time_ms >= 0.0
     assert bus.pending_count("A2") == 1
 
 
@@ -55,6 +56,7 @@ def test_receive_delivers_available_messages_once() -> None:
     assert bus.metrics.message_delay_steps == 0
     assert bus.metrics.average_message_delay == 0.0
     assert bus.metrics.max_message_delay == 0
+    assert bus.metrics.receive_time_ms >= 0.0
     assert bus.pending_count("A2") == 0
 
 

@@ -5,17 +5,32 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from time import perf_counter
-from typing import Any
+from typing import Any, Protocol
 
-from traffic_agents.controllers.phase_safety import (
-    PhaseCommand,
-    PhaseKind,
-    PhaseSafetyManager,
-)
-from traffic_agents.domain import AgentObservation, TrafficLightAction
-from traffic_agents.metrics.step_telemetry import requested_phase_id
+from traffic_agents.domain import AgentObservation, TrafficLightAction, TrafficLightActionKind
 
 AGENT_TRACE_FILE = "agent_trace.jsonl"
+
+
+class _CommandLike(Protocol):
+    @property
+    def phase_id(self) -> str: ...
+
+
+class _PhaseLike(Protocol):
+    @property
+    def phase_id(self) -> str: ...
+
+    @property
+    def kind(self) -> object: ...
+
+
+class _SafetyLike(Protocol):
+    @property
+    def phases(self) -> tuple[_PhaseLike, ...]: ...
+
+    @property
+    def allowed_green_transitions(self) -> Mapping[str, tuple[str, ...]]: ...
 
 
 @dataclass(frozen=True)
@@ -75,8 +90,8 @@ def build_agent_decision_trace_record(
     controller_id: str,
     observation: AgentObservation,
     action: TrafficLightAction,
-    command: PhaseCommand,
-    safety: PhaseSafetyManager,
+    command: _CommandLike,
+    safety: _SafetyLike,
     movement_pressure: Mapping[str, float],
     phase_scores: Mapping[str, float],
     computation_ms: float,
@@ -89,8 +104,8 @@ def build_agent_decision_trace_record(
     cooperative_adjustment: Mapping[str, float] | None = None,
 ) -> dict[str, object]:
     state = observation.state
-    requested_phase = requested_phase_id(observation, action, safety)
-    actual_phase = command.phase_id
+    requested_phase = _requested_phase_id(observation, action, safety)
+    actual_phase = str(command.phase_id)
     safety_decision = _safety_decision(
         current_phase=state.current_phase,
         requested_phase=requested_phase,
@@ -177,28 +192,48 @@ def _safety_decision(
     *,
     current_phase: str,
     requested_phase: str,
-    command: PhaseCommand,
-    safety: PhaseSafetyManager,
+    command: _CommandLike,
+    safety: _SafetyLike,
 ) -> str:
-    actual_phase = command.phase_id
+    actual_phase = str(command.phase_id)
     actual_kind = _phase_kind(actual_phase, safety)
     current_kind = _phase_kind(current_phase, safety)
     if actual_phase == requested_phase:
         return "APPLIED" if requested_phase != current_phase else "KEEP"
-    if current_kind == PhaseKind.GREEN and actual_phase == current_phase:
+    if current_kind == "GREEN" and actual_phase == current_phase:
         return "MIN_GREEN"
-    if actual_kind == PhaseKind.YELLOW:
+    if actual_kind == "YELLOW":
         return "WAIT_YELLOW"
-    if actual_kind == PhaseKind.INTERGREEN:
+    if actual_kind == "INTERGREEN":
         return "WAIT_INTERGREEN"
     return "SAFETY_OVERRIDE"
 
 
-def _phase_kind(phase_id: str, safety: PhaseSafetyManager) -> PhaseKind:
+def _phase_kind(phase_id: str, safety: _SafetyLike) -> str:
     for phase in safety.phases:
         if phase.phase_id == phase_id:
-            return phase.kind
-    return PhaseKind.INTERGREEN
+            kind = phase.kind
+            if hasattr(kind, "value"):
+                return str(kind.value)
+            return str(kind)
+    return "INTERGREEN"
+
+
+def _requested_phase_id(
+    observation: AgentObservation,
+    action: TrafficLightAction,
+    safety: _SafetyLike,
+) -> str:
+    current_phase_id = observation.state.current_phase
+    if action.kind == TrafficLightActionKind.KEEP_PHASE:
+        return current_phase_id
+    if action.kind == TrafficLightActionKind.SWITCH_PHASE and action.target_phase is not None:
+        return action.target_phase
+    if action.kind == TrafficLightActionKind.REQUEST_NEXT_PHASE:
+        targets = safety.allowed_green_transitions.get(current_phase_id, ())
+        if targets:
+            return str(targets[0])
+    return current_phase_id
 
 
 def _sorted_float_map(values: Mapping[str, float]) -> dict[str, float]:
