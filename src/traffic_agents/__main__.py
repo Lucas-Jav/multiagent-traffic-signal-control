@@ -7,6 +7,10 @@ from pathlib import Path
 
 from traffic_agents.config import get_settings, load_scenario_config
 from traffic_agents.demo import DemoConfig, run_demo
+from traffic_agents.experiments.freeze import (
+    freeze_experiment_config,
+    load_frozen_experiment_config,
+)
 from traffic_agents.experiments.report import (
     generate_experiment_report,
     generate_experiment_summary,
@@ -77,6 +81,11 @@ def _build_parser() -> argparse.ArgumentParser:
     experiment_run_parser = experiment_subparsers.add_parser("run")
     experiment_run_parser.add_argument("--config", type=Path, required=True)
     experiment_run_parser.set_defaults(handler=_run_experiment)
+
+    experiment_freeze_parser = experiment_subparsers.add_parser("freeze")
+    experiment_freeze_parser.add_argument("--config", type=Path, required=True)
+    experiment_freeze_parser.add_argument("--final", action="store_true")
+    experiment_freeze_parser.set_defaults(handler=_freeze_experiment)
 
     experiment_report_parser = experiment_subparsers.add_parser("report")
     experiment_report_parser.add_argument("experiment_folder", type=Path)
@@ -170,7 +179,11 @@ def _run_demo(args: argparse.Namespace) -> int:
 
 def _run_experiment(args: argparse.Namespace) -> int:
     config = load_experiment_config(args.config)
-    runner = ExperimentRunner(config=config)
+    frozen_config = load_frozen_experiment_config(config=config)
+    if frozen_config is None:
+        runner = ExperimentRunner(config=config)
+    else:
+        runner = ExperimentRunner(config=config, frozen_config=frozen_config)
 
     print("experiment start")
     summary = runner.run()
@@ -194,6 +207,17 @@ def _generate_experiment_report(args: argparse.Namespace) -> int:
 def _generate_experiment_summary(args: argparse.Namespace) -> int:
     summary = generate_experiment_summary(args.experiment_folder)
     print(f"summary={summary.summary_path}")
+    return 0
+
+
+def _freeze_experiment(args: argparse.Namespace) -> int:
+    result = freeze_experiment_config(args.config, final=args.final)
+    print("experiment frozen")
+    print(f"experiment_id={result.experiment_id}")
+    print(f"freeze_dir={result.freeze_dir}")
+    print(f"experiment_config={result.experiment_config_path}")
+    print(f"checksums={result.checksums_path}")
+    print(f"manifest={result.manifest_path}")
     return 0
 
 

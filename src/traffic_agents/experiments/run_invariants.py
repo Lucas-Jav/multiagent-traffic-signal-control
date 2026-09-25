@@ -26,7 +26,9 @@ COMPARISON_INVARIANT_FIELDS: tuple[str, ...] = (
     "phase_plan_version",
     "phase_plan_sha256",
     "movement_model_version",
+    "movement_model_sha256",
     "turning_ratios",
+    "turning_config_sha256",
     "communication_topology_sha256",
 )
 
@@ -43,7 +45,9 @@ class RunInvariantFingerprint:
     phase_plan_version: str
     phase_plan_sha256: str
     movement_model_version: str
+    movement_model_sha256: str
     turning_ratios: Mapping[str, float]
+    turning_config_sha256: str
     communication_topology_sha256: str
 
     def manifest_fields(self) -> dict[str, object]:
@@ -54,7 +58,9 @@ class RunInvariantFingerprint:
             "phase_plan_version": self.phase_plan_version,
             "phase_plan_sha256": self.phase_plan_sha256,
             "movement_model_version": self.movement_model_version,
+            "movement_model_sha256": self.movement_model_sha256,
             "turning_ratios": dict(self.turning_ratios),
+            "turning_config_sha256": self.turning_config_sha256,
             "communication_topology_sha256": self.communication_topology_sha256,
         }
 
@@ -99,7 +105,9 @@ def build_run_invariant_fingerprint(
         phase_plan_version=PHASE_PLAN_VERSION,
         phase_plan_sha256=phase_plan_sha256(traffic_models),
         movement_model_version=MOVEMENT_MODEL_VERSION,
+        movement_model_sha256=movement_model_sha256(traffic_models),
         turning_ratios=turning_ratios,
+        turning_config_sha256=turning_config_sha256(turning_ratios),
         communication_topology_sha256=grid_3x3_communication_topology().topology_hash,
     )
 
@@ -182,7 +190,9 @@ def run_invariant_fingerprint_from_manifest(
         phase_plan_version=_required_string(manifest, "phase_plan_version"),
         phase_plan_sha256=_required_string(manifest, "phase_plan_sha256"),
         movement_model_version=_required_string(manifest, "movement_model_version"),
+        movement_model_sha256=_required_string(manifest, "movement_model_sha256"),
         turning_ratios=_required_turning_ratios(manifest),
+        turning_config_sha256=_required_string(manifest, "turning_config_sha256"),
         communication_topology_sha256=_required_string(
             manifest,
             "communication_topology_sha256",
@@ -200,8 +210,30 @@ def file_sha256(path: Path) -> str:
 
 def scenario_config_sha256(scenario_config: ScenarioConfig) -> str:
     payload = scenario_config.model_dump(mode="json")
-    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    return hashlib.sha256(encoded).hexdigest()
+    return json_sha256(payload)
+
+
+def route_generator_config_sha256(scenario_config: ScenarioConfig) -> str:
+    selected_flows = [
+        {
+            "flow_id": flow.flow_id,
+            "origin_edge_id": flow.origin_edge_id,
+            "destination_edge_id": flow.destination_edge_id,
+            "begin_seconds": float(flow.begin_seconds),
+            "end_seconds": float(flow.end_seconds),
+            "vehicles_per_hour": float(
+                flow.vehicles_per_hour[scenario_config.traffic.demand_level]
+            ),
+        }
+        for flow in scenario_config.traffic.flows
+    ]
+    payload = {
+        "scenario": scenario_config.model_dump(mode="json"),
+        "seed": int(scenario_config.seed),
+        "demand_profile": scenario_config.traffic.demand_profile,
+        "selected_flows": selected_flows,
+    }
+    return json_sha256(payload)
 
 
 def phase_plan_sha256(
@@ -211,6 +243,30 @@ def phase_plan_sha256(
         intersection_id: [asdict(phase) for phase in traffic_model.phase_plan]
         for intersection_id, traffic_model in sorted(traffic_models.items())
     }
+    return json_sha256(payload)
+
+
+def movement_model_sha256(
+    traffic_models: Mapping[str, IntersectionTrafficModel],
+) -> str:
+    payload = {
+        intersection_id: {
+            "movements": [asdict(movement) for movement in traffic_model.movements],
+            "conflicts": {
+                movement_id: list(conflicts)
+                for movement_id, conflicts in sorted(traffic_model.conflicts.items())
+            },
+        }
+        for intersection_id, traffic_model in sorted(traffic_models.items())
+    }
+    return json_sha256(payload)
+
+
+def turning_config_sha256(turning_ratios: Mapping[str, float]) -> str:
+    return json_sha256({key: float(value) for key, value in sorted(turning_ratios.items())})
+
+
+def json_sha256(payload: object) -> str:
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
 

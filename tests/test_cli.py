@@ -188,6 +188,43 @@ max_steps: 10
     assert "experiment_id=smoke" in capsys.readouterr().out
 
 
+def test_experiment_freeze_subcommand_invokes_freeze(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config_path = tmp_path / "experiment.yaml"
+    config_path.write_text("experiment_id: smoke\n", encoding="utf-8")
+
+    def fake_freeze(config: Path, *, final: bool) -> object:
+        assert config == config_path
+        assert final is True
+        return type(
+            "FakeFreeze",
+            (),
+            {
+                "experiment_id": "smoke",
+                "freeze_dir": Path("artifacts/experiments/smoke/frozen"),
+                "experiment_config_path": Path(
+                    "artifacts/experiments/smoke/frozen/experiment.yaml"
+                ),
+                "checksums_path": Path("artifacts/experiments/smoke/frozen/checksums.json"),
+                "manifest_path": Path(
+                    "artifacts/experiments/smoke/frozen/freeze_manifest.json"
+                ),
+            },
+        )()
+
+    monkeypatch.setattr("traffic_agents.__main__.freeze_experiment_config", fake_freeze)
+
+    exit_code = main(["experiment", "freeze", "--config", str(config_path), "--final"])
+
+    assert exit_code == 0
+    output = capsys.readouterr().out
+    assert "experiment frozen" in output
+    assert "experiment_id=smoke" in output
+
+
 def test_experiment_report_subcommand_invokes_report_generator(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],

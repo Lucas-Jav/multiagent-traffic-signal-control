@@ -656,7 +656,9 @@ def test_traci_runner_writes_run_manifest(
     assert manifest["phase_plan_version"] == PHASE_PLAN_VERSION
     assert len(manifest["phase_plan_sha256"]) == 64
     assert manifest["movement_model_version"] == MOVEMENT_MODEL_VERSION
+    assert len(manifest["movement_model_sha256"]) == 64
     assert manifest["turning_ratios"] == {"straight": 0.6, "left": 0.2, "right": 0.2}
+    assert len(manifest["turning_config_sha256"]) == 64
     assert manifest["communication"] == {
         "delay_steps": 0,
         "drop_probability": 0.0,

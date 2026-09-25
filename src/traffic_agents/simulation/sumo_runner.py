@@ -124,6 +124,7 @@ class TraCISimulationRunner:
         artifacts_dir: Path | None = None,
         write_manifest: bool = True,
         run_mode: Literal["SIMULATION", "EXPERIMENT", "DEMO"] = "SIMULATION",
+        run_manifest_extra: Mapping[str, object] | None = None,
         step_telemetry_consumer: Callable[[tuple[StepTelemetryRecord, ...]], None] | None = None,
     ) -> None:
         if step_delay_seconds < 0:
@@ -152,6 +153,7 @@ class TraCISimulationRunner:
         self._artifacts_dir = artifacts_dir
         self._write_manifest = write_manifest
         self._run_mode = run_mode
+        self._run_manifest_extra = dict(run_manifest_extra or {})
         self._step_telemetry_consumer = step_telemetry_consumer
         self._active_run_dir: Path | None = None
         self._telemetry_path: Path | None = None
@@ -362,6 +364,7 @@ class TraCISimulationRunner:
                     self._sumo_info,
                     self._run_mode,
                     self._run_invariant_fingerprint,
+                    self._run_manifest_extra,
                     self._telemetry_path.name
                     if self._telemetry_path is not None and self._telemetry_path.exists()
                     else None,
@@ -475,6 +478,7 @@ def _manifest_payload(
     sumo_info: SumoEnvironmentInfo,
     run_mode: Literal["SIMULATION", "EXPERIMENT", "DEMO"] = "SIMULATION",
     run_invariant_fingerprint: RunInvariantFingerprint | None = None,
+    extra_fields: Mapping[str, object] | None = None,
     intersection_trace_file: str | None = None,
     agent_trace_file: str | None = None,
     performance_file: str | None = None,
@@ -526,6 +530,8 @@ def _manifest_payload(
         },
         "metrics_finalized": False,
     }
+    if extra_fields:
+        payload.update(dict(extra_fields))
     if intersection_trace_file is not None:
         payload["intersection_trace_file"] = intersection_trace_file
     if agent_trace_file is not None:

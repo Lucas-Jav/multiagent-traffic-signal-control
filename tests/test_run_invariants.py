@@ -29,8 +29,11 @@ def test_run_fingerprint_records_required_comparison_invariants(tmp_path: Path) 
     assert len(fingerprint.network_sha256) == 64
     assert len(fingerprint.route_sha256) == 64
     assert fingerprint.phase_plan_version == PHASE_PLAN_VERSION
+    assert len(fingerprint.phase_plan_sha256) == 64
     assert fingerprint.movement_model_version == MOVEMENT_MODEL_VERSION
+    assert len(fingerprint.movement_model_sha256) == 64
     assert fingerprint.turning_ratios == {"straight": 0.6, "left": 0.2, "right": 0.2}
+    assert len(fingerprint.turning_config_sha256) == 64
     assert len(fingerprint.communication_topology_sha256) == 64
 
 
@@ -181,7 +184,9 @@ def _fingerprint(
     phase_plan_version: str = PHASE_PLAN_VERSION,
     phase_plan_sha256: str = "a" * 64,
     movement_model_version: str = MOVEMENT_MODEL_VERSION,
+    movement_model_sha256: str = "a" * 64,
     turning_ratios: dict[str, float] | None = None,
+    turning_config_sha256: str = "a" * 64,
     communication_topology_sha256: str = "a" * 64,
 ) -> RunInvariantFingerprint:
     return RunInvariantFingerprint(
@@ -191,6 +196,8 @@ def _fingerprint(
         phase_plan_version=phase_plan_version,
         phase_plan_sha256=phase_plan_sha256,
         movement_model_version=movement_model_version,
+        movement_model_sha256=movement_model_sha256,
         turning_ratios=turning_ratios or {"straight": 0.6, "left": 0.2, "right": 0.2},
+        turning_config_sha256=turning_config_sha256,
         communication_topology_sha256=communication_topology_sha256,
     )

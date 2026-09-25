@@ -10,6 +10,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, NonNegativeInt, PositiveInt, model_validator
 
 from traffic_agents.config import CommunicationConfig, get_settings, load_scenario_config
+from traffic_agents.experiments.freeze import FrozenExperimentConfig
 from traffic_agents.simulation import SimulationRunSummary, TraCISimulationRunner
 
 DropProbability = Annotated[float, Field(ge=0.0, le=1.0)]
@@ -81,11 +82,16 @@ class ExperimentRunner:
         *,
         config: ExperimentConfig,
         artifacts_dir: Path | None = None,
+        frozen_config: FrozenExperimentConfig | None = None,
     ) -> None:
         self._config = config
         self._artifacts_dir = artifacts_dir
+        self._frozen_config = frozen_config
 
     def run(self) -> ExperimentRunSummary:
+        if self._frozen_config is not None:
+            self._frozen_config.validate()
+
         experiment_dir = self._experiment_dir()
         batch_id = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
         runs_dir = experiment_dir / "runs" / batch_id
@@ -115,6 +121,7 @@ class ExperimentRunner:
                     controller_id=run.controller_id,
                     artifacts_dir=runs_dir,
                     run_mode="EXPERIMENT",
+                    run_manifest_extra=self._run_manifest_extra(),
                 ).run()
                 summaries.append(summary)
                 records.append((run.run_id, run, summary))
@@ -139,6 +146,7 @@ class ExperimentRunner:
                         controller_id=controller_id,
                         artifacts_dir=runs_dir,
                         run_mode="EXPERIMENT",
+                        run_manifest_extra=self._run_manifest_extra(),
                     ).run()
                     summaries.append(summary)
                     records.append((f"{controller_id}_seed_{int(seed)}", None, summary))
@@ -162,6 +170,11 @@ class ExperimentRunner:
     def _experiment_dir(self) -> Path:
         artifacts_dir = self._artifacts_dir or get_settings().artifacts_dir
         return artifacts_dir / "experiments" / self._config.experiment_id
+
+    def _run_manifest_extra(self) -> dict[str, object]:
+        if self._frozen_config is None:
+            return {}
+        return dict(self._frozen_config.run_manifest_fields())
 
 
 def load_experiment_config(path: Path) -> ExperimentConfig:
