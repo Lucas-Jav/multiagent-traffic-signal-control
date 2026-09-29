@@ -33,6 +33,12 @@ The final V1 campaign uses five controllers:
 | `C1_COOPERATIVE_COMPACT` | Main cooperative method |
 | `C2_COOPERATIVE_EXPANDED` | Communication-rich ablation/comparison |
 
+The final fixed-time baseline is `B0_FIXED`.
+
+`B0_FIXED` must be described only as a traditional/static fixed-time baseline.
+It is not Webster-optimized. No `B0_WEBSTER_FIXED` baseline is implemented for
+V1, and V1 reports must not use "Webster" as a synonym for `B0_FIXED`.
+
 Primary scientific comparison:
 
 ```text
