@@ -203,9 +203,7 @@ def test_focus_agent_console_line_reports_neighbors_from_existing_runtime() -> N
     controller = SimpleNamespace(
         controller_id="C1_COOPERATIVE_COMPACT",
         _runtime_by_intersection={
-            "A5": SimpleNamespace(
-                adjustment=SimpleNamespace(neighbor_ids=("A2", "A4", "A6", "A8"))
-            )
+            "A5": SimpleNamespace(adjustment=SimpleNamespace(neighbor_ids=("A2", "A4", "A6", "A8")))
         },
         _message_bus=SimpleNamespace(
             metrics=SimpleNamespace(
@@ -241,7 +239,7 @@ def test_focus_agent_console_line_reports_neighbors_from_existing_runtime() -> N
             turn_count_right=0.2,
             junction_entries=2,
             junction_exits=1,
-            junction_blocking_events=0,
+            internal_lane_persistence_events=0,
             clearance_violations=0,
             turn_completion_count=1.0,
             movement_queue_mean=3.0,

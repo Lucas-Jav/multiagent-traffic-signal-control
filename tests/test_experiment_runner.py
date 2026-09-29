@@ -22,6 +22,8 @@ class FakeSimulationConfig:
 
 class FakeScenarioConfig:
     def __init__(self) -> None:
+        self.scenario_id = "grid_3x3"
+        self.traffic = type("Traffic", (), {"demand_profile": "S1_BALANCED"})()
         self.simulation = FakeSimulationConfig()
         self.updates: list[dict[str, object]] = []
 
@@ -214,3 +216,148 @@ runs:
         "rng_seed": None,
         "max_message_age_steps": 1,
     }
+
+
+def test_experiment_runner_skips_completed_run_on_resume(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config_path = _write_basic_experiment(tmp_path)
+    config = load_experiment_config(config_path)
+    monkeypatch.setattr(
+        "traffic_agents.experiments.runner.load_scenario_config",
+        lambda _path: FakeScenarioConfig(),
+    )
+    calls = 0
+
+    class FakeRunner:
+        def __init__(self, **kwargs: object) -> None:
+            self._kwargs = kwargs
+
+        def run(self) -> SimulationRunSummary:
+            nonlocal calls
+            calls += 1
+            return _summary(str(self._kwargs["run_id"]))
+
+    monkeypatch.setattr("traffic_agents.experiments.runner.TraCISimulationRunner", FakeRunner)
+
+    ExperimentRunner(config=config, artifacts_dir=tmp_path / "artifacts").run()
+    ExperimentRunner(config=config, artifacts_dir=tmp_path / "artifacts", resume=True).run()
+
+    assert calls == 1
+
+
+def test_experiment_runner_records_failed_run_without_silent_retry(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config_path = _write_basic_experiment(tmp_path)
+    config = load_experiment_config(config_path)
+    monkeypatch.setattr(
+        "traffic_agents.experiments.runner.load_scenario_config",
+        lambda _path: FakeScenarioConfig(),
+    )
+    calls = 0
+
+    class FailingRunner:
+        def __init__(self, **kwargs: object) -> None:
+            return None
+
+        def run(self) -> SimulationRunSummary:
+            nonlocal calls
+            calls += 1
+            raise RuntimeError("boom")
+
+    monkeypatch.setattr("traffic_agents.experiments.runner.TraCISimulationRunner", FailingRunner)
+
+    first = ExperimentRunner(config=config, artifacts_dir=tmp_path / "artifacts").run()
+    second = ExperimentRunner(
+        config=config,
+        artifacts_dir=tmp_path / "artifacts",
+        resume=True,
+    ).run()
+
+    first_manifest = json.loads(first.manifest_path.read_text(encoding="utf-8"))
+    second_manifest = json.loads(second.manifest_path.read_text(encoding="utf-8"))
+    assert calls == 1
+    assert first_manifest["failed_count"] == 1
+    assert second_manifest["failed_count"] == 1
+    assert second_manifest["runs"][0]["status"] == "FAILED"
+
+
+def test_experiment_runner_retry_failed_is_explicit(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config_path = _write_basic_experiment(tmp_path)
+    config = load_experiment_config(config_path)
+    monkeypatch.setattr(
+        "traffic_agents.experiments.runner.load_scenario_config",
+        lambda _path: FakeScenarioConfig(),
+    )
+    calls = 0
+
+    class SometimesRunner:
+        def __init__(self, **kwargs: object) -> None:
+            self._kwargs = kwargs
+
+        def run(self) -> SimulationRunSummary:
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                raise RuntimeError("first failure")
+            return _summary(str(self._kwargs["run_id"]))
+
+    monkeypatch.setattr("traffic_agents.experiments.runner.TraCISimulationRunner", SometimesRunner)
+
+    ExperimentRunner(config=config, artifacts_dir=tmp_path / "artifacts").run()
+    summary = ExperimentRunner(
+        config=config,
+        artifacts_dir=tmp_path / "artifacts",
+        resume=True,
+        retry_failed=True,
+    ).run()
+
+    manifest = json.loads(summary.manifest_path.read_text(encoding="utf-8"))
+    assert calls == 2
+    assert manifest["completed_count"] == 1
+    status_path = tmp_path / "artifacts" / "experiments" / "smoke" / "run_status.jsonl"
+    status_lines = status_path.read_text(encoding="utf-8")
+    assert "first failure" in status_lines
+
+
+def _write_basic_experiment(tmp_path: Path) -> Path:
+    scenario_path = tmp_path / "scenario.yaml"
+    scenario_path.write_text("scenario", encoding="utf-8")
+    config_path = tmp_path / "experiment.yaml"
+    config_path.write_text(
+        """
+experiment_id: smoke
+scenario: scenario.yaml
+controllers:
+  - B0_FIXED
+seeds:
+  - 42
+max_steps: 10
+""".strip(),
+        encoding="utf-8",
+    )
+    return config_path
+
+
+def _summary(run_id: str) -> SimulationRunSummary:
+    return SimulationRunSummary(
+        started_at="2026-01-01T00:00:00Z",
+        ended_at="2026-01-01T00:00:01Z",
+        run_id=run_id,
+        manifest_path=Path("artifacts/runs") / run_id / "manifest.json",
+        scenario_id="grid_3x3",
+        controller_id="B0_FIXED",
+        controller_version="0.1.0",
+        demand_profile="S1_BALANCED",
+        seed=42,
+        steps_executed=10,
+        vehicles_departed=1,
+        vehicles_arrived=1,
+        wall_time_seconds=0.1,
+    )

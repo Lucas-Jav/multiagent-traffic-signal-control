@@ -80,6 +80,8 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     experiment_run_parser = experiment_subparsers.add_parser("run")
     experiment_run_parser.add_argument("--config", type=Path, required=True)
+    experiment_run_parser.add_argument("--resume", action="store_true")
+    experiment_run_parser.add_argument("--retry-failed", action="store_true")
     experiment_run_parser.set_defaults(handler=_run_experiment)
 
     experiment_freeze_parser = experiment_subparsers.add_parser("freeze")
@@ -181,9 +183,18 @@ def _run_experiment(args: argparse.Namespace) -> int:
     config = load_experiment_config(args.config)
     frozen_config = load_frozen_experiment_config(config=config)
     if frozen_config is None:
-        runner = ExperimentRunner(config=config)
+        runner = ExperimentRunner(
+            config=config,
+            resume=args.resume,
+            retry_failed=args.retry_failed,
+        )
     else:
-        runner = ExperimentRunner(config=config, frozen_config=frozen_config)
+        runner = ExperimentRunner(
+            config=config,
+            frozen_config=frozen_config,
+            resume=args.resume,
+            retry_failed=args.retry_failed,
+        )
 
     print("experiment start")
     summary = runner.run()

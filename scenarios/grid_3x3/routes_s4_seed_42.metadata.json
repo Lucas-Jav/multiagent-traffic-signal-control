@@ -1,12 +1,12 @@
 {
-  "config_hash": "2a01d953933ccf93d06ce0f15d6cf490005555411293853729cb773c4dd0550a",
+  "config_hash": "8299884682a82f57024dfa983998000423511764e1dcbeed3a2dafe46e075f1d",
   "demand_level": "MEDIUM",
   "demand_profile": "S4_LOCAL_SATURATION",
   "flows": [
     {
       "begin_seconds": 0.0,
       "destination_edge_id": "C2right2",
-      "end_seconds": 3600.0,
+      "end_seconds": 3900.0,
       "flow_id": "left2_to_right2_upper_straight",
       "origin_edge_id": "left2A2",
       "vehicles_per_hour": 500.0
@@ -14,7 +14,7 @@
     {
       "begin_seconds": 0.0,
       "destination_edge_id": "B2top1",
-      "end_seconds": 3600.0,
+      "end_seconds": 3900.0,
       "flow_id": "left2_to_top1_turn",
       "origin_edge_id": "left2A2",
       "vehicles_per_hour": 250.0
@@ -22,7 +22,7 @@
     {
       "begin_seconds": 0.0,
       "destination_edge_id": "A0bottom0",
-      "end_seconds": 3600.0,
+      "end_seconds": 3900.0,
       "flow_id": "left2_to_bottom0_turn",
       "origin_edge_id": "left2A2",
       "vehicles_per_hour": 250.0
@@ -30,7 +30,7 @@
     {
       "begin_seconds": 0.0,
       "destination_edge_id": "A0bottom0",
-      "end_seconds": 3600.0,
+      "end_seconds": 3900.0,
       "flow_id": "top0_to_bottom0_left_straight",
       "origin_edge_id": "top0A2",
       "vehicles_per_hour": 500.0
@@ -38,7 +38,7 @@
     {
       "begin_seconds": 0.0,
       "destination_edge_id": "A1left1",
-      "end_seconds": 3600.0,
+      "end_seconds": 3900.0,
       "flow_id": "top0_to_left1_turn",
       "origin_edge_id": "top0A2",
       "vehicles_per_hour": 250.0
@@ -46,7 +46,7 @@
     {
       "begin_seconds": 0.0,
       "destination_edge_id": "C2right2",
-      "end_seconds": 3600.0,
+      "end_seconds": 3900.0,
       "flow_id": "top0_to_right2_turn",
       "origin_edge_id": "top0A2",
       "vehicles_per_hour": 250.0
@@ -54,7 +54,7 @@
     {
       "begin_seconds": 0.0,
       "destination_edge_id": "C1right1",
-      "end_seconds": 3600.0,
+      "end_seconds": 3900.0,
       "flow_id": "west_to_east_middle",
       "origin_edge_id": "left1A1",
       "vehicles_per_hour": 326.0
@@ -62,7 +62,7 @@
     {
       "begin_seconds": 0.0,
       "destination_edge_id": "B2top1",
-      "end_seconds": 3600.0,
+      "end_seconds": 3900.0,
       "flow_id": "west_to_north_turn",
       "origin_edge_id": "left1A1",
       "vehicles_per_hour": 163.0
@@ -70,7 +70,7 @@
     {
       "begin_seconds": 0.0,
       "destination_edge_id": "B0bottom1",
-      "end_seconds": 3600.0,
+      "end_seconds": 3900.0,
       "flow_id": "west_to_south_turn",
       "origin_edge_id": "left1A1",
       "vehicles_per_hour": 163.0
@@ -78,7 +78,7 @@
     {
       "begin_seconds": 0.0,
       "destination_edge_id": "B0bottom1",
-      "end_seconds": 3600.0,
+      "end_seconds": 3900.0,
       "flow_id": "north_to_south_middle",
       "origin_edge_id": "top1B2",
       "vehicles_per_hour": 326.0
@@ -86,7 +86,7 @@
     {
       "begin_seconds": 0.0,
       "destination_edge_id": "A1left1",
-      "end_seconds": 3600.0,
+      "end_seconds": 3900.0,
       "flow_id": "north_to_west_turn",
       "origin_edge_id": "top1B2",
       "vehicles_per_hour": 163.0
@@ -94,7 +94,7 @@
     {
       "begin_seconds": 0.0,
       "destination_edge_id": "C1right1",
-      "end_seconds": 3600.0,
+      "end_seconds": 3900.0,
       "flow_id": "north_to_east_turn",
       "origin_edge_id": "top1B2",
       "vehicles_per_hour": 163.0
@@ -102,7 +102,7 @@
     {
       "begin_seconds": 0.0,
       "destination_edge_id": "A1left1",
-      "end_seconds": 3600.0,
+      "end_seconds": 3900.0,
       "flow_id": "east_to_west_middle",
       "origin_edge_id": "right1C1",
       "vehicles_per_hour": 110.0
@@ -110,7 +110,7 @@
     {
       "begin_seconds": 0.0,
       "destination_edge_id": "B2top1",
-      "end_seconds": 3600.0,
+      "end_seconds": 3900.0,
       "flow_id": "south_to_north_middle",
       "origin_edge_id": "bottom1B0",
       "vehicles_per_hour": 110.0
@@ -118,7 +118,7 @@
     {
       "begin_seconds": 0.0,
       "destination_edge_id": "B2top1",
-      "end_seconds": 3600.0,
+      "end_seconds": 3900.0,
       "flow_id": "east_to_north_turn",
       "origin_edge_id": "right1C1",
       "vehicles_per_hour": 55.0
@@ -126,7 +126,7 @@
     {
       "begin_seconds": 0.0,
       "destination_edge_id": "B0bottom1",
-      "end_seconds": 3600.0,
+      "end_seconds": 3900.0,
       "flow_id": "east_to_south_turn",
       "origin_edge_id": "right1C1",
       "vehicles_per_hour": 55.0
@@ -134,7 +134,7 @@
     {
       "begin_seconds": 0.0,
       "destination_edge_id": "A1left1",
-      "end_seconds": 3600.0,
+      "end_seconds": 3900.0,
       "flow_id": "south_to_west_turn",
       "origin_edge_id": "bottom1B0",
       "vehicles_per_hour": 55.0
@@ -142,22 +142,24 @@
     {
       "begin_seconds": 0.0,
       "destination_edge_id": "C1right1",
-      "end_seconds": 3600.0,
+      "end_seconds": 3900.0,
       "flow_id": "south_to_east_turn",
       "origin_edge_id": "bottom1B0",
       "vehicles_per_hour": 55.0
     }
   ],
-  "generated_at": "2026-09-07T22:01:11.897475Z",
+  "generated_at": "2026-09-29T01:14:31.260622Z",
+  "generator_version": "1.0.0",
+  "network_hash": "46953c48351b0fdecf9babca662354bd5e45a5772553b153bc6f354c5332b48e",
   "route_file": "routes_s4_seed_42.rou.xml",
-  "route_hash": "195de268c4838c6d364546d25f0017c72bc7f3aca68ebe12980c169f40de6cea",
-  "scenario_hash": "f9fb7d74b3b3f94881ea684c7e4b9cf3e04dfc17f2945105b78b969a816db2cc",
+  "route_hash": "7b0336d6208a45d3ac0c3a95cce3c7d782b3ef7626416cbe1ab707ee1ed5c5f2",
+  "scenario_hash": "1ea16989509a673fd736c4d8fab296859ea43e90a5d3812377030f7d6bd15281",
   "scenario_id": "grid_3x3",
   "schedule": [
     {
       "begin_seconds": 0.0,
       "description": "Localized high demand around project intersections A1, A2, A4, and A5.",
-      "end_seconds": 3600.0,
+      "end_seconds": 3900.0,
       "window_id": "full_run"
     }
   ],

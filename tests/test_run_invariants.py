@@ -12,6 +12,9 @@ from traffic_agents.experiments import (
     assert_comparable_manifests,
     assert_comparable_run_fingerprints,
     build_run_invariant_fingerprint,
+    file_sha256,
+    route_artifact_scenario_sha256,
+    route_generator_config_sha256,
     validate_run_inputs,
 )
 from traffic_agents.traffic_model import MOVEMENT_MODEL_VERSION, PHASE_PLAN_VERSION
@@ -173,6 +176,22 @@ def _write_scenario_dir(
     }
     (scenario_dir / "metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
     (scenario_dir / "routes_s1_seed_42.rou.xml").write_text("<routes/>", encoding="utf-8")
+    scenario_config = _scenario_config()
+    (scenario_dir / "routes_s1_seed_42.metadata.json").write_text(
+        json.dumps(
+            {
+                "scenario_id": scenario_config.scenario_id,
+                "seed": scenario_config.seed,
+                "config_hash": route_generator_config_sha256(scenario_config),
+                "scenario_hash": route_artifact_scenario_sha256(scenario_config),
+                "route_hash": file_sha256(scenario_dir / "routes_s1_seed_42.rou.xml"),
+                "network_hash": file_sha256(scenario_dir / "network.net.xml"),
+                "generated_at": "2026-01-01T00:00:00Z",
+                "generator_version": "test",
+            }
+        ),
+        encoding="utf-8",
+    )
     return scenario_dir
 
 

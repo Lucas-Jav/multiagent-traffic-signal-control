@@ -13,6 +13,10 @@ from typing import TYPE_CHECKING, Any
 from traffic_agents.communication import grid_3x3_communication_topology
 from traffic_agents.config import get_settings, load_scenario_config
 from traffic_agents.controllers import build_controller
+from traffic_agents.experiments.route_artifacts import (
+    route_metadata_path,
+    validate_route_artifacts,
+)
 from traffic_agents.experiments.run_invariants import (
     file_sha256,
     json_sha256,
@@ -105,8 +109,7 @@ def freeze_experiment_config(
     experiment_dir = _experiment_dir(config, artifacts_dir)
     if final and experiment_dir.exists():
         msg = (
-            "--final requires a new experiment id; "
-            f"artifact path already exists: {experiment_dir}"
+            f"--final requires a new experiment id; artifact path already exists: {experiment_dir}"
         )
         raise ExperimentFreezeError(msg)
 
@@ -170,6 +173,10 @@ def build_freeze_checksums(
     for scenario_path in scenario_paths:
         scenario_config = load_scenario_config(scenario_path)
         scenario_dir = scenario_path.parent
+        validate_route_artifacts(
+            scenario_config=scenario_config,
+            scenario_dir=scenario_dir,
+        )
         file_entries.append(_file_entry("scenario_config", scenario_path))
 
         network_path = scenario_dir / scenario_config.network_file
@@ -185,8 +192,8 @@ def build_freeze_checksums(
             file_entries.append(route_entry)
         else:
             missing_files.append(str(route_path.resolve()))
-        route_metadata_path = _route_metadata_path(route_path)
-        route_metadata_entry = _optional_file_entry("route_generator_metadata", route_metadata_path)
+        metadata_path = route_metadata_path(route_path)
+        route_metadata_entry = _optional_file_entry("route_generator_metadata", metadata_path)
         if route_metadata_entry is not None:
             file_entries.append(route_metadata_entry)
 
@@ -327,12 +334,6 @@ def _optional_file_entry(label: str, path: Path) -> dict[str, str] | None:
     if not path.exists():
         return None
     return _file_entry(label, path)
-
-
-def _route_metadata_path(route_path: Path) -> Path:
-    if route_path.name.endswith(".rou.xml"):
-        return route_path.with_name(route_path.name.replace(".rou.xml", ".metadata.json"))
-    return route_path.with_suffix(".metadata.json")
 
 
 def _controller_config_sha256(controller_id: str) -> str:

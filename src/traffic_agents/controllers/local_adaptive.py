@@ -30,6 +30,10 @@ from traffic_agents.metrics import (
     build_step_telemetry_records,
     internal_lane_vehicle_reader,
 )
+from traffic_agents.traffic_light_actuator import (
+    TrafficLightActuator,
+    TrafficLightConnection,
+)
 from traffic_agents.traffic_model import (
     IntersectionTrafficModel,
     load_grid_traffic_models,
@@ -135,16 +139,11 @@ class LocalAdaptivePolicy:
         }
 
 
-class _AdaptiveTrafficLight(Protocol):
-    def setPhase(self, tls_id: str, index: int) -> None: ...  # noqa: N802
-
-
 class _AdaptiveLane(Protocol):
     def getLastStepHaltingNumber(self, lane_id: str) -> int: ...  # noqa: N802
 
 
-class _AdaptiveConnection(Protocol):
-    trafficlight: _AdaptiveTrafficLight
+class _AdaptiveConnection(TrafficLightConnection, Protocol):
     lane: _AdaptiveLane
 
 
@@ -281,9 +280,9 @@ class LocalAdaptiveController:
                     self.config.internal_clearance_halting_threshold,
                 ):
                     continue
-                adaptive_connection.trafficlight.setPhase(
-                    runtime.traffic_light_id,
-                    command.phase_index,
+                TrafficLightActuator.from_connection(adaptive_connection).apply(
+                    traffic_light_id=runtime.traffic_light_id,
+                    command=command,
                 )
         self._step_index += 1
 

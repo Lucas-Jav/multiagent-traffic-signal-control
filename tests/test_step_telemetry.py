@@ -133,7 +133,7 @@ def test_build_step_telemetry_records_contains_scientific_debug_fields() -> None
         junction_metrics=JunctionStepMetrics(
             entries=3,
             exits=1,
-            blocking_events=2,
+            internal_lane_persistence_events=2,
             internal_vehicle_count=1,
         ),
         movement_queue_stats={
@@ -162,7 +162,7 @@ def test_build_step_telemetry_records_contains_scientific_debug_fields() -> None
     assert first.turn_count_right == 1.0
     assert first.junction_entries == 3
     assert first.junction_exits == 1
-    assert first.junction_blocking_events == 2
+    assert first.internal_lane_persistence_events == 2
     assert first.clearance_violations == 0
     assert abs(first.turn_completion_count - (6 / 9)) < 0.000001
     assert first.movement_queue_mean == 7.5
@@ -191,7 +191,7 @@ def test_junction_flow_tracker_counts_entries_and_exits_without_logging_vehicle_
     )
     assert first.entries == 2
     assert first.exits == 0
-    assert first.blocking_events == 0
+    assert first.internal_lane_persistence_events == 0
     lane_reader.vehicle_ids = {
         ":A1_0_0": ("veh-b", "veh-c"),
         ":A1_1_0": (),
@@ -204,7 +204,7 @@ def test_junction_flow_tracker_counts_entries_and_exits_without_logging_vehicle_
     )
     assert second.entries == 1
     assert second.exits == 1
-    assert second.blocking_events == 1
+    assert second.internal_lane_persistence_events == 1
 
 
 def test_clearance_violation_flags_green_with_internal_vehicle_present() -> None:
@@ -223,7 +223,7 @@ def test_clearance_violation_flags_green_with_internal_vehicle_present() -> None
         junction_metrics=JunctionStepMetrics(
             entries=0,
             exits=0,
-            blocking_events=1,
+            internal_lane_persistence_events=1,
             internal_vehicle_count=1,
         ),
     )
@@ -297,7 +297,7 @@ def test_append_step_telemetry_writes_csv_without_vehicle_position_columns(tmp_p
                 turn_count_right=0.4,
                 junction_entries=1,
                 junction_exits=0,
-                junction_blocking_events=0,
+                internal_lane_persistence_events=0,
                 clearance_violations=0,
                 turn_completion_count=0.0,
                 movement_queue_mean=2.0,

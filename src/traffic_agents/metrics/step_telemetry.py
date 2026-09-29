@@ -31,7 +31,7 @@ class StepTelemetryRecord:
     turn_count_right: float
     junction_entries: int
     junction_exits: int
-    junction_blocking_events: int
+    internal_lane_persistence_events: int
     clearance_violations: int
     turn_completion_count: float
     movement_queue_mean: float
@@ -43,7 +43,7 @@ class StepTelemetryRecord:
 class JunctionStepMetrics:
     entries: int
     exits: int
-    blocking_events: int
+    internal_lane_persistence_events: int
     internal_vehicle_count: int
 
 
@@ -97,11 +97,11 @@ class JunctionFlowTracker:
         self._vehicle_ids_by_intersection[intersection_id] = current_vehicle_ids
         entries = len(current_vehicle_ids - previous_vehicle_ids)
         exits = len(previous_vehicle_ids - current_vehicle_ids)
-        blocking_events = len(current_vehicle_ids & previous_vehicle_ids)
+        persistence_events = len(current_vehicle_ids & previous_vehicle_ids)
         return JunctionStepMetrics(
             entries=entries,
             exits=exits,
-            blocking_events=blocking_events,
+            internal_lane_persistence_events=persistence_events,
             internal_vehicle_count=len(current_vehicle_ids),
         )
 
@@ -208,7 +208,7 @@ def build_step_telemetry_records(
             turn_count_right=turn_counts["right"],
             junction_entries=junction_metrics.entries,
             junction_exits=junction_metrics.exits,
-            junction_blocking_events=junction_metrics.blocking_events,
+            internal_lane_persistence_events=junction_metrics.internal_lane_persistence_events,
             clearance_violations=clearance_violations,
             turn_completion_count=turn_completion_counts.get(movement.movement_id, 0.0),
             movement_queue_mean=_movement_queue_stats(
@@ -233,9 +233,7 @@ def requested_phase_id(
     safety: _SafetyLike,
 ) -> str:
     current_phase = next(
-        phase
-        for phase in safety.phases
-        if phase.phase_id == observation.state.current_phase
+        phase for phase in safety.phases if phase.phase_id == observation.state.current_phase
     )
     if action.kind == TrafficLightAction.KEEP_PHASE:
         return current_phase.phase_id
@@ -325,9 +323,7 @@ def _clearance_violations(
 ) -> int:
     if internal_vehicle_count <= 0:
         return 0
-    actual_phase = next(
-        phase for phase in safety.phases if phase.phase_id == command.phase_id
-    )
+    actual_phase = next(phase for phase in safety.phases if phase.phase_id == command.phase_id)
     if _phase_kind_value(actual_phase) == "GREEN":
         return 1
     return 0

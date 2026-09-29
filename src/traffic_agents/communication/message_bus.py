@@ -72,6 +72,7 @@ class MessageBusMetrics:
     average_message_delay: float = 0.0
     max_message_delay: int = 0
     serialized_bytes: int = 0
+    delivered_serialized_bytes: int = 0
     messages_dropped: int = 0
     observed_drop_rate: float = 0.0
     stale_messages: int = 0
@@ -273,6 +274,7 @@ class MessageBus:
                 for message in messages
                 if message.delivered_step is not None
             )
+            delivered_bytes = sum(len(serialize_message(message)) for message in messages)
             total_delay_steps = self._metrics.message_delay_steps + sum(delivered_delays)
             messages_delivered = self._metrics.messages_delivered + len(messages)
             self._metrics = MessageBusMetrics(
@@ -287,6 +289,9 @@ class MessageBus:
                     default=0,
                 ),
                 serialized_bytes=self._metrics.serialized_bytes,
+                delivered_serialized_bytes=(
+                    self._metrics.delivered_serialized_bytes + delivered_bytes
+                ),
                 messages_dropped=self._metrics.messages_dropped,
                 observed_drop_rate=_observed_drop_rate(
                     messages_dropped=self._metrics.messages_dropped,
@@ -349,6 +354,7 @@ class MessageBus:
             average_message_delay=self._metrics.average_message_delay,
             max_message_delay=self._metrics.max_message_delay,
             serialized_bytes=self._metrics.serialized_bytes + serialized_bytes,
+            delivered_serialized_bytes=self._metrics.delivered_serialized_bytes,
             messages_dropped=self._metrics.messages_dropped,
             observed_drop_rate=_observed_drop_rate(
                 messages_dropped=self._metrics.messages_dropped,
@@ -367,6 +373,7 @@ class MessageBus:
             average_message_delay=self._metrics.average_message_delay,
             max_message_delay=self._metrics.max_message_delay,
             serialized_bytes=self._metrics.serialized_bytes,
+            delivered_serialized_bytes=self._metrics.delivered_serialized_bytes,
             messages_dropped=self._metrics.messages_dropped + 1,
             observed_drop_rate=_observed_drop_rate(
                 messages_dropped=self._metrics.messages_dropped + 1,
@@ -439,6 +446,7 @@ def _metrics_with_timing(
         average_message_delay=metrics.average_message_delay,
         max_message_delay=metrics.max_message_delay,
         serialized_bytes=metrics.serialized_bytes,
+        delivered_serialized_bytes=metrics.delivered_serialized_bytes,
         messages_dropped=metrics.messages_dropped,
         observed_drop_rate=metrics.observed_drop_rate,
         stale_messages=metrics.stale_messages,

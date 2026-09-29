@@ -166,7 +166,7 @@ max_steps: 10
     )
 
     class FakeExperimentRunner:
-        def __init__(self, *, config: object) -> None:
+        def __init__(self, *, config: object, **_kwargs: object) -> None:
             self._config = config
 
         def run(self) -> object:
@@ -209,9 +209,7 @@ def test_experiment_freeze_subcommand_invokes_freeze(
                     "artifacts/experiments/smoke/frozen/experiment.yaml"
                 ),
                 "checksums_path": Path("artifacts/experiments/smoke/frozen/checksums.json"),
-                "manifest_path": Path(
-                    "artifacts/experiments/smoke/frozen/freeze_manifest.json"
-                ),
+                "manifest_path": Path("artifacts/experiments/smoke/frozen/freeze_manifest.json"),
             },
         )()
 

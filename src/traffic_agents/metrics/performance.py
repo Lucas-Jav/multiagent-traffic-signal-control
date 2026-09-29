@@ -57,10 +57,11 @@ def build_performance_payload(
     trace_enabled: bool,
     result_collector_time_ms: float = 0.0,
     use_gui: bool = False,
+    communication_metrics: dict[str, object] | None = None,
 ) -> dict[str, object]:
     stats = calculate_timing_stats(controller_timings.decision_timings_ms)
     steps_per_second = simulation_steps / wall_time_seconds if wall_time_seconds > 0 else 0.0
-    return {
+    payload: dict[str, object] = {
         "run_id": run_id,
         "controller": controller,
         "simulation_steps": int(simulation_steps),
@@ -86,6 +87,9 @@ def build_performance_payload(
         "sumo_mode": "gui" if use_gui else "headless",
         "traci_note": TRACI_PROFILING_NOTE,
     }
+    if communication_metrics is not None:
+        payload["communication_metrics"] = communication_metrics
+    return payload
 
 
 def write_performance_json(path: Path, payload: dict[str, object]) -> None:

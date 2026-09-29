@@ -33,6 +33,10 @@ from traffic_agents.metrics import (
     build_step_telemetry_records,
     internal_lane_vehicle_reader,
 )
+from traffic_agents.traffic_light_actuator import (
+    TrafficLightActuator,
+    TrafficLightConnection,
+)
 from traffic_agents.traffic_model import (
     IntersectionTrafficModel,
     Movement,
@@ -211,16 +215,11 @@ class _PressureIntersectionRuntime:
     safety: PhaseSafetyManager
 
 
-class _PressureTrafficLight(Protocol):
-    def setPhase(self, tls_id: str, index: int) -> None: ...  # noqa: N802
-
-
 class _PressureLane(Protocol):
     def getLastStepHaltingNumber(self, lane_id: str) -> int: ...  # noqa: N802
 
 
-class _PressureConnection(Protocol):
-    trafficlight: _PressureTrafficLight
+class _PressureConnection(TrafficLightConnection, Protocol):
     lane: _PressureLane
 
 
@@ -393,9 +392,9 @@ class LocalPressureController:
                     self.config.internal_clearance_halting_threshold,
                 ):
                     continue
-                pressure_connection.trafficlight.setPhase(
-                    runtime.traffic_light_id,
-                    command.phase_index,
+                TrafficLightActuator.from_connection(pressure_connection).apply(
+                    traffic_light_id=runtime.traffic_light_id,
+                    command=command,
                 )
         self._step_index += 1
 

@@ -6,10 +6,16 @@ from pathlib import Path
 import pytest
 
 import traffic_agents.experiments.freeze as freeze
+from traffic_agents.config import load_scenario_config
 from traffic_agents.experiments.freeze import (
     ExperimentFreezeError,
     freeze_experiment_config,
     load_frozen_experiment_config_from_dir,
+)
+from traffic_agents.experiments.run_invariants import (
+    file_sha256,
+    route_artifact_scenario_sha256,
+    route_generator_config_sha256,
 )
 from traffic_agents.experiments.runner import ExperimentRunner, load_experiment_config
 from traffic_agents.simulation import SumoEnvironmentInfo
@@ -48,16 +54,15 @@ def test_modified_experiment_config_changes_hash(tmp_path: Path) -> None:
     assert modified["experiment_config_sha256"] != original["experiment_config_sha256"]
 
 
-def test_modified_route_changes_hash(tmp_path: Path) -> None:
+def test_modified_route_fails_route_artifact_validation(tmp_path: Path) -> None:
     config_path = _write_experiment_fixture(tmp_path)
     config = load_experiment_config(config_path)
-    original = freeze.build_freeze_checksums(config=config, config_path=config_path)
 
     route_path = tmp_path / "scenario" / "routes_s1_seed_42.rou.xml"
     route_path.write_text("<routes><vehicle id='changed'/></routes>", encoding="utf-8")
-    modified = freeze.build_freeze_checksums(config=config, config_path=config_path)
 
-    assert _file_hash(modified, "route_file") != _file_hash(original, "route_file")
+    with pytest.raises(ValueError, match="route_hash"):
+        freeze.build_freeze_checksums(config=config, config_path=config_path)
 
 
 def test_final_freeze_rejects_dirty_tree_via_mock(
@@ -162,10 +167,6 @@ def _write_experiment_fixture(tmp_path: Path) -> Path:
         encoding="utf-8",
     )
     (scenario_dir / "routes_s1_seed_42.rou.xml").write_text("<routes/>", encoding="utf-8")
-    (scenario_dir / "routes_s1_seed_42.metadata.json").write_text(
-        '{"config_hash":"abc"}\n',
-        encoding="utf-8",
-    )
     (scenario_dir / "scenario.yaml").write_text(
         """
 scenario_id: grid_3x3
@@ -222,6 +223,22 @@ seeds:
   - 42
 max_steps: 1
 """.strip(),
+        encoding="utf-8",
+    )
+    scenario_config = load_scenario_config(scenario_dir / "scenario.yaml")
+    (scenario_dir / "routes_s1_seed_42.metadata.json").write_text(
+        json.dumps(
+            {
+                "scenario_id": scenario_config.scenario_id,
+                "seed": scenario_config.seed,
+                "config_hash": route_generator_config_sha256(scenario_config),
+                "scenario_hash": route_artifact_scenario_sha256(scenario_config),
+                "route_hash": file_sha256(scenario_dir / "routes_s1_seed_42.rou.xml"),
+                "network_hash": file_sha256(scenario_dir / "network.net.xml"),
+                "generated_at": "2026-01-01T00:00:00Z",
+                "generator_version": "test",
+            }
+        ),
         encoding="utf-8",
     )
     return config_path

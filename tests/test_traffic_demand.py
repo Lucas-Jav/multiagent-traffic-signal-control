@@ -131,6 +131,8 @@ def test_traffic_demand_generator_writes_routes_and_metadata(
     assert metadata["config_hash"]
     assert metadata["scenario_hash"] == generated.scenario_hash
     assert metadata["route_hash"] == generated.route_hash
+    assert metadata["network_hash"]
+    assert metadata["generator_version"]
     assert len(metadata["scenario_hash"]) == 64
     assert len(metadata["route_hash"]) == 64
     assert "--seed" in calls[0]
@@ -165,8 +167,6 @@ def test_same_seed_and_config_keep_metadata_hash_stable(
         demand_profile="S1_BALANCED",
         sumo_info=info,
     ).generate()
-    first_metadata = json.loads(first.metadata_path.read_text(encoding="utf-8"))
-
     second = TrafficDemandGenerator(
         scenario_config=config,
         scenario_dir=scenario_dir,
@@ -174,10 +174,8 @@ def test_same_seed_and_config_keep_metadata_hash_stable(
         demand_profile="S1_BALANCED",
         sumo_info=info,
     ).generate()
-    second_metadata = json.loads(second.metadata_path.read_text(encoding="utf-8"))
-
     assert first.config_hash == second.config_hash
-    assert first_metadata["generated_at"] == second_metadata["generated_at"]
+    assert first.route_hash == second.route_hash
 
 
 def test_traffic_demand_generator_rejects_profile_mismatch(tmp_path: Path) -> None:

@@ -1,0 +1,93 @@
+# Controller Methodology
+
+This document is part of the V1 methodology freeze material. It documents the
+controller inputs and formulas without tuning controller parameters.
+
+## B0_FIXED
+
+- Inputs permitted: none from the adaptive observation stream.
+- Behavior: leaves the SUMO fixed-time phase program unchanged.
+- Fallback: not applicable.
+
+## B1_LOCAL_ADAPTIVE
+
+- Inputs permitted: local intersection observation only.
+- Policy: compares queue pressure on the current green phase against competing
+  green phases after `min_green_seconds`.
+- Parameters: `min_green_seconds=10.0`,
+  `significant_queue_threshold=2`, `pressure_margin=1.0`,
+  `max_green_seconds=60.0`,
+  `internal_clearance_halting_threshold=1`.
+- Fallback: keep current phase when local evidence is insufficient.
+
+## B2_LOCAL_PRESSURE
+
+- Inputs permitted: local intersection observation only.
+- Movement pressure:
+
+```text
+queue_weight * upstream_queue
++ arrival_rate_weight * arrival_rate
+- downstream_occupancy_weight * min(
+    outgoing_occupancy / downstream_saturation_occupancy,
+    1.0
+  )
+```
+
+- Phase score: sum of local movement pressures served by the green phase.
+- Parameters: `min_green_seconds=10.0`, `max_green_seconds=60.0`,
+  `queue_weight=1.0`, `arrival_rate_weight=0.0`,
+  `downstream_occupancy_weight=10.0`,
+  `downstream_saturation_occupancy=1.0`,
+  `switch_score_margin=0.0`,
+  `internal_clearance_halting_threshold=1`.
+- Fallback: keep current phase when no allowed candidate improves the local
+  score.
+
+## C1_COOPERATIVE_COMPACT
+
+- Core: same local pressure core as B2.
+- Inputs permitted: local observation plus received `CompactNeighborMessage`.
+- Freshness: a received message is used only when
+  `current_step - created_step <= max_message_age_steps`; stale messages are
+  counted and ignored.
+- Compact projected demand:
+
+```text
+sum(outgoing_queue_summary.values()) + arrival_trend
+```
+
+- Cooperative adjustment adds projected incoming pressure to compatible local
+  phases using `projected_incoming_weight`, turn weights, and
+  `directed_pressure_weight`; it subtracts downstream congestion using
+  `downstream_congestion_weight`.
+- Parameters: `projected_incoming_weight=1.0`,
+  `directed_pressure_weight=0.25`, `downstream_congestion_weight=10.0`,
+  turn weights `straight=0.60`, `left=0.20`, `right=0.20`.
+- Fallback: with no valid messages, adjusted phase scores equal the B2 local
+  phase scores for the same observation and safety state.
+
+## C2_COOPERATIVE_EXPANDED
+
+- Core: same local pressure core and safety path as C1/B2.
+- Inputs permitted: local observation plus received `ExpandedNeighborMessage`.
+- Freshness: same stale handling as C1.
+- Expanded projected demand:
+
+```text
+sum(queue_per_outgoing_movement.values())
++ sum(estimated_arrival_rate_per_relevant_movement.values())
+```
+
+- Downstream congestion uses the maximum value from
+  `occupancy_per_downstream_connection`.
+- C2 is not merely the same payload with more fields. It uses the same
+  architecture and B2 local core, but its cooperative adjustment can use
+  additional signals from the expanded message.
+
+## Internal Lane Persistence Metric
+
+`internal_lane_persistence_events` counts vehicles observed on internal lanes in
+consecutive simulation steps. It is a proxy for persistent internal-lane
+occupancy, not a universal direct measurement of physical spillback or junction
+blocking.

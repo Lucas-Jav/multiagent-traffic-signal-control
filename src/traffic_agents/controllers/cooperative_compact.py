@@ -56,6 +56,7 @@ from traffic_agents.metrics import (
     build_step_telemetry_records,
     internal_lane_vehicle_reader,
 )
+from traffic_agents.traffic_light_actuator import TrafficLightActuator
 from traffic_agents.traffic_model import (
     IntersectionTrafficModel,
     Movement,
@@ -437,6 +438,11 @@ class CooperativeCompactController:
         init=False,
         repr=False,
     )
+    _messages_fresh: int = field(default=0, init=False, repr=False)
+    _messages_stale: int = field(default=0, init=False, repr=False)
+    _message_age_total: int = field(default=0, init=False, repr=False)
+    _message_age_samples: int = field(default=0, init=False, repr=False)
+    _max_observed_message_age: int = field(default=0, init=False, repr=False)
     last_adjustment_result: CooperativeAdjustmentResult | None = field(default=None, init=False)
 
     def __post_init__(self) -> None:
@@ -466,6 +472,11 @@ class CooperativeCompactController:
         self._telemetry_records.clear()
         self._trace_writer = None
         self._decision_timings_ms.clear()
+        self._messages_fresh = 0
+        self._messages_stale = 0
+        self._message_age_total = 0
+        self._message_age_samples = 0
+        self._max_observed_message_age = 0
 
     def configure_agent_decision_tracing(
         self,
@@ -487,6 +498,7 @@ class CooperativeCompactController:
             safety=self.safety,
             current_step=int(observation.state.timestamp),
         )
+        self._record_adjustment_metrics(result)
         self.last_adjustment_result = result
         return action
 
@@ -570,6 +582,7 @@ class CooperativeCompactController:
                 observation=observation,
                 current_step=self._step_index,
             )
+            self._record_adjustment_metrics(result)
             action = self.local_core._decide_action_from_phase_scores(
                 observation,
                 result.phase_scores,
@@ -649,9 +662,9 @@ class CooperativeCompactController:
                     self.config.local_pressure.internal_clearance_halting_threshold,
                 ):
                     continue
-                cooperative_connection.trafficlight.setPhase(
-                    runtime.traffic_light_id,
-                    command.phase_index,
+                TrafficLightActuator.from_connection(cooperative_connection).apply(
+                    traffic_light_id=runtime.traffic_light_id,
+                    command=command,
                 )
         self._step_index += 1
 
@@ -675,6 +688,34 @@ class CooperativeCompactController:
             ),
         )
 
+    def communication_metrics(self) -> dict[str, object]:
+        bus_metrics = self._message_bus.metrics if self._message_bus is not None else None
+        sent = bus_metrics.messages_sent if bus_metrics is not None else 0
+        delivered = bus_metrics.messages_delivered if bus_metrics is not None else 0
+        bytes_sent = bus_metrics.serialized_bytes if bus_metrics is not None else 0
+        bytes_delivered = bus_metrics.delivered_serialized_bytes if bus_metrics is not None else 0
+        return {
+            "messages_sent": int(sent),
+            "messages_delivered": int(delivered),
+            "messages_dropped": int(bus_metrics.messages_dropped if bus_metrics is not None else 0),
+            "messages_stale": int(self._messages_stale),
+            "messages_fresh": int(self._messages_fresh),
+            "bytes_sent": int(bytes_sent),
+            "bytes_delivered": int(bytes_delivered),
+            "mean_message_size_bytes": (bytes_sent / sent if sent > 0 else 0.0),
+            "mean_delivered_message_size_bytes": (
+                bytes_delivered / delivered if delivered > 0 else 0.0
+            ),
+            "mean_message_age_steps": (
+                self._message_age_total / self._message_age_samples
+                if self._message_age_samples > 0
+                else 0.0
+            ),
+            "max_message_age_steps": int(self._max_observed_message_age),
+            "configured_delay_steps": int(self.config.message_bus.delay_steps),
+            "configured_drop_probability": float(self.config.message_bus.drop_probability),
+        }
+
     def manifest_metadata(self) -> dict[str, str | int | float | bool]:
         return {
             "controller_id": self.controller_id,
@@ -692,6 +733,19 @@ class CooperativeCompactController:
             "local_pressure_controller_id": self.local_core.controller_id,
             "local_pressure_controller_version": self.local_core.controller_version,
         }
+
+    def _record_adjustment_metrics(self, result: CooperativeAdjustmentResult) -> None:
+        self._messages_fresh += result.messages_fresh
+        self._messages_stale += result.messages_stale
+        observed_count = result.messages_fresh + result.messages_stale
+        if observed_count <= 0:
+            return
+        self._message_age_total += round(result.average_message_age * observed_count)
+        self._message_age_samples += observed_count
+        self._max_observed_message_age = max(
+            self._max_observed_message_age,
+            result.max_observed_message_age,
+        )
 
     def _decide_action(
         self,

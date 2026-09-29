@@ -72,6 +72,12 @@ def validate_run_inputs(
 ) -> RunInvariantFingerprint:
     """Validate invariant inputs before starting a SUMO run."""
 
+    from traffic_agents.experiments.route_artifacts import validate_route_artifacts
+
+    validate_route_artifacts(
+        scenario_config=scenario_config,
+        scenario_dir=scenario_dir,
+    )
     fingerprint = build_run_invariant_fingerprint(
         scenario_config=scenario_config,
         scenario_dir=scenario_dir,
@@ -228,12 +234,25 @@ def route_generator_config_sha256(scenario_config: ScenarioConfig) -> str:
         for flow in scenario_config.traffic.flows
     ]
     payload = {
-        "scenario": scenario_config.model_dump(mode="json"),
+        "scenario": route_artifact_scenario_payload(scenario_config),
         "seed": int(scenario_config.seed),
         "demand_profile": scenario_config.traffic.demand_profile,
         "selected_flows": selected_flows,
     }
     return json_sha256(payload)
+
+
+def route_artifact_scenario_sha256(scenario_config: ScenarioConfig) -> str:
+    return json_sha256(route_artifact_scenario_payload(scenario_config))
+
+
+def route_artifact_scenario_payload(scenario_config: ScenarioConfig) -> dict[str, object]:
+    payload = scenario_config.model_dump(mode="json")
+    return {
+        key: value
+        for key, value in payload.items()
+        if key not in {"controller_id", "communication", "tracing"}
+    }
 
 
 def phase_plan_sha256(

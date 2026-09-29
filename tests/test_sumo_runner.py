@@ -16,6 +16,10 @@ from traffic_agents.communication import (
 from traffic_agents.communication_seed import derive_communication_rng_seed
 from traffic_agents.config import ScenarioConfig
 from traffic_agents.experiments import RunInvariantValidationError
+from traffic_agents.experiments.run_invariants import (
+    route_artifact_scenario_sha256,
+    route_generator_config_sha256,
+)
 from traffic_agents.metrics import StepTelemetryRecord
 from traffic_agents.simulation import SumoEnvironmentInfo, TraCISimulationRunner
 from traffic_agents.traffic_model import MOVEMENT_MODEL_VERSION, PHASE_PLAN_VERSION
@@ -120,7 +124,7 @@ class FakeTelemetryController:
                 turn_count_right=0.2,
                 junction_entries=1,
                 junction_exits=0,
-                junction_blocking_events=0,
+                internal_lane_persistence_events=0,
                 clearance_violations=0,
                 turn_completion_count=0.0,
                 movement_queue_mean=1.0,
@@ -171,9 +175,7 @@ class FakeMessageBusController(FakeCountingController):
             created_step=step,
             payload={"queue": step},
         )
-        self.delivered_messages += len(
-            self.bus.receive(destination="A2", current_step=step)
-        )
+        self.delivered_messages += len(self.bus.receive(destination="A2", current_step=step))
 
 
 def make_scenario_config(
@@ -245,7 +247,10 @@ def make_sumo_info(tmp_path: Path) -> SumoEnvironmentInfo:
     )
 
 
-def make_scenario_dir(tmp_path: Path) -> Path:
+def make_scenario_dir(
+    tmp_path: Path,
+    scenario_config: ScenarioConfig | None = None,
+) -> Path:
     scenario_dir = tmp_path / "scenario"
     scenario_dir.mkdir()
     (scenario_dir / "network.net.xml").write_text(
@@ -273,7 +278,24 @@ def make_scenario_dir(tmp_path: Path) -> Path:
         ),
         encoding="utf-8",
     )
-    (scenario_dir / "routes_s1_seed_42.rou.xml").write_text("<routes/>", encoding="utf-8")
+    route_path = scenario_dir / "routes_s1_seed_42.rou.xml"
+    route_path.write_text("<routes/>", encoding="utf-8")
+    scenario_config = scenario_config or make_scenario_config()
+    (scenario_dir / "routes_s1_seed_42.metadata.json").write_text(
+        json.dumps(
+            {
+                "scenario_id": scenario_config.scenario_id,
+                "seed": scenario_config.seed,
+                "config_hash": route_generator_config_sha256(scenario_config),
+                "scenario_hash": route_artifact_scenario_sha256(scenario_config),
+                "route_hash": _sha256(route_path),
+                "network_hash": _sha256(scenario_dir / "network.net.xml"),
+                "generated_at": "2026-01-01T00:00:00Z",
+                "generator_version": "test",
+            }
+        ),
+        encoding="utf-8",
+    )
     return scenario_dir
 
 
@@ -333,9 +355,10 @@ def test_traci_runner_excludes_warmup_from_summary_metrics(
         lambda module_name: fake_traci if module_name == "traci" else None,
     )
 
+    scenario_config = make_scenario_config(duration_seconds=3, warmup_seconds=2)
     runner = TraCISimulationRunner(
-        scenario_config=make_scenario_config(duration_seconds=3, warmup_seconds=2),
-        scenario_dir=make_scenario_dir(tmp_path),
+        scenario_config=scenario_config,
+        scenario_dir=make_scenario_dir(tmp_path, scenario_config),
         sumo_info=make_sumo_info(tmp_path),
         label="test-simulation",
         write_manifest=False,
@@ -368,9 +391,10 @@ def test_traci_runner_boundary_step_starts_measurement_after_warmup(
         lambda module_name: fake_traci if module_name == "traci" else None,
     )
 
+    scenario_config = make_scenario_config(duration_seconds=3, warmup_seconds=2)
     runner = TraCISimulationRunner(
-        scenario_config=make_scenario_config(duration_seconds=3, warmup_seconds=2),
-        scenario_dir=make_scenario_dir(tmp_path),
+        scenario_config=scenario_config,
+        scenario_dir=make_scenario_dir(tmp_path, scenario_config),
         sumo_info=make_sumo_info(tmp_path),
         label="test-simulation",
         max_steps=3,
@@ -401,9 +425,10 @@ def test_traci_runner_can_stop_inside_warmup_without_measurement_metrics(
         lambda module_name: fake_traci if module_name == "traci" else None,
     )
 
+    scenario_config = make_scenario_config(duration_seconds=3, warmup_seconds=2)
     runner = TraCISimulationRunner(
-        scenario_config=make_scenario_config(duration_seconds=3, warmup_seconds=2),
-        scenario_dir=make_scenario_dir(tmp_path),
+        scenario_config=scenario_config,
+        scenario_dir=make_scenario_dir(tmp_path, scenario_config),
         sumo_info=make_sumo_info(tmp_path),
         label="test-simulation",
         max_steps=2,
@@ -436,9 +461,10 @@ def test_controller_continues_operating_during_warmup(
     )
     monkeypatch.setattr(sumo_runner, "build_controller", lambda _controller_id: controller)
 
+    scenario_config = make_scenario_config(duration_seconds=1, warmup_seconds=2)
     runner = TraCISimulationRunner(
-        scenario_config=make_scenario_config(duration_seconds=1, warmup_seconds=2),
-        scenario_dir=make_scenario_dir(tmp_path),
+        scenario_config=scenario_config,
+        scenario_dir=make_scenario_dir(tmp_path, scenario_config),
         sumo_info=make_sumo_info(tmp_path),
         label="test-simulation",
         write_manifest=False,
@@ -468,9 +494,10 @@ def test_message_bus_continues_operating_during_warmup(
     )
     monkeypatch.setattr(sumo_runner, "build_controller", lambda _controller_id: controller)
 
+    scenario_config = make_scenario_config(duration_seconds=1, warmup_seconds=2)
     runner = TraCISimulationRunner(
-        scenario_config=make_scenario_config(duration_seconds=1, warmup_seconds=2),
-        scenario_dir=make_scenario_dir(tmp_path),
+        scenario_config=scenario_config,
+        scenario_dir=make_scenario_dir(tmp_path, scenario_config),
         sumo_info=make_sumo_info(tmp_path),
         label="test-simulation",
         write_manifest=False,
@@ -496,9 +523,10 @@ def test_traci_runner_can_use_gui_binary_and_step_limit(
     sumo_info = make_sumo_info(tmp_path)
     sumo_info.sumo_gui_binary.write_text("", encoding="utf-8")
 
+    scenario_config = make_scenario_config(duration_seconds=10)
     runner = TraCISimulationRunner(
-        scenario_config=make_scenario_config(duration_seconds=10),
-        scenario_dir=make_scenario_dir(tmp_path),
+        scenario_config=scenario_config,
+        scenario_dir=make_scenario_dir(tmp_path, scenario_config),
         sumo_info=sumo_info,
         label="test-simulation",
         use_gui=True,
@@ -526,12 +554,13 @@ def test_traci_runner_loads_scenario_viewsettings_for_gui(
     )
     sumo_info = make_sumo_info(tmp_path)
     sumo_info.sumo_gui_binary.write_text("", encoding="utf-8")
-    scenario_dir = make_scenario_dir(tmp_path)
+    scenario_config = make_scenario_config(duration_seconds=1)
+    scenario_dir = make_scenario_dir(tmp_path, scenario_config)
     viewsettings_path = scenario_dir / "viewsettings.xml"
     viewsettings_path.write_text("<viewsettings/>", encoding="utf-8")
 
     runner = TraCISimulationRunner(
-        scenario_config=make_scenario_config(duration_seconds=1),
+        scenario_config=scenario_config,
         scenario_dir=scenario_dir,
         sumo_info=sumo_info,
         label="test-simulation",
@@ -561,9 +590,10 @@ def test_traci_runner_stops_safely_when_step_raises(
         "traffic_agents.simulation.sumo_runner.importlib.import_module",
         lambda module_name: fake_traci if module_name == "traci" else None,
     )
+    scenario_config = make_scenario_config(duration_seconds=1)
     runner = TraCISimulationRunner(
-        scenario_config=make_scenario_config(duration_seconds=1),
-        scenario_dir=make_scenario_dir(tmp_path),
+        scenario_config=scenario_config,
+        scenario_dir=make_scenario_dir(tmp_path, scenario_config),
         sumo_info=make_sumo_info(tmp_path),
         label="test-simulation",
         write_manifest=False,
@@ -585,7 +615,8 @@ def test_traci_runner_fails_fast_before_traci_start_on_invalid_run_inputs(
         "traffic_agents.simulation.sumo_runner.importlib.import_module",
         lambda module_name: fake_traci if module_name == "traci" else None,
     )
-    scenario_dir = make_scenario_dir(tmp_path)
+    scenario_config = make_scenario_config(duration_seconds=1)
+    scenario_dir = make_scenario_dir(tmp_path, scenario_config)
     (scenario_dir / "metadata.json").write_text(
         json.dumps(
             {
@@ -599,7 +630,7 @@ def test_traci_runner_fails_fast_before_traci_start_on_invalid_run_inputs(
         encoding="utf-8",
     )
     runner = TraCISimulationRunner(
-        scenario_config=make_scenario_config(duration_seconds=1),
+        scenario_config=scenario_config,
         scenario_dir=scenario_dir,
         sumo_info=make_sumo_info(tmp_path),
         label="test-simulation",
@@ -711,9 +742,10 @@ def test_traci_runner_writes_demo_run_mode_to_manifest(
         lambda module_name: fake_traci if module_name == "traci" else None,
     )
 
+    scenario_config = make_scenario_config(duration_seconds=1)
     runner = TraCISimulationRunner(
-        scenario_config=make_scenario_config(duration_seconds=1),
-        scenario_dir=make_scenario_dir(tmp_path),
+        scenario_config=scenario_config,
+        scenario_dir=make_scenario_dir(tmp_path, scenario_config),
         sumo_info=make_sumo_info(tmp_path),
         label="test-demo-simulation",
         artifacts_dir=tmp_path / "artifacts" / "demos",
@@ -744,9 +776,10 @@ def test_traci_runner_can_stream_step_telemetry_without_manifest(
         lambda _controller_id: FakeTelemetryController(),
     )
 
+    scenario_config = make_scenario_config(duration_seconds=1)
     runner = TraCISimulationRunner(
-        scenario_config=make_scenario_config(duration_seconds=1),
-        scenario_dir=make_scenario_dir(tmp_path),
+        scenario_config=scenario_config,
+        scenario_dir=make_scenario_dir(tmp_path, scenario_config),
         sumo_info=make_sumo_info(tmp_path),
         label="test-demo-telemetry",
         write_manifest=False,
@@ -775,9 +808,10 @@ def test_traci_runner_writes_intersection_trace_for_telemetry_controller(
         "build_controller",
         lambda _controller_id: FakeTelemetryController(),
     )
-    scenario_dir = make_scenario_dir(tmp_path)
+    scenario_config = make_scenario_config(duration_seconds=1)
+    scenario_dir = make_scenario_dir(tmp_path, scenario_config)
     runner = TraCISimulationRunner(
-        scenario_config=make_scenario_config(duration_seconds=1),
+        scenario_config=scenario_config,
         scenario_dir=scenario_dir,
         sumo_info=make_sumo_info(tmp_path),
         label="test-simulation",
@@ -797,7 +831,7 @@ def test_traci_runner_writes_intersection_trace_for_telemetry_controller(
     assert rows[0]["requested_phase"] == "phase_3"
     assert rows[0]["actual_phase"] == "phase_1"
     assert rows[0]["safety_override"] == "True"
-    assert rows[0]["junction_blocking_events"] == "0"
+    assert rows[0]["internal_lane_persistence_events"] == "0"
     assert rows[0]["clearance_violations"] == "0"
     assert rows[0]["turn_completion_count"] == "0.0"
     assert rows[0]["movement_queue_mean"] == "1.0"

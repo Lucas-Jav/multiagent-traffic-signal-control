@@ -51,9 +51,7 @@ class FocusAgentConsole:
     _latest_printed_step: int | None = field(default=None, init=False)
 
     def consume(self, records: tuple[StepTelemetryRecord, ...]) -> None:
-        focus_records = [
-            record for record in records if record.intersection_id == self.focus_agent
-        ]
+        focus_records = [record for record in records if record.intersection_id == self.focus_agent]
         if not focus_records:
             return
         step_index = focus_records[0].step_index
