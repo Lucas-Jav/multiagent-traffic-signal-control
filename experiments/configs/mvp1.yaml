@@ -5,6 +5,7 @@ controllers:
   - B1_LOCAL_ADAPTIVE
   - B2_LOCAL_PRESSURE
   - C1_COOPERATIVE_COMPACT
+  - C2_COOPERATIVE_EXPANDED
 seeds:
   - 42
 max_steps: 300

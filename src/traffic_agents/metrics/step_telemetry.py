@@ -7,11 +7,6 @@ from pathlib import Path
 from typing import Protocol, cast
 
 from traffic_agents.config import TurningRatiosConfig
-from traffic_agents.controllers.phase_safety import (
-    PhaseCommand,
-    PhaseKind,
-    PhaseSafetyManager,
-)
 from traffic_agents.domain import AgentObservation, IntersectionId, TrafficLightAction
 from traffic_agents.traffic_model import IntersectionTrafficModel, TurnType
 
@@ -36,18 +31,19 @@ class StepTelemetryRecord:
     turn_count_right: float
     junction_entries: int
     junction_exits: int
-    junction_blocking_events: int
+    internal_lane_persistence_events: int
     clearance_violations: int
     turn_completion_count: float
     movement_queue_mean: float
     movement_queue_max: int
+    is_warmup: bool = False
 
 
 @dataclass(frozen=True)
 class JunctionStepMetrics:
     entries: int
     exits: int
-    blocking_events: int
+    internal_lane_persistence_events: int
     internal_vehicle_count: int
 
 
@@ -59,6 +55,27 @@ class MovementQueueStats:
 
 class InternalLaneVehicleReader(Protocol):
     def getLastStepVehicleIDs(self, lane_id: str) -> tuple[str, ...]: ...  # noqa: N802
+
+
+class _CommandLike(Protocol):
+    @property
+    def phase_id(self) -> str: ...
+
+
+class _PhaseLike(Protocol):
+    @property
+    def phase_id(self) -> str: ...
+
+    @property
+    def kind(self) -> object: ...
+
+
+class _SafetyLike(Protocol):
+    @property
+    def phases(self) -> tuple[_PhaseLike, ...]: ...
+
+    @property
+    def allowed_green_transitions(self) -> Mapping[str, tuple[str, ...]]: ...
 
 
 class JunctionFlowTracker:
@@ -80,11 +97,11 @@ class JunctionFlowTracker:
         self._vehicle_ids_by_intersection[intersection_id] = current_vehicle_ids
         entries = len(current_vehicle_ids - previous_vehicle_ids)
         exits = len(previous_vehicle_ids - current_vehicle_ids)
-        blocking_events = len(current_vehicle_ids & previous_vehicle_ids)
+        persistence_events = len(current_vehicle_ids & previous_vehicle_ids)
         return JunctionStepMetrics(
             entries=entries,
             exits=exits,
-            blocking_events=blocking_events,
+            internal_lane_persistence_events=persistence_events,
             internal_vehicle_count=len(current_vehicle_ids),
         )
 
@@ -100,10 +117,17 @@ class MovementQueueTracker:
         *,
         observation: AgentObservation,
         traffic_model: IntersectionTrafficModel,
+        include_sample: bool = True,
     ) -> dict[str, MovementQueueStats]:
         stats: dict[str, MovementQueueStats] = {}
         for movement in traffic_model.movements:
             queue = observation.state.incoming_queue.get(movement.incoming_lane_id, 0)
+            if not include_sample:
+                stats[movement.movement_id] = self._current_stats(
+                    movement_id=movement.movement_id,
+                    queue=queue,
+                )
+                continue
             self._total_by_movement[movement.movement_id] = (
                 self._total_by_movement.get(movement.movement_id, 0) + queue
             )
@@ -123,18 +147,28 @@ class MovementQueueTracker:
             )
         return stats
 
+    def _current_stats(self, *, movement_id: str, queue: int) -> MovementQueueStats:
+        samples = self._samples_by_movement.get(movement_id, 0)
+        if samples <= 0:
+            return MovementQueueStats(mean=float(queue), max=queue)
+        return MovementQueueStats(
+            mean=self._total_by_movement[movement_id] / samples,
+            max=self._max_by_movement[movement_id],
+        )
+
 
 def build_step_telemetry_records(
     *,
     step_index: int,
     observation: AgentObservation,
     action: TrafficLightAction,
-    command: PhaseCommand,
-    safety: PhaseSafetyManager,
+    command: _CommandLike,
+    safety: _SafetyLike,
     traffic_model: IntersectionTrafficModel,
     turning_ratios: TurningRatiosConfig,
     junction_metrics: JunctionStepMetrics,
     movement_queue_stats: Mapping[str, MovementQueueStats] | None = None,
+    is_warmup: bool = False,
 ) -> tuple[StepTelemetryRecord, ...]:
     state = observation.state
     requested_phase = requested_phase_id(observation, action, safety)
@@ -174,7 +208,7 @@ def build_step_telemetry_records(
             turn_count_right=turn_counts["right"],
             junction_entries=junction_metrics.entries,
             junction_exits=junction_metrics.exits,
-            junction_blocking_events=junction_metrics.blocking_events,
+            internal_lane_persistence_events=junction_metrics.internal_lane_persistence_events,
             clearance_violations=clearance_violations,
             turn_completion_count=turn_completion_counts.get(movement.movement_id, 0.0),
             movement_queue_mean=_movement_queue_stats(
@@ -187,6 +221,7 @@ def build_step_telemetry_records(
                 movement.movement_id,
                 state.incoming_queue.get(movement.incoming_lane_id, 0),
             ).max,
+            is_warmup=is_warmup,
         )
         for movement in traffic_model.movements
     )
@@ -195,7 +230,7 @@ def build_step_telemetry_records(
 def requested_phase_id(
     observation: AgentObservation,
     action: TrafficLightAction,
-    safety: PhaseSafetyManager,
+    safety: _SafetyLike,
 ) -> str:
     current_phase = next(
         phase for phase in safety.phases if phase.phase_id == observation.state.current_phase
@@ -206,7 +241,7 @@ def requested_phase_id(
         return action.target_phase
     if (
         action.kind == TrafficLightAction.REQUEST_NEXT_PHASE
-        and current_phase.kind == PhaseKind.GREEN
+        and _phase_kind_value(current_phase) == "GREEN"
     ):
         return safety.allowed_green_transitions[current_phase.phase_id][0]
     return current_phase.phase_id
@@ -282,16 +317,23 @@ def _turn_completion_counts(
 
 def _clearance_violations(
     *,
-    command: PhaseCommand,
-    safety: PhaseSafetyManager,
+    command: _CommandLike,
+    safety: _SafetyLike,
     internal_vehicle_count: int,
 ) -> int:
     if internal_vehicle_count <= 0:
         return 0
     actual_phase = next(phase for phase in safety.phases if phase.phase_id == command.phase_id)
-    if actual_phase.kind == PhaseKind.GREEN:
+    if _phase_kind_value(actual_phase) == "GREEN":
         return 1
     return 0
+
+
+def _phase_kind_value(phase: _PhaseLike) -> str:
+    kind = phase.kind
+    if hasattr(kind, "value"):
+        return str(kind.value)
+    return str(kind)
 
 
 def _movement_queue_stats(

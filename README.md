@@ -202,15 +202,35 @@ B2
 informacao compacta dos vizinhos
 ```
 
+`C2_COOPERATIVE_EXPANDED`: controlador cooperativo expandido. Ele reutiliza o mesmo nucleo cooperativo do `C1_COOPERATIVE_COMPACT`, incluindo calculo de pressao, ajuste cooperativo, seguranca de fase e fallback local. A diferenca experimental principal e a informacao disponivel: C1 troca `CompactNeighborMessage`, enquanto C2 troca `ExpandedNeighborMessage`.
+
 Quando mensagens de vizinhos nao estao disponiveis, o comportamento volta para a decisao local.
 
 ## 11. Multi-Agent Communication
 
 A comunicacao do MVP1 usa `CompactNeighborMessage` e `MessageBus`.
 
-`CompactNeighborMessage` carrega informacao compacta sobre o estado local relevante para um vizinho. `MessageBus` entrega mensagens entre agentes respeitando a communication topology configurada para a rede 3x3.
+`CompactNeighborMessage` carrega informacao compacta sobre o estado local relevante para um vizinho. `ExpandedNeighborMessage` carrega os campos compactos e informacao destination-specific adicional, como filas por movimento de saida relevante, ocupacao por conexao downstream, taxa estimada de chegada por movimento relevante, resumo direcional de demanda, phase group e phase elapsed. Ela nao inclui lista de veiculos, estado global, dados de agentes terceiros nem informacao local sem relacao com o destino. `MessageBus` entrega mensagens entre agentes respeitando a communication topology configurada para a rede 3x3.
 
 A communication topology define quais agentes podem trocar mensagens. Ela nao altera a traffic topology e nao cria novas conexoes fisicas na rede SUMO.
+
+O atraso de comunicacao e configurado no cenario:
+
+```yaml
+communication:
+  delay_steps: 0
+  drop_probability: 0.0
+  rng_seed: null
+  max_message_age_steps: 1
+```
+
+O tempo de entrega usa apenas simulation step. O `MessageBus` nao usa relogio de parede para entrega cientifica de mensagens. Uma mensagem criada no step `t` e primeiro contabilizada como sent. A decisao de perda acontece imediatamente no `publish(...)`, usando um RNG dedicado do canal de comunicacao. Se a mensagem for perdida, ela nunca entra na agenda de entrega nem chega ao inbox. Se nao for perdida, ela e agendada para `t + delay_steps`. Em cada simulation step, o controlador cooperativo publica as mensagens locais, chama `receive(...)` e so depois decide a fase; portanto, uma mensagem agendada para o step `s` fica disponivel antes da decisao tomada no proprio step `s`. Com `delay_steps: 0` e `drop_probability: 0.0`, isso preserva o comportamento atual: uma mensagem criada no step corrente pode ser usada na decisao do mesmo step.
+
+`rng_seed: null` faz a seed efetiva ser derivada deterministicamente de `simulation.seed`, `communication.delay_steps` e `communication.drop_probability`. Um inteiro em `rng_seed` substitui essa derivacao. A seed efetiva do canal e registrada no manifest da run.
+
+Cada mensagem registra `created_step`, `scheduled_delivery_step` e `delivered_step`. O bus mantem mensagens internamente por delivery step e preserva ordenacao deterministica por `delivery_step`, `created_step`, `sequence`, `source` e `destination`. As metricas de transporte incluem `messages_sent`, `messages_delivered`, `messages_dropped`, `observed_drop_rate`, `message_delay_steps`, `average_message_delay` e `max_message_delay`.
+
+A idade cientifica da informacao e `current_simulation_step - created_step`, medida pelo `C1_COOPERATIVE_COMPACT` quando a mensagem chega ao agente. Mensagens com `age <= max_message_age_steps` sao fresh; mensagens com `age > max_message_age_steps` sao stale. A fronteira e inclusiva: `age == max_message_age_steps` ainda e fresh. Mensagens stale sao ignoradas pelo ajuste cooperativo, sem exception, e o controlador segue com a informacao local/B2 quando nao houver mensagem cooperativa util. As metricas de utilidade da informacao incluem `messages_fresh`, `messages_stale`, `average_message_age` e `max_observed_message_age`. O registro preparado para agent tracing guarda `message_age_steps`, `used` e `reason=STALE` quando uma mensagem entregue e descartada por idade.
 
 ## 12. Running a Simulation
 
@@ -240,7 +260,7 @@ uv run traffic-agents simulation run --scenario scenarios/grid_3x3/scenario.yaml
 
 ## 13. Running an Experiment
 
-O experimento MVP1 esta em `experiments/configs/mvp1.yaml`. Ele executa os controladores `B0_FIXED`, `B1_LOCAL_ADAPTIVE`, `B2_LOCAL_PRESSURE` e `C1_COOPERATIVE_COMPACT` com seed 42 e `max_steps: 300`.
+O experimento MVP1 esta em `experiments/configs/mvp1.yaml`. Ele executa os controladores `B0_FIXED`, `B1_LOCAL_ADAPTIVE`, `B2_LOCAL_PRESSURE`, `C1_COOPERATIVE_COMPACT` e `C2_COOPERATIVE_EXPANDED` com seed 42 e `max_steps: 300`.
 
 ```powershell
 uv run traffic-agents experiment run --config experiments/configs/mvp1.yaml

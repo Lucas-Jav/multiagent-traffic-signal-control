@@ -6,11 +6,11 @@ import os
 import platform
 import sys
 import time
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Protocol, cast
+from typing import Literal, Protocol, cast
 from uuid import uuid4
 
 from traffic_agents.config import ScenarioConfig, get_settings
@@ -27,7 +27,21 @@ from traffic_agents.experiments.run_invariants import (
     build_run_invariant_fingerprint,
     validate_run_inputs,
 )
-from traffic_agents.metrics import StepTelemetryRecord, append_step_telemetry
+from traffic_agents.metrics import (
+    AGENT_TRACE_FILE,
+    PERFORMANCE_FILE,
+    SUMO_TRAFFIC_METRICS_FILE,
+    AgentDecisionTraceSettings,
+    AgentDecisionTraceWriter,
+    ControllerPerformanceTimings,
+    StepTelemetryRecord,
+    append_step_telemetry,
+    build_performance_payload,
+    missing_sumo_trip_metrics,
+    parse_sumo_trip_metrics,
+    write_performance_json,
+    write_sumo_trip_metrics,
+)
 from traffic_agents.simulation.sumo_environment import SumoEnvironmentInfo, detect_sumo_environment
 from traffic_agents.simulation.traci_sensor_adapter import (
     TraCISensorAdapter,
@@ -51,6 +65,12 @@ class SimulationRunSummary:
     vehicles_departed: int
     vehicles_arrived: int
     wall_time_seconds: float
+    measurement_start_step: int = 0
+    measurement_end_step: int = 0
+    total_simulation_steps: int = 0
+    measurement_steps_executed: int = 0
+    total_vehicles_departed: int = 0
+    total_vehicles_arrived: int = 0
 
 
 class SimulationRunner(Protocol):
@@ -89,6 +109,14 @@ class _TelemetryProducer(Protocol):
     def pop_step_telemetry_records(self) -> tuple[StepTelemetryRecord, ...]: ...
 
 
+class _PerformanceTimingsProducer(Protocol):
+    def performance_timings(self) -> ControllerPerformanceTimings: ...
+
+
+class _CommunicationMetricsProducer(Protocol):
+    def communication_metrics(self) -> dict[str, object]: ...
+
+
 class TraCISimulationRunner:
     def __init__(
         self,
@@ -103,6 +131,10 @@ class TraCISimulationRunner:
         controller_id: str | None = None,
         artifacts_dir: Path | None = None,
         write_manifest: bool = True,
+        run_mode: Literal["SIMULATION", "EXPERIMENT", "DEMO"] = "SIMULATION",
+        run_manifest_extra: Mapping[str, object] | None = None,
+        step_telemetry_consumer: Callable[[tuple[StepTelemetryRecord, ...]], None] | None = None,
+        run_id: str | None = None,
     ) -> None:
         if step_delay_seconds < 0:
             msg = "step_delay_seconds must be non-negative"
@@ -129,8 +161,18 @@ class TraCISimulationRunner:
         self._max_steps = max_steps
         self._artifacts_dir = artifacts_dir
         self._write_manifest = write_manifest
+        self._run_mode = run_mode
+        self._run_manifest_extra = dict(run_manifest_extra or {})
+        self._step_telemetry_consumer = step_telemetry_consumer
+        self._configured_run_id = run_id
         self._active_run_dir: Path | None = None
         self._telemetry_path: Path | None = None
+        self._agent_trace_path: Path | None = None
+        self._performance_path: Path | None = None
+        self._sumo_dir: Path | None = None
+        self._tripinfo_path: Path | None = None
+        self._statistics_path: Path | None = None
+        self._sumo_metrics_path: Path | None = None
         self._run_invariant_fingerprint: RunInvariantFingerprint | None = None
         self._traci: _TraCIModule | None = None
         self._connection: _TraCIConnection | None = None
@@ -138,6 +180,10 @@ class TraCISimulationRunner:
         self._steps_executed = 0
         self._vehicles_departed = 0
         self._vehicles_arrived = 0
+        self._measurement_steps_executed = 0
+        self._total_vehicles_departed = 0
+        self._total_vehicles_arrived = 0
+        self._result_collector_time_ms = 0.0
 
     def start(self) -> None:
         if self._started:
@@ -159,9 +205,16 @@ class TraCISimulationRunner:
         self._controller.before_simulation_step(connection)
         connection.simulationStep()
         simulation = connection.simulation
+        step_index = self._steps_executed
+        departed = int(simulation.getDepartedNumber())
+        arrived = int(simulation.getArrivedNumber())
         self._steps_executed += 1
-        self._vehicles_departed += int(simulation.getDepartedNumber())
-        self._vehicles_arrived += int(simulation.getArrivedNumber())
+        self._total_vehicles_departed += departed
+        self._total_vehicles_arrived += arrived
+        if self._scenario_config.is_measurement_step(step_index):
+            self._measurement_steps_executed += 1
+            self._vehicles_departed += departed
+            self._vehicles_arrived += arrived
         self._controller.after_simulation_step(connection)
         self._write_step_telemetry()
 
@@ -182,6 +235,7 @@ class TraCISimulationRunner:
     def run(self) -> SimulationRunSummary:
         run_id = self._build_run_id()
         self._prepare_run_artifacts(run_id)
+        self._configure_agent_decision_tracing(run_id)
         started_at = _utc_now()
         start_time = time.perf_counter()
         try:
@@ -208,7 +262,15 @@ class TraCISimulationRunner:
             vehicles_departed=self._vehicles_departed,
             vehicles_arrived=self._vehicles_arrived,
             wall_time_seconds=wall_time_seconds,
+            measurement_start_step=self._scenario_config.measurement_start_step,
+            measurement_end_step=self._scenario_config.measurement_end_step,
+            total_simulation_steps=self._scenario_config.total_simulation_steps,
+            measurement_steps_executed=self._measurement_steps_executed,
+            total_vehicles_departed=self._total_vehicles_departed,
+            total_vehicles_arrived=self._total_vehicles_arrived,
         )
+        self._write_performance(summary)
+        self._write_sumo_metrics()
         if self._write_manifest:
             return self._write_run_manifest(summary)
         return summary
@@ -224,6 +286,10 @@ class TraCISimulationRunner:
             traffic_light_ids=traffic_light_ids,
             step_length=self._scenario_config.step_length,
         )
+
+    @property
+    def controller(self) -> object:
+        return self._controller
 
     def _sumo_command(self) -> list[str]:
         network_path = self._scenario_dir / self._scenario_config.network_file
@@ -250,6 +316,10 @@ class TraCISimulationRunner:
             "--no-step-log",
             "--quit-on-end",
         ]
+        if self._tripinfo_path is not None:
+            command.extend(["--tripinfo-output", str(self._tripinfo_path)])
+        if self._statistics_path is not None:
+            command.extend(["--statistic-output", str(self._statistics_path)])
         if self._use_gui:
             gui_settings_path = self._scenario_dir / "viewsettings.xml"
             if gui_settings_path.exists():
@@ -258,9 +328,7 @@ class TraCISimulationRunner:
         return command
 
     def _target_steps(self) -> int:
-        scenario_steps = int(
-            self._scenario_config.duration_seconds / self._scenario_config.step_length
-        )
+        scenario_steps = self._scenario_config.total_simulation_steps
         if self._max_steps is None:
             return scenario_steps
         return min(scenario_steps, self._max_steps)
@@ -272,9 +340,12 @@ class TraCISimulationRunner:
         return self._connection
 
     def _build_run_id(self) -> str:
-        timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+        if self._configured_run_id is not None:
+            return self._configured_run_id
+        timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S_%fZ")
+        suffix = uuid4().hex[:8]
         return (
-            f"{timestamp}_{self._scenario_config.scenario_id}_"
+            f"{timestamp}_{suffix}_{self._scenario_config.scenario_id}_"
             f"{self._controller.controller_id}_"
             f"{self._scenario_config.traffic.demand_profile}_"
             f"seed_{self._scenario_config.seed}"
@@ -298,6 +369,12 @@ class TraCISimulationRunner:
             vehicles_departed=summary.vehicles_departed,
             vehicles_arrived=summary.vehicles_arrived,
             wall_time_seconds=summary.wall_time_seconds,
+            measurement_start_step=summary.measurement_start_step,
+            measurement_end_step=summary.measurement_end_step,
+            total_simulation_steps=summary.total_simulation_steps,
+            measurement_steps_executed=summary.measurement_steps_executed,
+            total_vehicles_departed=summary.total_vehicles_departed,
+            total_vehicles_arrived=summary.total_vehicles_arrived,
         )
         manifest_path.write_text(
             json.dumps(
@@ -307,9 +384,20 @@ class TraCISimulationRunner:
                     self._scenario_config,
                     self._scenario_dir,
                     self._sumo_info,
+                    self._run_mode,
                     self._run_invariant_fingerprint,
+                    self._run_manifest_extra,
                     self._telemetry_path.name
                     if self._telemetry_path is not None and self._telemetry_path.exists()
+                    else None,
+                    self._agent_trace_path.name
+                    if self._agent_trace_path is not None and self._agent_trace_path.exists()
+                    else None,
+                    self._performance_path.name
+                    if self._performance_path is not None and self._performance_path.exists()
+                    else None,
+                    self._sumo_metrics_path.name
+                    if self._sumo_metrics_path is not None and self._sumo_metrics_path.exists()
                     else None,
                 ),
                 indent=2,
@@ -326,21 +414,111 @@ class TraCISimulationRunner:
     def _prepare_run_artifacts(self, run_id: str) -> None:
         self._active_run_dir = None
         self._telemetry_path = None
-        if not self._write_manifest:
+        self._agent_trace_path = None
+        self._performance_path = None
+        self._sumo_dir = None
+        self._tripinfo_path = None
+        self._statistics_path = None
+        self._sumo_metrics_path = None
+        trace_settings = AgentDecisionTraceSettings.from_config(
+            getattr(self._scenario_config, "tracing", None)
+        )
+        if not self._write_manifest and not trace_settings.enabled:
             return
         self._active_run_dir = self._manifest_dir(run_id)
-        self._active_run_dir.mkdir(parents=True, exist_ok=True)
-        self._telemetry_path = self._active_run_dir / "intersection_trace.csv"
+        self._active_run_dir.mkdir(parents=True, exist_ok=False)
+        if self._write_manifest:
+            self._telemetry_path = self._active_run_dir / "intersection_trace.csv"
+            self._performance_path = self._active_run_dir / PERFORMANCE_FILE
+            self._sumo_dir = self._active_run_dir / "sumo"
+            self._sumo_dir.mkdir()
+            self._tripinfo_path = self._sumo_dir / "tripinfo.xml"
+            self._statistics_path = self._sumo_dir / "statistics.xml"
+            self._sumo_metrics_path = self._active_run_dir / SUMO_TRAFFIC_METRICS_FILE
+        if trace_settings.enabled:
+            self._agent_trace_path = self._active_run_dir / AGENT_TRACE_FILE
+            self._performance_path = self._active_run_dir / PERFORMANCE_FILE
+
+    def _configure_agent_decision_tracing(self, run_id: str) -> None:
+        configure_tracing = getattr(self._controller, "configure_agent_decision_tracing", None)
+        if not callable(configure_tracing):
+            return
+        trace_settings = AgentDecisionTraceSettings.from_config(
+            getattr(self._scenario_config, "tracing", None)
+        )
+        if not trace_settings.enabled or self._agent_trace_path is None:
+            configure_tracing(None)
+            return
+        configure_tracing(
+            AgentDecisionTraceWriter(
+                run_id=run_id,
+                path=self._agent_trace_path,
+                settings=trace_settings,
+            )
+        )
 
     def _write_step_telemetry(self) -> None:
-        if self._telemetry_path is None:
+        if self._telemetry_path is None and self._step_telemetry_consumer is None:
             return
+        started_at = time.perf_counter()
         producer = self._controller
         pop_records = getattr(producer, "pop_step_telemetry_records", None)
         if not callable(pop_records):
             return
-        records = cast(_TelemetryProducer, producer).pop_step_telemetry_records()
-        append_step_telemetry(self._telemetry_path, records)
+        try:
+            records = cast(_TelemetryProducer, producer).pop_step_telemetry_records()
+            if self._step_telemetry_consumer is not None:
+                self._step_telemetry_consumer(records)
+            if self._telemetry_path is not None:
+                append_step_telemetry(self._telemetry_path, records)
+        finally:
+            self._result_collector_time_ms += (time.perf_counter() - started_at) * 1000
+
+    def _write_performance(self, summary: SimulationRunSummary) -> None:
+        if self._performance_path is None:
+            return
+        trace_settings = AgentDecisionTraceSettings.from_config(
+            getattr(self._scenario_config, "tracing", None)
+        )
+        payload = build_performance_payload(
+            run_id=summary.run_id,
+            controller=summary.controller_id,
+            simulation_steps=summary.steps_executed,
+            wall_time_seconds=summary.wall_time_seconds,
+            controller_timings=self._controller_performance_timings(),
+            trace_enabled=trace_settings.enabled,
+            result_collector_time_ms=self._result_collector_time_ms,
+            use_gui=self._use_gui,
+            communication_metrics=self._controller_communication_metrics(),
+        )
+        write_performance_json(self._performance_path, payload)
+
+    def _write_sumo_metrics(self) -> None:
+        if self._sumo_metrics_path is None or self._tripinfo_path is None:
+            return
+        if self._tripinfo_path.exists():
+            metrics = parse_sumo_trip_metrics(
+                tripinfo_path=self._tripinfo_path,
+                statistics_path=self._statistics_path,
+            )
+        else:
+            metrics = missing_sumo_trip_metrics(
+                tripinfo_path=self._tripinfo_path,
+                statistics_path=self._statistics_path,
+            )
+        write_sumo_trip_metrics(self._sumo_metrics_path, metrics)
+
+    def _controller_performance_timings(self) -> ControllerPerformanceTimings:
+        performance_timings = getattr(self._controller, "performance_timings", None)
+        if not callable(performance_timings):
+            return ControllerPerformanceTimings()
+        return cast(_PerformanceTimingsProducer, self._controller).performance_timings()
+
+    def _controller_communication_metrics(self) -> dict[str, object] | None:
+        communication_metrics = getattr(self._controller, "communication_metrics", None)
+        if not callable(communication_metrics):
+            return None
+        return cast(_CommunicationMetricsProducer, self._controller).communication_metrics()
 
 
 def _manifest_payload(
@@ -354,8 +532,13 @@ def _manifest_payload(
     scenario_config: ScenarioConfig,
     scenario_dir: Path,
     sumo_info: SumoEnvironmentInfo,
+    run_mode: Literal["SIMULATION", "EXPERIMENT", "DEMO"] = "SIMULATION",
     run_invariant_fingerprint: RunInvariantFingerprint | None = None,
+    extra_fields: Mapping[str, object] | None = None,
     intersection_trace_file: str | None = None,
+    agent_trace_file: str | None = None,
+    performance_file: str | None = None,
+    sumo_metrics_file: str | None = None,
 ) -> dict[str, object]:
     fingerprint = run_invariant_fingerprint or build_run_invariant_fingerprint(
         scenario_config=scenario_config,
@@ -366,6 +549,7 @@ def _manifest_payload(
         "scenario_id": summary.scenario_id,
         "demand_profile": summary.demand_profile,
         "seed": summary.seed,
+        "run_mode": run_mode,
         "python_version": platform.python_version(),
         "sumo_version": sumo_info.version,
         "git_sha": _detect_git_sha(Path.cwd()),
@@ -373,16 +557,59 @@ def _manifest_payload(
         "started_at": summary.started_at,
         "ended_at": summary.ended_at,
         "controller": controller.manifest_metadata(),
+        "warmup_seconds": float(scenario_config.warmup_seconds),
+        "measurement_start_step": int(scenario_config.measurement_start_step),
+        "measurement_end_step": int(scenario_config.measurement_end_step),
+        "total_simulation_steps": int(scenario_config.total_simulation_steps),
+        "communication": {
+            "delay_steps": int(scenario_config.communication.delay_steps),
+            "drop_probability": float(scenario_config.communication.drop_probability),
+            "rng_seed": scenario_config.communication.resolved_rng_seed(int(scenario_config.seed)),
+            "max_message_age_steps": int(scenario_config.communication.max_message_age_steps),
+        },
+        "measurement": {
+            "warmup_seconds": float(scenario_config.warmup_seconds),
+            "measurement_duration_seconds": float(scenario_config.measurement_duration_seconds),
+            "measurement_start_step": int(scenario_config.measurement_start_step),
+            "measurement_end_step": int(scenario_config.measurement_end_step),
+            "total_simulation_steps": int(scenario_config.total_simulation_steps),
+        },
         "simulation": {
             "steps_executed": summary.steps_executed,
+            "measurement_steps_executed": summary.measurement_steps_executed,
             "vehicles_departed": summary.vehicles_departed,
             "vehicles_arrived": summary.vehicles_arrived,
+            "total_vehicles_departed": summary.total_vehicles_departed,
+            "total_vehicles_arrived": summary.total_vehicles_arrived,
             "wall_time_seconds": summary.wall_time_seconds,
         },
         "metrics_finalized": False,
+        "sumo_outputs": {
+            "tripinfo": "sumo/tripinfo.xml",
+            "statistics": "sumo/statistics.xml",
+            "trip_metrics_definition": (
+                "waitingTime, timeLoss, duration and waitingCount are parsed from SUMO "
+                "tripinfo completed-trip records."
+            ),
+            "unfinished_vehicle_policy": (
+                "Completed trips are averaged; vehicles not completed by run end remain "
+                "visible through departed/arrived counts."
+            ),
+        },
     }
+    if extra_fields:
+        payload.update(dict(extra_fields))
     if intersection_trace_file is not None:
         payload["intersection_trace_file"] = intersection_trace_file
+    if agent_trace_file is not None:
+        payload["agent_trace_file"] = agent_trace_file
+    if performance_file is not None:
+        payload["performance_file"] = performance_file
+    if sumo_metrics_file is not None:
+        payload["sumo_traffic_metrics_file"] = sumo_metrics_file
+    communication_metrics = getattr(controller, "communication_metrics", None)
+    if callable(communication_metrics):
+        payload["communication_metrics"] = communication_metrics()
     return payload
 
 

@@ -4,6 +4,7 @@ import json
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
+from time import perf_counter
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, ClassVar, Protocol, cast
 
@@ -22,11 +23,19 @@ from traffic_agents.domain import (
     TrafficLightAction,
 )
 from traffic_agents.metrics import (
+    AgentDecisionTraceWriter,
+    ControllerPerformanceTimings,
+    DecisionTimer,
     JunctionFlowTracker,
     MovementQueueTracker,
     StepTelemetryRecord,
+    build_agent_decision_trace_record,
     build_step_telemetry_records,
     internal_lane_vehicle_reader,
+)
+from traffic_agents.traffic_light_actuator import (
+    TrafficLightActuator,
+    TrafficLightConnection,
 )
 from traffic_agents.traffic_model import (
     IntersectionTrafficModel,
@@ -206,16 +215,11 @@ class _PressureIntersectionRuntime:
     safety: PhaseSafetyManager
 
 
-class _PressureTrafficLight(Protocol):
-    def setPhase(self, tls_id: str, index: int) -> None: ...  # noqa: N802
-
-
 class _PressureLane(Protocol):
     def getLastStepHaltingNumber(self, lane_id: str) -> int: ...  # noqa: N802
 
 
-class _PressureConnection(Protocol):
-    trafficlight: _PressureTrafficLight
+class _PressureConnection(TrafficLightConnection, Protocol):
     lane: _PressureLane
 
 
@@ -251,6 +255,16 @@ class LocalPressureController:
         init=False,
         repr=False,
     )
+    _trace_writer: AgentDecisionTraceWriter | None = field(
+        default=None,
+        init=False,
+        repr=False,
+    )
+    _decision_timings_ms: list[float] = field(
+        default_factory=list,
+        init=False,
+        repr=False,
+    )
 
     def configure(self, *, scenario_config: ScenarioConfig, scenario_dir: Path) -> None:
         self._scenario_config = scenario_config
@@ -261,6 +275,14 @@ class LocalPressureController:
         self._movement_queue_tracker = MovementQueueTracker()
         self._step_index = 0
         self._telemetry_records.clear()
+        self._trace_writer = None
+        self._decision_timings_ms.clear()
+
+    def configure_agent_decision_tracing(
+        self,
+        trace_writer: AgentDecisionTraceWriter | None,
+    ) -> None:
+        self._trace_writer = trace_writer
 
     def decide(self, observation: AgentObservation) -> TrafficLightAction:
         if self.phase_calculator is None or self.safety is None:
@@ -295,12 +317,26 @@ class LocalPressureController:
             )
 
         for intersection in scenario_config.intersections:
+            is_warmup = scenario_config.is_warmup_step(self._step_index)
             runtime = self._runtime_by_intersection[intersection.intersection_id]
             state = self._sensor_provider.observe(intersection.intersection_id)
             observation = AgentObservation(state=state)
-            action = self._decide_action(
+            trace_enabled = self._trace_writer is not None and self._trace_writer.enabled_for(
+                intersection.intersection_id
+            )
+            timer = DecisionTimer.start() if trace_enabled else None
+            decision_started_at = perf_counter()
+            movement_pressures = runtime.phase_calculator.movement_pressure_calculator.calculate(
+                observation
+            )
+            phase_scores = {
+                phase.phase_id: runtime.phase_calculator.score_phase(phase, movement_pressures)
+                for phase in runtime.phase_calculator.phases
+                if phase.kind == PhaseKind.GREEN
+            }
+            action = self._decide_action_from_phase_scores(
                 observation,
-                runtime.phase_calculator,
+                phase_scores,
                 runtime.safety,
             )
             decision = ControllerDecision(
@@ -309,6 +345,22 @@ class LocalPressureController:
                 action=action,
             )
             command = runtime.safety.resolve(observation, decision)
+            self._decision_timings_ms.append((perf_counter() - decision_started_at) * 1000)
+            if trace_enabled and self._trace_writer is not None and timer is not None:
+                self._trace_writer.append(
+                    build_agent_decision_trace_record(
+                        run_id=self._trace_writer.run_id,
+                        simulation_step=self._step_index,
+                        controller_id=self.controller_id,
+                        observation=observation,
+                        action=action,
+                        command=command,
+                        safety=runtime.safety,
+                        movement_pressure=movement_pressures,
+                        phase_scores=phase_scores,
+                        computation_ms=timer.elapsed_ms(),
+                    )
+                )
             junction_metrics = self._junction_flow_tracker.update(
                 intersection_id=intersection.intersection_id,
                 internal_lane_ids=runtime.internal_lane_ids,
@@ -317,6 +369,7 @@ class LocalPressureController:
             movement_queue_stats = self._movement_queue_tracker.update(
                 observation=observation,
                 traffic_model=runtime.traffic_model,
+                include_sample=not is_warmup,
             )
             self._telemetry_records.extend(
                 build_step_telemetry_records(
@@ -329,6 +382,7 @@ class LocalPressureController:
                     turning_ratios=scenario_config.traffic.turning_ratios,
                     junction_metrics=junction_metrics,
                     movement_queue_stats=movement_queue_stats,
+                    is_warmup=is_warmup,
                 )
             )
             if command.kind == PhaseCommandKind.SET_PHASE:
@@ -338,9 +392,9 @@ class LocalPressureController:
                     self.config.internal_clearance_halting_threshold,
                 ):
                     continue
-                pressure_connection.trafficlight.setPhase(
-                    runtime.traffic_light_id,
-                    command.phase_index,
+                TrafficLightActuator.from_connection(pressure_connection).apply(
+                    traffic_light_id=runtime.traffic_light_id,
+                    command=command,
                 )
         self._step_index += 1
 
@@ -351,6 +405,11 @@ class LocalPressureController:
         records = tuple(self._telemetry_records)
         self._telemetry_records.clear()
         return records
+
+    def performance_timings(self) -> ControllerPerformanceTimings:
+        return ControllerPerformanceTimings(
+            decision_timings_ms=tuple(self._decision_timings_ms),
+        )
 
     def manifest_metadata(self) -> dict[str, str | int | float | bool]:
         return {

@@ -5,7 +5,9 @@ from typing import Any, ClassVar
 
 from traffic_agents.controllers.cooperative_compact import (
     COOPERATIVE_COMPACT_CONTROLLER_ID,
+    COOPERATIVE_EXPANDED_CONTROLLER_ID,
     CooperativeCompactController,
+    CooperativePressureConfig,
 )
 from traffic_agents.controllers.local_adaptive import (
     LOCAL_ADAPTIVE_CONTROLLER_ID,
@@ -15,6 +17,7 @@ from traffic_agents.controllers.local_pressure import (
     LOCAL_PRESSURE_CONTROLLER_ID,
     LocalPressureController,
 )
+from traffic_agents.metrics import ControllerPerformanceTimings
 
 FIXED_TIME_CONTROLLER_ID = "B0_FIXED"
 FIXED_TIME_CONTROLLER_VERSION = "0.1.0"
@@ -44,6 +47,9 @@ class FixedTimeController:
             "adaptive_adjustments_enabled": False,
         }
 
+    def performance_timings(self) -> ControllerPerformanceTimings:
+        return ControllerPerformanceTimings()
+
 
 def build_controller(
     controller_id: str,
@@ -57,6 +63,11 @@ def build_controller(
         return FixedTimeController()
     if controller_id == COOPERATIVE_COMPACT_CONTROLLER_ID:
         return CooperativeCompactController()
+    if controller_id == COOPERATIVE_EXPANDED_CONTROLLER_ID:
+        return CooperativeCompactController(
+            config=CooperativePressureConfig(message_schema="expanded"),
+            controller_id=COOPERATIVE_EXPANDED_CONTROLLER_ID,
+        )
     if controller_id == LOCAL_ADAPTIVE_CONTROLLER_ID:
         return LocalAdaptiveController()
     if controller_id == LOCAL_PRESSURE_CONTROLLER_ID:

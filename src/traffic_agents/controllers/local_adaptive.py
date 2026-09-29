@@ -4,6 +4,7 @@ import json
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
+from time import perf_counter
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, ClassVar, Protocol, cast
 
@@ -22,11 +23,16 @@ from traffic_agents.domain import (
     TrafficLightAction,
 )
 from traffic_agents.metrics import (
+    ControllerPerformanceTimings,
     JunctionFlowTracker,
     MovementQueueTracker,
     StepTelemetryRecord,
     build_step_telemetry_records,
     internal_lane_vehicle_reader,
+)
+from traffic_agents.traffic_light_actuator import (
+    TrafficLightActuator,
+    TrafficLightConnection,
 )
 from traffic_agents.traffic_model import (
     IntersectionTrafficModel,
@@ -133,16 +139,11 @@ class LocalAdaptivePolicy:
         }
 
 
-class _AdaptiveTrafficLight(Protocol):
-    def setPhase(self, tls_id: str, index: int) -> None: ...  # noqa: N802
-
-
 class _AdaptiveLane(Protocol):
     def getLastStepHaltingNumber(self, lane_id: str) -> int: ...  # noqa: N802
 
 
-class _AdaptiveConnection(Protocol):
-    trafficlight: _AdaptiveTrafficLight
+class _AdaptiveConnection(TrafficLightConnection, Protocol):
     lane: _AdaptiveLane
 
 
@@ -185,6 +186,11 @@ class LocalAdaptiveController:
         init=False,
         repr=False,
     )
+    _decision_timings_ms: list[float] = field(
+        default_factory=list,
+        init=False,
+        repr=False,
+    )
 
     def configure(self, *, scenario_config: ScenarioConfig, scenario_dir: Path) -> None:
         self._scenario_config = scenario_config
@@ -195,6 +201,7 @@ class LocalAdaptiveController:
         self._movement_queue_tracker = MovementQueueTracker()
         self._step_index = 0
         self._telemetry_records.clear()
+        self._decision_timings_ms.clear()
 
     def before_simulation_step(self, connection: Any) -> None:
         from traffic_agents.simulation.traci_sensor_adapter import (
@@ -229,9 +236,11 @@ class LocalAdaptiveController:
             )
 
         for intersection in scenario_config.intersections:
+            is_warmup = scenario_config.is_warmup_step(self._step_index)
             runtime = self._runtime_by_intersection[intersection.intersection_id]
             state = self._sensor_provider.observe(intersection.intersection_id)
             observation = AgentObservation(state=state)
+            decision_started_at = perf_counter()
             action = runtime.policy.decide(observation)
             decision = ControllerDecision(
                 intersection_id=intersection.intersection_id,
@@ -239,6 +248,7 @@ class LocalAdaptiveController:
                 action=action,
             )
             command = runtime.safety.resolve(observation, decision)
+            self._decision_timings_ms.append((perf_counter() - decision_started_at) * 1000)
             junction_metrics = self._junction_flow_tracker.update(
                 intersection_id=intersection.intersection_id,
                 internal_lane_ids=runtime.internal_lane_ids,
@@ -247,6 +257,7 @@ class LocalAdaptiveController:
             movement_queue_stats = self._movement_queue_tracker.update(
                 observation=observation,
                 traffic_model=runtime.traffic_model,
+                include_sample=not is_warmup,
             )
             self._telemetry_records.extend(
                 build_step_telemetry_records(
@@ -259,6 +270,7 @@ class LocalAdaptiveController:
                     turning_ratios=scenario_config.traffic.turning_ratios,
                     junction_metrics=junction_metrics,
                     movement_queue_stats=movement_queue_stats,
+                    is_warmup=is_warmup,
                 )
             )
             if command.kind == PhaseCommandKind.SET_PHASE:
@@ -268,9 +280,9 @@ class LocalAdaptiveController:
                     self.config.internal_clearance_halting_threshold,
                 ):
                     continue
-                adaptive_connection.trafficlight.setPhase(
-                    runtime.traffic_light_id,
-                    command.phase_index,
+                TrafficLightActuator.from_connection(adaptive_connection).apply(
+                    traffic_light_id=runtime.traffic_light_id,
+                    command=command,
                 )
         self._step_index += 1
 
@@ -281,6 +293,11 @@ class LocalAdaptiveController:
         records = tuple(self._telemetry_records)
         self._telemetry_records.clear()
         return records
+
+    def performance_timings(self) -> ControllerPerformanceTimings:
+        return ControllerPerformanceTimings(
+            decision_timings_ms=tuple(self._decision_timings_ms),
+        )
 
     def manifest_metadata(self) -> dict[str, str | int | float | bool]:
         return {

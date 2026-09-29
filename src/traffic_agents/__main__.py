@@ -6,7 +6,17 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from traffic_agents.config import get_settings, load_scenario_config
+from traffic_agents.demo import DemoConfig, run_demo
+from traffic_agents.experiments.freeze import (
+    freeze_experiment_config,
+    load_frozen_experiment_config,
+)
+from traffic_agents.experiments.report import (
+    generate_experiment_report,
+    generate_experiment_summary,
+)
 from traffic_agents.experiments.runner import ExperimentRunner, load_experiment_config
+from traffic_agents.metrics import inspect_agent_trace
 from traffic_agents.simulation import TraCISimulationRunner
 
 
@@ -34,6 +44,19 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="traffic-agents")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    demo_parser = subparsers.add_parser("demo")
+    demo_parser.add_argument("--scenario", required=True)
+    demo_controller_group = demo_parser.add_mutually_exclusive_group(required=True)
+    demo_controller_group.add_argument("--controller", dest="controller_id")
+    demo_controller_group.add_argument("--controller-id", dest="controller_id")
+    demo_parser.add_argument("--seed", type=int, required=True)
+    demo_parser.add_argument("--focus-agent", default=None)
+    demo_parser.add_argument("--speed-factor", type=float, default=25.0)
+    demo_parser.add_argument("--max-steps", type=int, default=None)
+    demo_parser.add_argument("--write-artifact", action="store_true")
+    demo_parser.add_argument("--console-interval-steps", type=int, default=10)
+    demo_parser.set_defaults(handler=_run_demo)
+
     simulation_parser = subparsers.add_parser("simulation")
     simulation_subparsers = simulation_parser.add_subparsers(
         dest="simulation_command",
@@ -57,7 +80,31 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     experiment_run_parser = experiment_subparsers.add_parser("run")
     experiment_run_parser.add_argument("--config", type=Path, required=True)
+    experiment_run_parser.add_argument("--resume", action="store_true")
+    experiment_run_parser.add_argument("--retry-failed", action="store_true")
     experiment_run_parser.set_defaults(handler=_run_experiment)
+
+    experiment_freeze_parser = experiment_subparsers.add_parser("freeze")
+    experiment_freeze_parser.add_argument("--config", type=Path, required=True)
+    experiment_freeze_parser.add_argument("--final", action="store_true")
+    experiment_freeze_parser.set_defaults(handler=_freeze_experiment)
+
+    experiment_report_parser = experiment_subparsers.add_parser("report")
+    experiment_report_parser.add_argument("experiment_folder", type=Path)
+    experiment_report_parser.set_defaults(handler=_generate_experiment_report)
+
+    experiment_summary_parser = experiment_subparsers.add_parser("summary")
+    experiment_summary_parser.add_argument("experiment_folder", type=Path)
+    experiment_summary_parser.set_defaults(handler=_generate_experiment_summary)
+
+    trace_parser = subparsers.add_parser("trace")
+    trace_subparsers = trace_parser.add_subparsers(dest="trace_command", required=True)
+    trace_inspect_parser = trace_subparsers.add_parser("inspect")
+    trace_inspect_parser.add_argument("--run", dest="run_id", required=True)
+    trace_inspect_parser.add_argument("--agent", dest="agent_id", required=True)
+    trace_inspect_parser.add_argument("--artifacts-dir", type=Path, default=None)
+    trace_inspect_parser.add_argument("--limit", type=int, default=20)
+    trace_inspect_parser.set_defaults(handler=_inspect_trace)
 
     return parser
 
@@ -68,7 +115,9 @@ def _run_simulation(args: argparse.Namespace) -> int:
     if args.controller_id is not None:
         updates["controller_id"] = args.controller_id
     if args.seed is not None:
-        updates["seed"] = args.seed
+        updates["simulation"] = scenario_config.simulation.model_copy(
+            update={"seed": args.seed},
+        )
     if updates:
         scenario_config = scenario_config.model_copy(update=updates)
 
@@ -92,9 +141,39 @@ def _run_simulation(args: argparse.Namespace) -> int:
     print(f"demand_profile={summary.demand_profile}")
     print(f"seed={summary.seed}")
     print(f"steps_executed={summary.steps_executed}")
+    print(f"measurement_steps_executed={summary.measurement_steps_executed}")
     print(f"vehicles_departed={summary.vehicles_departed}")
     print(f"vehicles_arrived={summary.vehicles_arrived}")
+    print(f"total_vehicles_departed={summary.total_vehicles_departed}")
+    print(f"total_vehicles_arrived={summary.total_vehicles_arrived}")
     print(f"wall_time_seconds={summary.wall_time_seconds:.3f}")
+    if summary.manifest_path is not None:
+        print(f"manifest={summary.manifest_path}")
+    return 0
+
+
+def _run_demo(args: argparse.Namespace) -> int:
+    print("demo start")
+    result = run_demo(
+        DemoConfig(
+            scenario=args.scenario,
+            controller_id=args.controller_id,
+            seed=args.seed,
+            focus_agent=args.focus_agent,
+            speed_factor=args.speed_factor,
+            max_steps=args.max_steps,
+            write_artifact=args.write_artifact,
+            console_interval_steps=args.console_interval_steps,
+        )
+    )
+    summary = result.summary
+    print("demo end")
+    print(f"scenario={result.scenario_path}")
+    print(f"controller_id={summary.controller_id}")
+    print(f"demand_profile={summary.demand_profile}")
+    print(f"seed={summary.seed}")
+    print(f"steps_executed={summary.steps_executed}")
+    print("run_mode=DEMO")
     if summary.manifest_path is not None:
         print(f"manifest={summary.manifest_path}")
     return 0
@@ -102,7 +181,20 @@ def _run_simulation(args: argparse.Namespace) -> int:
 
 def _run_experiment(args: argparse.Namespace) -> int:
     config = load_experiment_config(args.config)
-    runner = ExperimentRunner(config=config)
+    frozen_config = load_frozen_experiment_config(config=config)
+    if frozen_config is None:
+        runner = ExperimentRunner(
+            config=config,
+            resume=args.resume,
+            retry_failed=args.retry_failed,
+        )
+    else:
+        runner = ExperimentRunner(
+            config=config,
+            frozen_config=frozen_config,
+            resume=args.resume,
+            retry_failed=args.retry_failed,
+        )
 
     print("experiment start")
     summary = runner.run()
@@ -110,6 +202,46 @@ def _run_experiment(args: argparse.Namespace) -> int:
     print(f"experiment_id={summary.experiment_id}")
     print(f"runs_executed={len(summary.run_summaries)}")
     print(f"manifest={summary.manifest_path}")
+    return 0
+
+
+def _generate_experiment_report(args: argparse.Namespace) -> int:
+    report = generate_experiment_report(args.experiment_folder)
+    summary = generate_experiment_summary(args.experiment_folder)
+    print(f"figures_dir={report.figures_dir}")
+    for path in report.generated_files:
+        print(f"figure={path}")
+    print(f"summary={summary.summary_path}")
+    return 0
+
+
+def _generate_experiment_summary(args: argparse.Namespace) -> int:
+    summary = generate_experiment_summary(args.experiment_folder)
+    print(f"summary={summary.summary_path}")
+    return 0
+
+
+def _freeze_experiment(args: argparse.Namespace) -> int:
+    result = freeze_experiment_config(args.config, final=args.final)
+    print("experiment frozen")
+    print(f"experiment_id={result.experiment_id}")
+    print(f"freeze_dir={result.freeze_dir}")
+    print(f"experiment_config={result.experiment_config_path}")
+    print(f"checksums={result.checksums_path}")
+    print(f"manifest={result.manifest_path}")
+    return 0
+
+
+def _inspect_trace(args: argparse.Namespace) -> int:
+    artifacts_dir = args.artifacts_dir or get_settings().artifacts_dir
+    print(
+        inspect_agent_trace(
+            run_id=args.run_id,
+            agent_id=args.agent_id,
+            artifacts_dir=artifacts_dir,
+            limit=args.limit,
+        )
+    )
     return 0
 
 

@@ -127,7 +127,14 @@ def test_traffic_demand_generator_writes_routes_and_metadata(
     assert metadata["flows"]
     assert metadata["flows"][0]["vehicles_per_hour"] == 600
     assert metadata["turning_ratios"] == {"straight": 0.6, "left": 0.2, "right": 0.2}
+    assert metadata["schedule"] == []
     assert metadata["config_hash"]
+    assert metadata["scenario_hash"] == generated.scenario_hash
+    assert metadata["route_hash"] == generated.route_hash
+    assert metadata["network_hash"]
+    assert metadata["generator_version"]
+    assert len(metadata["scenario_hash"]) == 64
+    assert len(metadata["route_hash"]) == 64
     assert "--seed" in calls[0]
     assert "42" in calls[0]
 
@@ -160,8 +167,6 @@ def test_same_seed_and_config_keep_metadata_hash_stable(
         demand_profile="S1_BALANCED",
         sumo_info=info,
     ).generate()
-    first_metadata = json.loads(first.metadata_path.read_text(encoding="utf-8"))
-
     second = TrafficDemandGenerator(
         scenario_config=config,
         scenario_dir=scenario_dir,
@@ -169,10 +174,8 @@ def test_same_seed_and_config_keep_metadata_hash_stable(
         demand_profile="S1_BALANCED",
         sumo_info=info,
     ).generate()
-    second_metadata = json.loads(second.metadata_path.read_text(encoding="utf-8"))
-
     assert first.config_hash == second.config_hash
-    assert first_metadata["generated_at"] == second_metadata["generated_at"]
+    assert first.route_hash == second.route_hash
 
 
 def test_traffic_demand_generator_rejects_profile_mismatch(tmp_path: Path) -> None:
@@ -232,3 +235,22 @@ def test_apply_visual_vehicle_style_colors_known_flows(tmp_path: Path) -> None:
     west_route = west_flow.find("route")
     assert west_route is not None
     assert west_route.attrib["color"] == "#1971c2"
+
+
+def test_apply_visual_vehicle_style_colors_windowed_known_flows(tmp_path: Path) -> None:
+    route_path = tmp_path / "routes.rou.xml"
+    route_path.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
+<routes>
+    <flow id="s3_w1_west_to_east_middle" begin="0" end="10" route="route0"/>
+</routes>
+""",
+        encoding="utf-8",
+    )
+
+    apply_visual_vehicle_style(route_path)
+
+    root = ET.parse(route_path).getroot()
+    flow = root.find("./flow[@id='s3_w1_west_to_east_middle']")
+    assert flow is not None
+    assert flow.attrib["color"] == "#1971c2"

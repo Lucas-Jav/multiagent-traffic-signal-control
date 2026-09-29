@@ -11,10 +11,10 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 
 from traffic_agents.config import DemandLevel, DemandProfileId, ScenarioConfig
 from traffic_agents.config.scenario import FlowDefinitionConfig
+from traffic_agents.experiments.run_invariants import route_artifact_scenario_sha256
 from traffic_agents.simulation.sumo_environment import SumoEnvironmentInfo, detect_sumo_environment
 
 GENERATED_COMMENT_PATTERN = re.compile(
@@ -29,6 +29,7 @@ PASSENGER_VEHICLE_VISUAL_STYLE: Mapping[str, str] = {
     "width": "1.80",
 }
 DEFAULT_FLOW_COLOR = "#2f80ed"
+TRAFFIC_DEMAND_GENERATOR_VERSION = "1.0.0"
 FLOW_VISUAL_COLORS: Mapping[str, str] = {
     "east_to_north_turn": "#ff6b6b",
     "east_to_south_turn": "#f59f00",
@@ -52,6 +53,8 @@ class GeneratedTrafficDemandInfo:
     seed: int
     demand_profile: DemandProfileId
     config_hash: str
+    scenario_hash: str
+    route_hash: str
     flow_count: int
 
 
@@ -99,6 +102,7 @@ class TrafficDemandGenerator:
         route_path.parent.mkdir(parents=True, exist_ok=True)
         selected_flows = self._selected_flows()
         config_hash = self._config_hash(selected_flows)
+        scenario_hash = self._scenario_hash()
 
         with tempfile.TemporaryDirectory() as temp_dir:
             flow_input_path = Path(temp_dir) / "demand.flows.xml"
@@ -109,7 +113,16 @@ class TrafficDemandGenerator:
         normalize_generated_route_header(route_path)
         apply_visual_vehicle_style(route_path)
         _validate_route_file(route_path)
-        self._write_metadata(metadata_path, selected_flows, config_hash)
+        route_hash = _file_sha256(route_path)
+        network_hash = _file_sha256(network_path)
+        self._write_metadata(
+            metadata_path,
+            selected_flows,
+            config_hash,
+            scenario_hash,
+            route_hash,
+            network_hash,
+        )
 
         return GeneratedTrafficDemandInfo(
             route_path=route_path,
@@ -117,6 +130,8 @@ class TrafficDemandGenerator:
             seed=self._seed,
             demand_profile=self._demand_profile,
             config_hash=config_hash,
+            scenario_hash=scenario_hash,
+            route_hash=route_hash,
             flow_count=len(selected_flows),
         )
 
@@ -201,7 +216,11 @@ class TrafficDemandGenerator:
 
     def _config_hash(self, selected_flows: tuple[SelectedFlow, ...]) -> str:
         payload = {
-            "scenario": self._scenario_config.model_dump(mode="json"),
+            "scenario": {
+                key: value
+                for key, value in self._scenario_config.model_dump(mode="json").items()
+                if key not in {"controller_id", "communication", "tracing"}
+            },
             "seed": self._seed,
             "demand_profile": self._demand_profile,
             "selected_flows": [flow.__dict__ for flow in selected_flows],
@@ -209,16 +228,18 @@ class TrafficDemandGenerator:
         encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
         return hashlib.sha256(encoded).hexdigest()
 
+    def _scenario_hash(self) -> str:
+        return route_artifact_scenario_sha256(self._scenario_config)
+
     def _write_metadata(
         self,
         metadata_path: Path,
         selected_flows: tuple[SelectedFlow, ...],
         config_hash: str,
+        scenario_hash: str,
+        route_hash: str,
+        network_hash: str,
     ) -> None:
-        generated_at = _existing_generated_at(metadata_path, config_hash)
-        if generated_at is None:
-            generated_at = datetime.now(UTC).isoformat().replace("+00:00", "Z")
-
         payload = {
             "scenario_id": self._scenario_config.scenario_id,
             "route_file": self._scenario_config.route_file.as_posix(),
@@ -226,8 +247,15 @@ class TrafficDemandGenerator:
             "demand_profile": self._demand_profile,
             "demand_level": self._scenario_config.traffic.demand_level,
             "turning_ratios": self._scenario_config.traffic.turning_ratios.model_dump(),
-            "generated_at": generated_at,
+            "schedule": [
+                window.model_dump(mode="json") for window in self._scenario_config.traffic.schedule
+            ],
+            "generated_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            "generator_version": TRAFFIC_DEMAND_GENERATOR_VERSION,
             "config_hash": config_hash,
+            "scenario_hash": scenario_hash,
+            "route_hash": route_hash,
+            "network_hash": network_hash,
             "flows": [flow.__dict__ for flow in selected_flows],
         }
         metadata_path.write_text(
@@ -293,30 +321,14 @@ def _metadata_path_for(route_path: Path) -> Path:
     return route_path.with_suffix(".metadata.json")
 
 
+def _file_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 def _remove_duarouter_alternatives(route_path: Path) -> None:
     alternatives_path = route_path.with_suffix(".alt.xml")
     if alternatives_path.exists():
         alternatives_path.unlink()
-
-
-def _existing_generated_at(metadata_path: Path, config_hash: str) -> str | None:
-    if not metadata_path.exists():
-        return None
-
-    try:
-        payload: Any = json.loads(metadata_path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return None
-
-    if not isinstance(payload, dict):
-        return None
-    if payload.get("config_hash") != config_hash:
-        return None
-
-    generated_at = payload.get("generated_at")
-    if isinstance(generated_at, str):
-        return generated_at
-    return None
 
 
 def _sumo_tool_binary(sumo_info: SumoEnvironmentInfo, tool_name: str) -> Path:
@@ -348,4 +360,9 @@ def _format_number(value: float) -> str:
 
 
 def _flow_color(flow_id: str) -> str:
-    return FLOW_VISUAL_COLORS.get(flow_id, DEFAULT_FLOW_COLOR)
+    if flow_id in FLOW_VISUAL_COLORS:
+        return FLOW_VISUAL_COLORS[flow_id]
+    for known_flow_id, color in FLOW_VISUAL_COLORS.items():
+        if flow_id.endswith(known_flow_id):
+            return color
+    return DEFAULT_FLOW_COLOR

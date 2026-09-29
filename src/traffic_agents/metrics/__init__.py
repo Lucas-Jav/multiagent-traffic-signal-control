@@ -1,5 +1,24 @@
 """Experiment metrics."""
 
+from traffic_agents.metrics.agent_trace import (
+    AGENT_TRACE_FILE,
+    AgentDecisionTraceSettings,
+    AgentDecisionTraceWriter,
+    DecisionTimer,
+    build_agent_decision_trace_record,
+    find_agent_trace_path,
+    inspect_agent_trace,
+)
+from traffic_agents.metrics.performance import (
+    CONTROLLER_DECISION_WINDOW,
+    PERFORMANCE_FILE,
+    TRACI_PROFILING_NOTE,
+    ControllerPerformanceTimings,
+    TimingStats,
+    build_performance_payload,
+    calculate_timing_stats,
+    write_performance_json,
+)
 from traffic_agents.metrics.step_telemetry import (
     JunctionFlowTracker,
     JunctionStepMetrics,
@@ -11,15 +30,44 @@ from traffic_agents.metrics.step_telemetry import (
     internal_lane_vehicle_reader,
     requested_phase_id,
 )
+from traffic_agents.metrics.sumo_trip_metrics import (
+    SUMO_TRAFFIC_METRICS_FILE,
+    SumoTripMetrics,
+    SumoTripMetricsError,
+    missing_sumo_trip_metrics,
+    parse_sumo_trip_metrics,
+    write_sumo_trip_metrics,
+)
 
 __all__ = [
+    "AGENT_TRACE_FILE",
+    "CONTROLLER_DECISION_WINDOW",
+    "PERFORMANCE_FILE",
+    "SUMO_TRAFFIC_METRICS_FILE",
+    "TRACI_PROFILING_NOTE",
+    "AgentDecisionTraceSettings",
+    "AgentDecisionTraceWriter",
+    "ControllerPerformanceTimings",
+    "DecisionTimer",
     "JunctionFlowTracker",
     "JunctionStepMetrics",
     "MovementQueueStats",
     "MovementQueueTracker",
     "StepTelemetryRecord",
+    "SumoTripMetrics",
+    "SumoTripMetricsError",
+    "TimingStats",
     "append_step_telemetry",
+    "build_agent_decision_trace_record",
+    "build_performance_payload",
     "build_step_telemetry_records",
+    "calculate_timing_stats",
+    "find_agent_trace_path",
+    "inspect_agent_trace",
     "internal_lane_vehicle_reader",
+    "missing_sumo_trip_metrics",
+    "parse_sumo_trip_metrics",
     "requested_phase_id",
+    "write_performance_json",
+    "write_sumo_trip_metrics",
 ]

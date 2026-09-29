@@ -4,6 +4,8 @@ import pytest
 
 from traffic_agents.__main__ import main
 from traffic_agents.config import get_settings
+from traffic_agents.demo import DemoConfig
+from traffic_agents.metrics import AGENT_TRACE_FILE
 from traffic_agents.simulation import SimulationRunSummary
 
 
@@ -75,6 +77,75 @@ def test_simulation_run_subcommand_invokes_runner(
     assert f"manifest={Path('artifacts/runs/run-1/manifest.json')}" in capsys.readouterr().out
 
 
+def test_demo_subcommand_invokes_demo_runner(
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    demo_calls: list[DemoConfig] = []
+
+    def fake_run_demo(config: DemoConfig) -> object:
+        demo_calls.append(config)
+        return type(
+            "FakeDemoResult",
+            (),
+            {
+                "scenario_path": Path("scenarios/grid_3x3/scenario.yaml"),
+                "summary": SimulationRunSummary(
+                    started_at="2026-01-01T00:00:00Z",
+                    ended_at="2026-01-01T00:00:01Z",
+                    run_id="demo-run",
+                    manifest_path=None,
+                    scenario_id="grid_3x3",
+                    controller_id="C1_COOPERATIVE_COMPACT",
+                    controller_version="0.1.0",
+                    demand_profile="S2_DIRECTIONAL_PEAK",
+                    seed=42,
+                    steps_executed=10,
+                    vehicles_departed=1,
+                    vehicles_arrived=1,
+                    wall_time_seconds=0.1,
+                ),
+            },
+        )()
+
+    monkeypatch.setattr("traffic_agents.__main__.run_demo", fake_run_demo)
+
+    exit_code = main(
+        [
+            "demo",
+            "--scenario",
+            "S2_DIRECTIONAL_PEAK",
+            "--controller",
+            "C1_COOPERATIVE_COMPACT",
+            "--seed",
+            "42",
+            "--focus-agent",
+            "A5",
+            "--speed-factor",
+            "20",
+            "--max-steps",
+            "10",
+            "--write-artifact",
+        ]
+    )
+
+    assert exit_code == 0
+    assert demo_calls == [
+        DemoConfig(
+            scenario="S2_DIRECTIONAL_PEAK",
+            controller_id="C1_COOPERATIVE_COMPACT",
+            seed=42,
+            focus_agent="A5",
+            speed_factor=20.0,
+            max_steps=10,
+            write_artifact=True,
+        )
+    ]
+    output = capsys.readouterr().out
+    assert "demo start" in output
+    assert "run_mode=DEMO" in output
+
+
 def test_experiment_run_subcommand_invokes_runner(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
@@ -95,7 +166,7 @@ max_steps: 10
     )
 
     class FakeExperimentRunner:
-        def __init__(self, *, config: object) -> None:
+        def __init__(self, *, config: object, **_kwargs: object) -> None:
             self._config = config
 
         def run(self) -> object:
@@ -115,6 +186,143 @@ max_steps: 10
 
     assert exit_code == 0
     assert "experiment_id=smoke" in capsys.readouterr().out
+
+
+def test_experiment_freeze_subcommand_invokes_freeze(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config_path = tmp_path / "experiment.yaml"
+    config_path.write_text("experiment_id: smoke\n", encoding="utf-8")
+
+    def fake_freeze(config: Path, *, final: bool) -> object:
+        assert config == config_path
+        assert final is True
+        return type(
+            "FakeFreeze",
+            (),
+            {
+                "experiment_id": "smoke",
+                "freeze_dir": Path("artifacts/experiments/smoke/frozen"),
+                "experiment_config_path": Path(
+                    "artifacts/experiments/smoke/frozen/experiment.yaml"
+                ),
+                "checksums_path": Path("artifacts/experiments/smoke/frozen/checksums.json"),
+                "manifest_path": Path("artifacts/experiments/smoke/frozen/freeze_manifest.json"),
+            },
+        )()
+
+    monkeypatch.setattr("traffic_agents.__main__.freeze_experiment_config", fake_freeze)
+
+    exit_code = main(["experiment", "freeze", "--config", str(config_path), "--final"])
+
+    assert exit_code == 0
+    output = capsys.readouterr().out
+    assert "experiment frozen" in output
+    assert "experiment_id=smoke" in output
+
+
+def test_experiment_report_subcommand_invokes_report_generator(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    experiment_folder = tmp_path / "artifacts" / "experiments" / "smoke"
+
+    def fake_generate_experiment_report(path: Path) -> object:
+        assert path == experiment_folder
+        return type(
+            "FakeReport",
+            (),
+            {
+                "figures_dir": experiment_folder / "figures",
+                "generated_files": (experiment_folder / "figures" / "waiting_time.png",),
+            },
+        )()
+
+    monkeypatch.setattr(
+        "traffic_agents.__main__.generate_experiment_report",
+        fake_generate_experiment_report,
+    )
+    monkeypatch.setattr(
+        "traffic_agents.__main__.generate_experiment_summary",
+        lambda _path: type(
+            "FakeSummary",
+            (),
+            {"summary_path": experiment_folder / "summary.md"},
+        )(),
+    )
+
+    exit_code = main(["experiment", "report", str(experiment_folder)])
+
+    assert exit_code == 0
+    output = capsys.readouterr().out
+    assert f"figures_dir={experiment_folder / 'figures'}" in output
+    assert f"figure={experiment_folder / 'figures' / 'waiting_time.png'}" in output
+    assert f"summary={experiment_folder / 'summary.md'}" in output
+
+
+def test_experiment_summary_subcommand_invokes_summary_generator(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    experiment_folder = tmp_path / "artifacts" / "experiments" / "smoke"
+
+    def fake_generate_experiment_summary(path: Path) -> object:
+        assert path == experiment_folder
+        return type(
+            "FakeSummary",
+            (),
+            {"summary_path": experiment_folder / "summary.md"},
+        )()
+
+    monkeypatch.setattr(
+        "traffic_agents.__main__.generate_experiment_summary",
+        fake_generate_experiment_summary,
+    )
+
+    exit_code = main(["experiment", "summary", str(experiment_folder)])
+
+    assert exit_code == 0
+    assert f"summary={experiment_folder / 'summary.md'}" in capsys.readouterr().out
+
+
+def test_trace_inspect_subcommand_prints_agent_trace(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    run_dir = tmp_path / "runs" / "run-1"
+    run_dir.mkdir(parents=True)
+    (run_dir / AGENT_TRACE_FILE).write_text(
+        (
+            '{"run_id":"run-1","simulation_step":520,"agent_id":"A5",'
+            '"controller_id":"B2_LOCAL_PRESSURE","current_phase":"NS_THROUGH",'
+            '"phase_elapsed":10.0,"movement_pressure":{"A5:EW":42.8},'
+            '"phase_scores":{"EW_THROUGH":42.8},"requested_phase":"EW_THROUGH",'
+            '"safety_decision":"WAIT_YELLOW","actual_phase":"NS_TO_YELLOW",'
+            '"computation_ms":0.1,"local_state_summary":{"incoming_queues":{},'
+            '"outgoing_occupancies":{},"arrival_rates":{}}}\n'
+        ),
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "trace",
+            "inspect",
+            "--run",
+            "run-1",
+            "--agent",
+            "A5",
+            "--artifacts-dir",
+            str(tmp_path),
+        ]
+    )
+
+    assert exit_code == 0
+    assert "STEP 520\nA5" in capsys.readouterr().out
 
 
 def _write_scenario(tmp_path: Path) -> Path:

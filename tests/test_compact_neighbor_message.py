@@ -6,8 +6,11 @@ import pytest
 
 from traffic_agents.communication import (
     CompactNeighborMessageFactory,
+    ExpandedNeighborMessageFactory,
     MessageBus,
+    MessageBusConfig,
     compact_message_payload,
+    expanded_message_payload,
     grid_3x3_communication_topology,
     serialize_message,
 )
@@ -248,6 +251,84 @@ def test_compact_message_serialized_bytes_are_recorded_by_bus() -> None:
         sequence=0,
     )
 
-    bus.publish_compact(message)
+    scheduled_message = bus.publish_compact(message)
 
-    assert bus.metrics.serialized_bytes == len(serialize_message(message))
+    assert scheduled_message.scheduled_delivery_step == 42
+    assert scheduled_message.delivered_step is None
+    assert bus.metrics.serialized_bytes == len(serialize_message(scheduled_message))
+
+
+def test_expanded_neighbor_message_contains_more_information_than_compact() -> None:
+    compact = make_factory().build(
+        observation=make_observation(),
+        destination="A5",
+        created_step=42,
+        sequence=0,
+    )
+    expanded = ExpandedNeighborMessageFactory(
+        traffic_model=make_traffic_model(),
+        topology=grid_3x3_communication_topology(),
+    ).build(
+        observation=make_observation(),
+        destination="A5",
+        created_step=42,
+        sequence=0,
+    )
+
+    assert set(type(compact).model_fields).issubset(set(type(expanded).model_fields))
+    assert expanded.queue_per_outgoing_movement
+    assert expanded.occupancy_per_downstream_connection
+    assert expanded.estimated_arrival_rate_per_relevant_movement
+    assert expanded.directional_demand_summary
+    assert len(serialize_message(expanded)) >= len(serialize_message(compact))
+
+
+def test_expanded_neighbor_message_is_destination_specific() -> None:
+    message = ExpandedNeighborMessageFactory(
+        traffic_model=make_traffic_model(),
+        topology=grid_3x3_communication_topology(),
+    ).build(
+        observation=make_observation(),
+        destination="A5",
+        created_step=42,
+        sequence=0,
+    )
+
+    assert set(message.queue_per_outgoing_movement) == {
+        "A4:north_to_east",
+        "A4:south_to_east",
+        "A4:west_to_east",
+    }
+    assert "A4:east_to_north" not in message.queue_per_outgoing_movement
+    assert message.directional_demand_summary == {
+        "straight": pytest.approx(33.0),
+        "left": pytest.approx(11.0),
+        "right": pytest.approx(22.0),
+    }
+    assert expanded_message_payload(message)["phase_elapsed"] == 8.0
+
+
+def test_expanded_message_delay_and_loss_use_message_bus() -> None:
+    topology = grid_3x3_communication_topology()
+    bus = MessageBus(
+        destinations=topology.agent_ids,
+        topology=topology,
+        config=MessageBusConfig(delay_steps=2, drop_probability=1.0, rng_seed=123),
+    )
+    message = ExpandedNeighborMessageFactory(
+        traffic_model=make_traffic_model(),
+        topology=topology,
+    ).build(
+        observation=make_observation(),
+        destination="A5",
+        created_step=42,
+        sequence=0,
+    )
+
+    scheduled_message = bus.publish_compact(message)
+
+    assert scheduled_message.scheduled_delivery_step == 44
+    assert bus.receive(destination="A5", current_step=44) == ()
+    assert bus.metrics.messages_sent == 1
+    assert bus.metrics.messages_delivered == 0
+    assert bus.metrics.messages_dropped == 1

@@ -12,6 +12,9 @@ from traffic_agents.experiments import (
     assert_comparable_manifests,
     assert_comparable_run_fingerprints,
     build_run_invariant_fingerprint,
+    file_sha256,
+    route_artifact_scenario_sha256,
+    route_generator_config_sha256,
     validate_run_inputs,
 )
 from traffic_agents.traffic_model import MOVEMENT_MODEL_VERSION, PHASE_PLAN_VERSION
@@ -29,8 +32,11 @@ def test_run_fingerprint_records_required_comparison_invariants(tmp_path: Path) 
     assert len(fingerprint.network_sha256) == 64
     assert len(fingerprint.route_sha256) == 64
     assert fingerprint.phase_plan_version == PHASE_PLAN_VERSION
+    assert len(fingerprint.phase_plan_sha256) == 64
     assert fingerprint.movement_model_version == MOVEMENT_MODEL_VERSION
+    assert len(fingerprint.movement_model_sha256) == 64
     assert fingerprint.turning_ratios == {"straight": 0.6, "left": 0.2, "right": 0.2}
+    assert len(fingerprint.turning_config_sha256) == 64
     assert len(fingerprint.communication_topology_sha256) == 64
 
 
@@ -170,6 +176,22 @@ def _write_scenario_dir(
     }
     (scenario_dir / "metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
     (scenario_dir / "routes_s1_seed_42.rou.xml").write_text("<routes/>", encoding="utf-8")
+    scenario_config = _scenario_config()
+    (scenario_dir / "routes_s1_seed_42.metadata.json").write_text(
+        json.dumps(
+            {
+                "scenario_id": scenario_config.scenario_id,
+                "seed": scenario_config.seed,
+                "config_hash": route_generator_config_sha256(scenario_config),
+                "scenario_hash": route_artifact_scenario_sha256(scenario_config),
+                "route_hash": file_sha256(scenario_dir / "routes_s1_seed_42.rou.xml"),
+                "network_hash": file_sha256(scenario_dir / "network.net.xml"),
+                "generated_at": "2026-01-01T00:00:00Z",
+                "generator_version": "test",
+            }
+        ),
+        encoding="utf-8",
+    )
     return scenario_dir
 
 
@@ -181,7 +203,9 @@ def _fingerprint(
     phase_plan_version: str = PHASE_PLAN_VERSION,
     phase_plan_sha256: str = "a" * 64,
     movement_model_version: str = MOVEMENT_MODEL_VERSION,
+    movement_model_sha256: str = "a" * 64,
     turning_ratios: dict[str, float] | None = None,
+    turning_config_sha256: str = "a" * 64,
     communication_topology_sha256: str = "a" * 64,
 ) -> RunInvariantFingerprint:
     return RunInvariantFingerprint(
@@ -191,6 +215,8 @@ def _fingerprint(
         phase_plan_version=phase_plan_version,
         phase_plan_sha256=phase_plan_sha256,
         movement_model_version=movement_model_version,
+        movement_model_sha256=movement_model_sha256,
         turning_ratios=turning_ratios or {"straight": 0.6, "left": 0.2, "right": 0.2},
+        turning_config_sha256=turning_config_sha256,
         communication_topology_sha256=communication_topology_sha256,
     )
