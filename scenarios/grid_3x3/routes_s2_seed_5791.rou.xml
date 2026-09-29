@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <vType id="passenger" length="5.00" minGap="2.50" maxSpeed="13.89" vClass="passenger" guiShape="passenger" width="1.80" height="1.50" color="#2f80ed" accel="2.6" decel="4.5" sigma="0.5" />
+    <flow id="east_to_north_turn" type="passenger" begin="0.00" end="3900.00" perHour="180.00" departLane="best" departSpeed="max" color="#ff6b6b">
+        <route edges="right1C1 C1B1 B1B2 B2top1" color="#ff6b6b" />
+    </flow>
+    <flow id="east_to_south_turn" type="passenger" begin="0.00" end="3900.00" perHour="225.00" departLane="best" departSpeed="max" color="#f59f00">
+        <route edges="right1C1 C1B1 B1B0 B0bottom1" color="#f59f00" />
+    </flow>
+    <flow id="east_to_west_middle" type="passenger" begin="0.00" end="3900.00" perHour="494.98" departLane="best" departSpeed="max" color="#e03131">
+        <route edges="right1C1 C1B1 B1A1 A1left1" color="#e03131" />
+    </flow>
+    <flow id="north_to_east_turn" type="passenger" begin="0.00" end="3900.00" perHour="60.00" departLane="best" departSpeed="max" color="#20c997">
+        <route edges="top1B2 B2B1 B1C1 C1right1" color="#20c997" />
+    </flow>
+    <flow id="north_to_south_middle" type="passenger" begin="0.00" end="3900.00" perHour="165.00" departLane="best" departSpeed="max" color="#2f9e44">
+        <route edges="top1B2 B2B1 B1B0 B0bottom1" color="#2f9e44" />
+    </flow>
+    <flow id="north_to_west_turn" type="passenger" begin="0.00" end="3900.00" perHour="75.00" departLane="best" departSpeed="max" color="#94d82d">
+        <route edges="top1B2 B2B1 B1A1 A1left1" color="#94d82d" />
+    </flow>
+    <flow id="south_to_east_turn" type="passenger" begin="0.00" end="3900.00" perHour="60.00" departLane="best" departSpeed="max" color="#748ffc">
+        <route edges="bottom1B0 B0B1 B1C1 C1right1" color="#748ffc" />
+    </flow>
+    <flow id="south_to_north_middle" type="passenger" begin="0.00" end="3900.00" perHour="165.00" departLane="best" departSpeed="max" color="#364fc7">
+        <route edges="bottom1B0 B0B1 B1B2 B2top1" color="#364fc7" />
+    </flow>
+    <flow id="south_to_west_turn" type="passenger" begin="0.00" end="3900.00" perHour="75.00" departLane="best" departSpeed="max" color="#15aabf">
+        <route edges="bottom1B0 B0B1 B1A1 A1left1" color="#15aabf" />
+    </flow>
+    <flow id="west_to_east_middle" type="passenger" begin="0.00" end="3900.00" perHour="659.95" departLane="best" departSpeed="max" color="#1971c2">
+        <route edges="left1A1 A1B1 B1C1 C1right1" color="#1971c2" />
+    </flow>
+    <flow id="west_to_north_turn" type="passenger" begin="0.00" end="3900.00" perHour="300.00" departLane="best" departSpeed="max" color="#9c36b5">
+        <route edges="left1A1 A1B1 B1B2 B2top1" color="#9c36b5" />
+    </flow>
+    <flow id="west_to_south_turn" type="passenger" begin="0.00" end="3900.00" perHour="240.00" departLane="best" departSpeed="max" color="#d6336c">
+        <route edges="left1A1 A1B1 B1B0 B0bottom1" color="#d6336c" />
+    </flow>
+</routes>

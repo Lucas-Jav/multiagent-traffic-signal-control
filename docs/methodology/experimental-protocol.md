@@ -297,17 +297,14 @@ These mismatches must be resolved before the final campaign is frozen or run:
 1. `S1_BALANCED` currently uses turning ratios straight `0.60`, left `0.20`,
    right `0.20` in `scenarios/grid_3x3/scenario.yaml`; this protocol requires
    straight `0.70`, left `0.15`, right `0.15`.
-2. Existing S1-S4 route artifacts are generated for seed `42` only. The final
-   minimum pilot requires five distinct seeds: `42`, `2027`, `3253`, `4517`,
-   and `5791`.
-3. Existing S5 configs use `drop_probability` values `0.00`, `0.05`, `0.10`,
-   and `0.25`, and combine them with delay values. The core S5 protocol
-   requires packet-loss values `0.00`, `0.20`, `0.50`, and `1.00`; delay is a
+2. Older S5 exploratory configs use `drop_probability` values `0.00`, `0.05`,
+   `0.10`, and `0.25`, and combine them with delay values. The planned core S5
+   packet-loss config uses `0.00`, `0.20`, `0.50`, and `1.00`; delay remains a
    separate optional `S5B_DELAY` study.
-4. `S3_DEMAND_SHIFT` implementation must be checked or updated so its first 50%
+3. `S3_DEMAND_SHIFT` implementation must be checked or updated so its first 50%
    is balanced and its second 50% is the frozen directional/localized shock
    specified by this protocol.
-5. Corridor-specific metrics for S2 and post-shock metrics for S3 must be
+4. Corridor-specific metrics for S2 and post-shock metrics for S3 must be
    available in the final analysis outputs before final reporting.
 
 ## Implementation Work Still Required
@@ -315,14 +312,11 @@ These mismatches must be resolved before the final campaign is frozen or run:
 Before running the final campaign:
 
 1. Update or generate final scenario artifacts to match this protocol.
-2. Generate seed-specific scenarios, routes, and route metadata for the approved
-   seed set without using comparative controller results.
-3. Regenerate S5 packet-loss configs to use `0.00`, `0.20`, `0.50`, and `1.00`
-   as the mandatory core matrix.
-4. Keep delay experiments under the optional `S5B_DELAY` label if they are run.
-5. Ensure final analysis includes scenario-specific metrics listed in this
+2. Keep final seed count pending until the pilot assessment is complete.
+3. Keep delay experiments under the optional `S5B_DELAY` label if they are run.
+4. Ensure final analysis includes scenario-specific metrics listed in this
    protocol, especially S2 corridor metrics and S3 post-shock metrics.
-6. Freeze all final inputs and verify route/config/hash invariants before
+5. Freeze all final inputs and verify route/config/hash invariants before
    campaign execution.
 
 ## Prohibited Actions

@@ -1,0 +1,503 @@
+experiment_id: final_s5_packet_loss_planned_pre_freeze
+description: 'campaign_role: PLANNED_FINAL. Pre-freeze S5 packet-loss campaign over
+  S2 directional demand. Final seed count remains pending pilot assessment; do not
+  execute as final.'
+campaign_role: PLANNED_FINAL
+controllers:
+- B2_LOCAL_PRESSURE
+- C1_COOPERATIVE_COMPACT
+- C2_COOPERATIVE_EXPANDED
+seeds:
+- 42
+- 2027
+- 3253
+- 4517
+- 5791
+matrix:
+  delay_steps:
+  - 0
+  drop_probability:
+  - 0.0
+  - 0.2
+  - 0.5
+  - 1.0
+runs:
+- run_id: final_s5_packet_loss_seed42_b2_reference
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_42.yaml
+  controller_id: B2_LOCAL_PRESSURE
+  seed: 42
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication: &id001
+    delay_steps: 0
+    drop_probability: 0.0
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed42_c1_drop0
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_42.yaml
+  controller_id: C1_COOPERATIVE_COMPACT
+  seed: 42
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.0
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed42_c1_drop020
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_42.yaml
+  controller_id: C1_COOPERATIVE_COMPACT
+  seed: 42
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.2
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed42_c1_drop050
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_42.yaml
+  controller_id: C1_COOPERATIVE_COMPACT
+  seed: 42
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.5
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed42_c1_drop100
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_42.yaml
+  controller_id: C1_COOPERATIVE_COMPACT
+  seed: 42
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 1.0
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed42_c2_drop0
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_42.yaml
+  controller_id: C2_COOPERATIVE_EXPANDED
+  seed: 42
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.0
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed42_c2_drop020
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_42.yaml
+  controller_id: C2_COOPERATIVE_EXPANDED
+  seed: 42
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.2
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed42_c2_drop050
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_42.yaml
+  controller_id: C2_COOPERATIVE_EXPANDED
+  seed: 42
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.5
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed42_c2_drop100
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_42.yaml
+  controller_id: C2_COOPERATIVE_EXPANDED
+  seed: 42
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 1.0
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed2027_b2_reference
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_2027.yaml
+  controller_id: B2_LOCAL_PRESSURE
+  seed: 2027
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication: *id001
+- run_id: final_s5_packet_loss_seed2027_c1_drop0
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_2027.yaml
+  controller_id: C1_COOPERATIVE_COMPACT
+  seed: 2027
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.0
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed2027_c1_drop020
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_2027.yaml
+  controller_id: C1_COOPERATIVE_COMPACT
+  seed: 2027
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.2
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed2027_c1_drop050
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_2027.yaml
+  controller_id: C1_COOPERATIVE_COMPACT
+  seed: 2027
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.5
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed2027_c1_drop100
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_2027.yaml
+  controller_id: C1_COOPERATIVE_COMPACT
+  seed: 2027
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 1.0
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed2027_c2_drop0
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_2027.yaml
+  controller_id: C2_COOPERATIVE_EXPANDED
+  seed: 2027
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.0
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed2027_c2_drop020
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_2027.yaml
+  controller_id: C2_COOPERATIVE_EXPANDED
+  seed: 2027
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.2
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed2027_c2_drop050
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_2027.yaml
+  controller_id: C2_COOPERATIVE_EXPANDED
+  seed: 2027
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.5
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed2027_c2_drop100
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_2027.yaml
+  controller_id: C2_COOPERATIVE_EXPANDED
+  seed: 2027
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 1.0
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed3253_b2_reference
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_3253.yaml
+  controller_id: B2_LOCAL_PRESSURE
+  seed: 3253
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication: *id001
+- run_id: final_s5_packet_loss_seed3253_c1_drop0
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_3253.yaml
+  controller_id: C1_COOPERATIVE_COMPACT
+  seed: 3253
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.0
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed3253_c1_drop020
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_3253.yaml
+  controller_id: C1_COOPERATIVE_COMPACT
+  seed: 3253
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.2
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed3253_c1_drop050
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_3253.yaml
+  controller_id: C1_COOPERATIVE_COMPACT
+  seed: 3253
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.5
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed3253_c1_drop100
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_3253.yaml
+  controller_id: C1_COOPERATIVE_COMPACT
+  seed: 3253
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 1.0
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed3253_c2_drop0
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_3253.yaml
+  controller_id: C2_COOPERATIVE_EXPANDED
+  seed: 3253
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.0
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed3253_c2_drop020
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_3253.yaml
+  controller_id: C2_COOPERATIVE_EXPANDED
+  seed: 3253
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.2
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed3253_c2_drop050
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_3253.yaml
+  controller_id: C2_COOPERATIVE_EXPANDED
+  seed: 3253
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.5
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed3253_c2_drop100
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_3253.yaml
+  controller_id: C2_COOPERATIVE_EXPANDED
+  seed: 3253
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 1.0
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed4517_b2_reference
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_4517.yaml
+  controller_id: B2_LOCAL_PRESSURE
+  seed: 4517
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication: *id001
+- run_id: final_s5_packet_loss_seed4517_c1_drop0
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_4517.yaml
+  controller_id: C1_COOPERATIVE_COMPACT
+  seed: 4517
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.0
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed4517_c1_drop020
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_4517.yaml
+  controller_id: C1_COOPERATIVE_COMPACT
+  seed: 4517
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.2
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed4517_c1_drop050
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_4517.yaml
+  controller_id: C1_COOPERATIVE_COMPACT
+  seed: 4517
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.5
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed4517_c1_drop100
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_4517.yaml
+  controller_id: C1_COOPERATIVE_COMPACT
+  seed: 4517
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 1.0
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed4517_c2_drop0
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_4517.yaml
+  controller_id: C2_COOPERATIVE_EXPANDED
+  seed: 4517
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.0
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed4517_c2_drop020
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_4517.yaml
+  controller_id: C2_COOPERATIVE_EXPANDED
+  seed: 4517
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.2
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed4517_c2_drop050
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_4517.yaml
+  controller_id: C2_COOPERATIVE_EXPANDED
+  seed: 4517
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.5
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed4517_c2_drop100
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_4517.yaml
+  controller_id: C2_COOPERATIVE_EXPANDED
+  seed: 4517
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 1.0
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed5791_b2_reference
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_5791.yaml
+  controller_id: B2_LOCAL_PRESSURE
+  seed: 5791
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication: *id001
+- run_id: final_s5_packet_loss_seed5791_c1_drop0
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_5791.yaml
+  controller_id: C1_COOPERATIVE_COMPACT
+  seed: 5791
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.0
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed5791_c1_drop020
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_5791.yaml
+  controller_id: C1_COOPERATIVE_COMPACT
+  seed: 5791
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.2
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed5791_c1_drop050
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_5791.yaml
+  controller_id: C1_COOPERATIVE_COMPACT
+  seed: 5791
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.5
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed5791_c1_drop100
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_5791.yaml
+  controller_id: C1_COOPERATIVE_COMPACT
+  seed: 5791
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 1.0
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed5791_c2_drop0
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_5791.yaml
+  controller_id: C2_COOPERATIVE_EXPANDED
+  seed: 5791
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.0
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed5791_c2_drop020
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_5791.yaml
+  controller_id: C2_COOPERATIVE_EXPANDED
+  seed: 5791
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.2
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed5791_c2_drop050
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_5791.yaml
+  controller_id: C2_COOPERATIVE_EXPANDED
+  seed: 5791
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 0.5
+    rng_seed: null
+    max_message_age_steps: 1
+- run_id: final_s5_packet_loss_seed5791_c2_drop100
+  scenario_base: S2_DIRECTIONAL_PEAK
+  scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak_seed_5791.yaml
+  controller_id: C2_COOPERATIVE_EXPANDED
+  seed: 5791
+  communication_seed_policy: derived_from_simulation_seed_delay_drop
+  communication:
+    delay_steps: 0
+    drop_probability: 1.0
+    rng_seed: null
+    max_message_age_steps: 1

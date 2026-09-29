@@ -94,6 +94,7 @@ def test_experiment_runner_writes_manifest(
     config_path.write_text(
         """
 experiment_id: smoke
+campaign_role: PILOT
 scenario: scenario.yaml
 controllers:
   - B0_FIXED
@@ -138,6 +139,7 @@ max_steps: 10
 
     manifest = json.loads(summary.manifest_path.read_text(encoding="utf-8"))
     assert manifest["experiment_id"] == "smoke"
+    assert manifest["campaign_role"] == "PILOT"
     assert manifest["runs"][0]["controller_id"] == "B0_FIXED"
     assert scenario_config.simulation.updates == [{"seed": 42}]
 
@@ -216,6 +218,67 @@ runs:
         "rng_seed": None,
         "max_message_age_steps": 1,
     }
+
+
+def test_explicit_run_keys_include_configured_run_id_for_communication_matrix(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scenario_path = tmp_path / "scenario.yaml"
+    scenario_path.write_text("scenario", encoding="utf-8")
+    config_path = tmp_path / "experiment.yaml"
+    config_path.write_text(
+        """
+experiment_id: s5
+runs:
+  - run_id: c1_drop0
+    scenario_base: S2_DIRECTIONAL_PEAK
+    scenario: scenario.yaml
+    controller_id: C1_COOPERATIVE_COMPACT
+    seed: 42
+    communication_seed_policy: derived_from_simulation_seed_delay_drop
+    communication:
+      delay_steps: 0
+      drop_probability: 0.0
+      rng_seed: null
+      max_message_age_steps: 1
+  - run_id: c1_drop100
+    scenario_base: S2_DIRECTIONAL_PEAK
+    scenario: scenario.yaml
+    controller_id: C1_COOPERATIVE_COMPACT
+    seed: 42
+    communication_seed_policy: derived_from_simulation_seed_delay_drop
+    communication:
+      delay_steps: 0
+      drop_probability: 1.0
+      rng_seed: null
+      max_message_age_steps: 1
+""".strip(),
+        encoding="utf-8",
+    )
+    config = load_experiment_config(config_path)
+
+    monkeypatch.setattr(
+        "traffic_agents.experiments.runner.load_scenario_config",
+        lambda _path: FakeScenarioConfig(),
+    )
+
+    class FakeRunner:
+        def __init__(self, **kwargs: object) -> None:
+            self._kwargs = kwargs
+
+        def run(self) -> SimulationRunSummary:
+            return _summary(str(self._kwargs["run_id"]))
+
+    monkeypatch.setattr("traffic_agents.experiments.runner.TraCISimulationRunner", FakeRunner)
+
+    summary = ExperimentRunner(config=config, artifacts_dir=tmp_path / "artifacts").run()
+
+    manifest = json.loads(summary.manifest_path.read_text(encoding="utf-8"))
+    run_keys = [record["run_key"] for record in manifest["runs"]]
+    assert len(run_keys) == len(set(run_keys))
+    assert run_keys[0].startswith("c1_drop0:")
+    assert run_keys[1].startswith("c1_drop100:")
 
 
 def test_experiment_runner_skips_completed_run_on_resume(

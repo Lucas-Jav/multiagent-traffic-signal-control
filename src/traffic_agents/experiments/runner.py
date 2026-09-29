@@ -17,6 +17,7 @@ from traffic_agents.simulation import SimulationRunSummary, TraCISimulationRunne
 
 DropProbability = Annotated[float, Field(ge=0.0, le=1.0)]
 CommunicationSeedPolicy = Literal["derived_from_simulation_seed_delay_drop", "explicit_rng_seed"]
+CampaignRole = Literal["PILOT", "PLANNED_FINAL", "OPTIONAL_PLANNED"]
 
 
 class ExperimentCommunicationMatrixConfig(BaseModel):
@@ -44,6 +45,7 @@ class ExperimentConfig(BaseModel):
 
     experiment_id: Annotated[str, Field(min_length=1)]
     description: str | None = None
+    campaign_role: CampaignRole | None = None
     scenario: Path | None = None
     controllers: tuple[str, ...] = ()
     seeds: Annotated[tuple[NonNegativeInt, ...], Field(min_length=1)] = (42,)
@@ -228,7 +230,7 @@ class ExperimentRunner:
                             run.max_steps if run.max_steps is not None else self._config.max_steps
                         ),
                         "run_config": run,
-                        "run_key": f"{run.scenario}:{run.seed}:{run.controller_id}",
+                        "run_key": f"{run.run_id}:{run.scenario}:{run.seed}:{run.controller_id}",
                     }
                 )
             return tuple(specs)
@@ -301,6 +303,7 @@ def _experiment_manifest_payload(
     return {
         "experiment_id": config.experiment_id,
         "description": config.description,
+        "campaign_role": config.campaign_role,
         "batch_id": batch_id,
         "scenario": config.scenario.as_posix() if config.scenario is not None else None,
         "controllers": list(config.controllers),

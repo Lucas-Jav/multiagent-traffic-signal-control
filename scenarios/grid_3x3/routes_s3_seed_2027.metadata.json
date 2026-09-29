@@ -1,0 +1,226 @@
+{
+  "config_hash": "78f258d4478391ed2653d6e0dd3ad336a69fc5e51ea4c4171dbbe0de72cdf9d1",
+  "demand_level": "MEDIUM",
+  "demand_profile": "S3_DEMAND_SHIFT",
+  "flows": [
+    {
+      "begin_seconds": 0.0,
+      "destination_edge_id": "C1right1",
+      "end_seconds": 1950.0,
+      "flow_id": "s3_w1_west_to_east_middle",
+      "origin_edge_id": "left1A1",
+      "vehicles_per_hour": 193.0
+    },
+    {
+      "begin_seconds": 0.0,
+      "destination_edge_id": "A1left1",
+      "end_seconds": 1950.0,
+      "flow_id": "s3_w1_east_to_west_middle",
+      "origin_edge_id": "right1C1",
+      "vehicles_per_hour": 193.0
+    },
+    {
+      "begin_seconds": 0.0,
+      "destination_edge_id": "B0bottom1",
+      "end_seconds": 1950.0,
+      "flow_id": "s3_w1_north_to_south_middle",
+      "origin_edge_id": "top1B2",
+      "vehicles_per_hour": 605.0
+    },
+    {
+      "begin_seconds": 0.0,
+      "destination_edge_id": "B2top1",
+      "end_seconds": 1950.0,
+      "flow_id": "s3_w1_south_to_north_middle",
+      "origin_edge_id": "bottom1B0",
+      "vehicles_per_hour": 605.0
+    },
+    {
+      "begin_seconds": 0.0,
+      "destination_edge_id": "B2top1",
+      "end_seconds": 1950.0,
+      "flow_id": "s3_w1_west_to_north_turn",
+      "origin_edge_id": "left1A1",
+      "vehicles_per_hour": 88.0
+    },
+    {
+      "begin_seconds": 0.0,
+      "destination_edge_id": "B0bottom1",
+      "end_seconds": 1950.0,
+      "flow_id": "s3_w1_west_to_south_turn",
+      "origin_edge_id": "left1A1",
+      "vehicles_per_hour": 69.0
+    },
+    {
+      "begin_seconds": 0.0,
+      "destination_edge_id": "B2top1",
+      "end_seconds": 1950.0,
+      "flow_id": "s3_w1_east_to_north_turn",
+      "origin_edge_id": "right1C1",
+      "vehicles_per_hour": 69.0
+    },
+    {
+      "begin_seconds": 0.0,
+      "destination_edge_id": "B0bottom1",
+      "end_seconds": 1950.0,
+      "flow_id": "s3_w1_east_to_south_turn",
+      "origin_edge_id": "right1C1",
+      "vehicles_per_hour": 88.0
+    },
+    {
+      "begin_seconds": 0.0,
+      "destination_edge_id": "A1left1",
+      "end_seconds": 1950.0,
+      "flow_id": "s3_w1_north_to_west_turn",
+      "origin_edge_id": "top1B2",
+      "vehicles_per_hour": 275.0
+    },
+    {
+      "begin_seconds": 0.0,
+      "destination_edge_id": "C1right1",
+      "end_seconds": 1950.0,
+      "flow_id": "s3_w1_north_to_east_turn",
+      "origin_edge_id": "top1B2",
+      "vehicles_per_hour": 220.0
+    },
+    {
+      "begin_seconds": 0.0,
+      "destination_edge_id": "A1left1",
+      "end_seconds": 1950.0,
+      "flow_id": "s3_w1_south_to_west_turn",
+      "origin_edge_id": "bottom1B0",
+      "vehicles_per_hour": 275.0
+    },
+    {
+      "begin_seconds": 0.0,
+      "destination_edge_id": "C1right1",
+      "end_seconds": 1950.0,
+      "flow_id": "s3_w1_south_to_east_turn",
+      "origin_edge_id": "bottom1B0",
+      "vehicles_per_hour": 220.0
+    },
+    {
+      "begin_seconds": 1950.0,
+      "destination_edge_id": "C1right1",
+      "end_seconds": 3900.0,
+      "flow_id": "s3_w2_west_to_east_middle",
+      "origin_edge_id": "left1A1",
+      "vehicles_per_hour": 605.0
+    },
+    {
+      "begin_seconds": 1950.0,
+      "destination_edge_id": "A1left1",
+      "end_seconds": 3900.0,
+      "flow_id": "s3_w2_east_to_west_middle",
+      "origin_edge_id": "right1C1",
+      "vehicles_per_hour": 605.0
+    },
+    {
+      "begin_seconds": 1950.0,
+      "destination_edge_id": "B0bottom1",
+      "end_seconds": 3900.0,
+      "flow_id": "s3_w2_north_to_south_middle",
+      "origin_edge_id": "top1B2",
+      "vehicles_per_hour": 193.0
+    },
+    {
+      "begin_seconds": 1950.0,
+      "destination_edge_id": "B2top1",
+      "end_seconds": 3900.0,
+      "flow_id": "s3_w2_south_to_north_middle",
+      "origin_edge_id": "bottom1B0",
+      "vehicles_per_hour": 193.0
+    },
+    {
+      "begin_seconds": 1950.0,
+      "destination_edge_id": "B2top1",
+      "end_seconds": 3900.0,
+      "flow_id": "s3_w2_west_to_north_turn",
+      "origin_edge_id": "left1A1",
+      "vehicles_per_hour": 275.0
+    },
+    {
+      "begin_seconds": 1950.0,
+      "destination_edge_id": "B0bottom1",
+      "end_seconds": 3900.0,
+      "flow_id": "s3_w2_west_to_south_turn",
+      "origin_edge_id": "left1A1",
+      "vehicles_per_hour": 220.0
+    },
+    {
+      "begin_seconds": 1950.0,
+      "destination_edge_id": "B2top1",
+      "end_seconds": 3900.0,
+      "flow_id": "s3_w2_east_to_north_turn",
+      "origin_edge_id": "right1C1",
+      "vehicles_per_hour": 220.0
+    },
+    {
+      "begin_seconds": 1950.0,
+      "destination_edge_id": "B0bottom1",
+      "end_seconds": 3900.0,
+      "flow_id": "s3_w2_east_to_south_turn",
+      "origin_edge_id": "right1C1",
+      "vehicles_per_hour": 275.0
+    },
+    {
+      "begin_seconds": 1950.0,
+      "destination_edge_id": "A1left1",
+      "end_seconds": 3900.0,
+      "flow_id": "s3_w2_north_to_west_turn",
+      "origin_edge_id": "top1B2",
+      "vehicles_per_hour": 88.0
+    },
+    {
+      "begin_seconds": 1950.0,
+      "destination_edge_id": "C1right1",
+      "end_seconds": 3900.0,
+      "flow_id": "s3_w2_north_to_east_turn",
+      "origin_edge_id": "top1B2",
+      "vehicles_per_hour": 69.0
+    },
+    {
+      "begin_seconds": 1950.0,
+      "destination_edge_id": "A1left1",
+      "end_seconds": 3900.0,
+      "flow_id": "s3_w2_south_to_west_turn",
+      "origin_edge_id": "bottom1B0",
+      "vehicles_per_hour": 88.0
+    },
+    {
+      "begin_seconds": 1950.0,
+      "destination_edge_id": "C1right1",
+      "end_seconds": 3900.0,
+      "flow_id": "s3_w2_south_to_east_turn",
+      "origin_edge_id": "bottom1B0",
+      "vehicles_per_hour": 69.0
+    }
+  ],
+  "generated_at": "2026-09-29T16:59:23.257858Z",
+  "generator_version": "1.0.0",
+  "network_hash": "46953c48351b0fdecf9babca662354bd5e45a5772553b153bc6f354c5332b48e",
+  "route_file": "routes_s3_seed_2027.rou.xml",
+  "route_hash": "6c8a4031d67cd9ba4f742825d808a051f99876a7cd37f8869cef77e20a7521d6",
+  "scenario_hash": "a48a503403e2e7c9d7323d3e34ad552d7625ea597b8703ba8ad46def060e2e87",
+  "scenario_id": "grid_3x3",
+  "schedule": [
+    {
+      "begin_seconds": 0.0,
+      "description": "North-south demand dominates the first simulation half.",
+      "end_seconds": 1950.0,
+      "window_id": "north_south_peak"
+    },
+    {
+      "begin_seconds": 1950.0,
+      "description": "East-west demand dominates the second simulation half.",
+      "end_seconds": 3900.0,
+      "window_id": "east_west_peak"
+    }
+  ],
+  "seed": 2027,
+  "turning_ratios": {
+    "left": 0.25,
+    "right": 0.2,
+    "straight": 0.55
+  }
+}
