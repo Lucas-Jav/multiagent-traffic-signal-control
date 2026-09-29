@@ -32,9 +32,18 @@ def test_generate_experiment_report_writes_expected_figures(tmp_path: Path) -> N
         "delay_sensitivity.png",
         "drop_sensitivity.png",
         "turning_movement_queue.png",
+        "throughput_change_vs_zero_loss_by_controller.png",
     }
     assert report.figures_dir == experiment_folder / "figures"
     assert {path.name for path in report.generated_files} == expected_files
+    assert report.metric_definitions_path == experiment_folder / "metric_definitions.json"
+    metric_definitions = json.loads(report.metric_definitions_path.read_text(encoding="utf-8"))
+    exported_metric_names = {definition["name"] for definition in metric_definitions}
+    assert "waiting_time" in exported_metric_names
+    assert "throughput" in exported_metric_names
+    assert "throughput_change_vs_zero_loss" in exported_metric_names
+    assert "messages_sent" in exported_metric_names
+    assert "serialized_bytes" in exported_metric_names
     for figure_path in report.generated_files:
         assert figure_path.parent == experiment_folder / "figures"
         assert figure_path.exists()

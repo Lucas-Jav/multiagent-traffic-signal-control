@@ -18,6 +18,8 @@ from matplotlib import pyplot as plt
 
 import pyarrow.parquet as pq  # type: ignore[import-untyped]
 
+from traffic_agents.experiments.metric_definitions import metric_definition_payload
+
 BANNED_SUMMARY_TERMS = (
     "better",
     "superior",
@@ -58,6 +60,25 @@ TRAFFIC_METRIC_FIGURES: Mapping[str, tuple[str, ...]] = {
         "vehicles_arrived",
         "arrived",
     ),
+    "travel_time_by_controller.png": (
+        "mean_travel_time",
+        "travel_time",
+        "mean_travel_time_seconds",
+    ),
+    "stops_by_controller.png": (
+        "mean_stops",
+        "stops",
+    ),
+    "network_throughput_by_controller.png": ("network_throughput",),
+    "corridor_throughput_by_controller.png": ("corridor_throughput",),
+    "corridor_travel_time_by_controller.png": ("corridor_travel_time",),
+    "corridor_stops_by_controller.png": ("corridor_stops",),
+    "post_shock_queue_by_controller.png": ("post_shock_mean_queue",),
+    "post_shock_max_queue_by_controller.png": ("post_shock_max_queue",),
+    "post_shock_time_loss_by_controller.png": ("post_shock_time_loss",),
+    "post_shock_queue_auc_by_controller.png": ("post_shock_queue_auc",),
+    "internal_lane_persistence_by_controller.png": ("internal_lane_persistence_events",),
+    "throughput_change_vs_zero_loss_by_controller.png": ("throughput_change_vs_zero_loss",),
 }
 
 COMMUNICATION_MESSAGE_METRICS = (
@@ -67,6 +88,8 @@ COMMUNICATION_MESSAGE_METRICS = (
 )
 COMMUNICATION_BYTE_METRICS = (
     "bytes",
+    "bytes_sent",
+    "bytes_delivered",
     "serialized_bytes",
     "message_bytes",
 )
@@ -82,6 +105,8 @@ COMMUNICATION_METRICS = (
     "messages_stale",
     "average_message_age",
     "max_observed_message_age",
+    "mean_message_age_steps",
+    "max_message_age_steps",
 )
 SENSITIVITY_TRAFFIC_METRICS = (
     "waiting_time",
@@ -91,6 +116,7 @@ SENSITIVITY_TRAFFIC_METRICS = (
     "queue",
     "mean_queue",
     "throughput",
+    "throughput_change_vs_zero_loss",
 )
 CONTROLLER_ALIASES: Mapping[str, str] = {
     "B0": "B0_FIXED",
@@ -110,6 +136,7 @@ class FigureReport:
     experiment_folder: Path
     figures_dir: Path
     generated_files: tuple[Path, ...]
+    metric_definitions_path: Path
 
 
 @dataclass(frozen=True)
@@ -124,12 +151,23 @@ def generate_experiment_report(experiment_folder: Path) -> FigureReport:
     _require_file(combined_path)
     _require_file(analysis_path)
 
-    combined = _normalize_combined_metrics(_read_parquet(combined_path))
+    combined = _with_derived_metrics(_normalize_combined_metrics(_read_parquet(combined_path)))
     analysis = _normalize_analysis(_read_parquet(analysis_path))
     _validate_combined_metrics(combined)
 
     figures_dir = experiment_folder / "figures"
     figures_dir.mkdir(parents=True, exist_ok=True)
+
+    metric_definitions_path = experiment_folder / "metric_definitions.json"
+    metric_definitions_path.write_text(
+        json.dumps(
+            metric_definition_payload([str(row["metric"]) for row in combined]),
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
     generated: list[Path] = []
     for filename, candidates in TRAFFIC_METRIC_FIGURES.items():
@@ -186,6 +224,7 @@ def generate_experiment_report(experiment_folder: Path) -> FigureReport:
         experiment_folder=experiment_folder,
         figures_dir=figures_dir,
         generated_files=tuple(generated),
+        metric_definitions_path=metric_definitions_path,
     )
 
 
@@ -240,6 +279,8 @@ def _normalize_combined_metrics(records: Iterable[Mapping[str, Any]]) -> list[di
             ),
             "metric": str(metric),
             "value": _finite_float(value, row_index=index),
+            "run_id": _first_present(record, ("run_id",), required=False),
+            "seed": _first_present(record, ("seed", "simulation_seed"), required=False),
             "status": _first_present(record, ("status", "run_status"), required=False),
             "success": _first_present(record, ("success", "succeeded"), required=False),
             "delay_steps": _optional_float(
@@ -252,6 +293,45 @@ def _normalize_combined_metrics(records: Iterable[Mapping[str, Any]]) -> list[di
         }
         normalized.append(row)
     return normalized
+
+
+def _with_derived_metrics(records: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    enriched = [dict(record) for record in records]
+    enriched.extend(_throughput_change_vs_zero_loss(records))
+    return enriched
+
+
+def _throughput_change_vs_zero_loss(records: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    zero_loss_by_key: dict[tuple[object, ...], float] = {}
+    throughput_rows: list[Mapping[str, Any]] = []
+    for row in records:
+        if row.get("metric") != "throughput":
+            continue
+        if row.get("drop_probability") is None or row.get("seed") is None:
+            continue
+        throughput_rows.append(row)
+        key = _loss_pair_key(row)
+        if float(row["drop_probability"]) == 0.0:
+            zero_loss_by_key[key] = float(row["value"])
+
+    derived: list[dict[str, Any]] = []
+    for row in throughput_rows:
+        baseline = zero_loss_by_key.get(_loss_pair_key(row))
+        if baseline is None:
+            continue
+        derived_row = dict(row)
+        derived_row["metric"] = "throughput_change_vs_zero_loss"
+        derived_row["value"] = float(row["value"]) - baseline
+        derived.append(derived_row)
+    return derived
+
+
+def _loss_pair_key(row: Mapping[str, Any]) -> tuple[object, ...]:
+    return (
+        row.get("scenario"),
+        row.get("controller"),
+        row.get("seed"),
+    )
 
 
 def _normalize_summary_metrics(records: Iterable[Mapping[str, Any]]) -> list[dict[str, Any]]:
@@ -934,27 +1014,48 @@ def _metric_label(metric: str) -> str:
         "mean_waiting_time": "Waiting time (s)",
         "avg_waiting_time": "Waiting time (s)",
         "average_waiting_time": "Waiting time (s)",
+        "mean_travel_time": "Travel time (s)",
+        "travel_time": "Travel time (s)",
+        "mean_travel_time_seconds": "Travel time (s)",
         "time_loss": "Time loss (s)",
         "mean_time_loss": "Time loss (s)",
         "avg_time_loss": "Time loss (s)",
         "average_time_loss": "Time loss (s)",
+        "post_shock_time_loss": "Post-shock time loss (s)",
         "queue": "Queue length (vehicles)",
         "mean_queue": "Queue length (vehicles)",
         "avg_queue": "Queue length (vehicles)",
         "average_queue": "Queue length (vehicles)",
         "movement_queue_mean": "Queue length (vehicles)",
+        "post_shock_mean_queue": "Post-shock mean queue (vehicles)",
         "max_queue": "Max queue length (vehicles)",
         "maximum_queue": "Max queue length (vehicles)",
         "movement_queue_max": "Max queue length (vehicles)",
+        "post_shock_max_queue": "Post-shock max queue (vehicles)",
+        "post_shock_queue_auc": "Post-shock queue AUC (vehicle-s)",
         "throughput": "Throughput (vehicles)",
+        "network_throughput": "Network throughput (vehicles)",
+        "corridor_throughput": "Corridor throughput (vehicles)",
+        "corridor_travel_time": "Corridor travel time (s)",
+        "corridor_stops": "Corridor stops (stops/vehicle)",
+        "throughput_change_vs_zero_loss": "Throughput change vs zero loss (vehicles)",
         "vehicles_arrived": "Throughput (vehicles)",
         "arrived": "Throughput (vehicles)",
+        "mean_stops": "Stops (stops/vehicle)",
+        "stops": "Stops (stops/vehicle)",
+        "internal_lane_persistence_events": "Internal lane persistence events",
         "messages": "Messages (count)",
         "messages_sent": "Messages (count)",
         "messages_delivered": "Messages (count)",
+        "messages_dropped": "Messages dropped (count)",
+        "messages_stale": "Stale messages (count)",
         "bytes": "Bytes",
+        "bytes_sent": "Bytes sent",
+        "bytes_delivered": "Bytes delivered",
         "serialized_bytes": "Bytes",
         "message_bytes": "Bytes",
+        "mean_message_age_steps": "Mean message age (steps)",
+        "max_message_age_steps": "Max message age (steps)",
     }
     return labels.get(metric, metric.replace("_", " ").title())
 

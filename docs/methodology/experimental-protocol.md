@@ -11,6 +11,10 @@ and frozen.
 This document does not report experimental results. It must not describe any
 controller as superior before final campaign results exist.
 
+Operational metric definitions live in `docs/methodology/metrics.md`. If a
+metric name appears in this protocol, its unit, source, aggregation, measurement
+window, and edge-case policy are defined there.
+
 ## Research Question
 
 In a simulated urban traffic network, does local information exchange between

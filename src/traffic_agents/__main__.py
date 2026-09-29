@@ -211,6 +211,9 @@ def _generate_experiment_report(args: argparse.Namespace) -> int:
     print(f"figures_dir={report.figures_dir}")
     for path in report.generated_files:
         print(f"figure={path}")
+    metric_definitions_path = getattr(report, "metric_definitions_path", None)
+    if metric_definitions_path is not None:
+        print(f"metric_definitions={metric_definitions_path}")
     print(f"summary={summary.summary_path}")
     return 0
 
