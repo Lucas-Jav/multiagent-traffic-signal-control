@@ -1,130 +1,130 @@
-# Scenario-Specific Metrics
+# Métricas Específicas por Cenário
 
-Status: V1 final metric definitions (revised in Prompt 46.6 after the Pilot V1 forensic
-diagnosis). These definitions must be frozen before Pilot V2 or the final campaign is executed.
-Pilot V1 numbers computed with the previous definitions are superseded (see
+Status: definições finais de métricas da V1 (revisadas no Prompt 46.6 após o diagnóstico forense
+do Pilot V1). Essas definições devem ser congeladas antes da execução do Pilot V2 ou da campanha final.
+Os números do Pilot V1 calculados com as definições anteriores foram substituídos (veja
 `artifacts/experiments/pilot_v1/pilot-assessment-erratum.md`).
 
-The final campaign must not use hand-calculated metrics. Every completed run is finalized by
-the canonical pipeline (`run_metrics.json`, `metrics_finalized: true` in the run manifest) and
-the experiment runner aggregates all finalized runs into `combined_metrics.parquet`
-(`traffic-agents experiment aggregate <folder>` does the same for an existing experiment).
-Report generation and paired analysis read that file. A run whose finalization fails is a
-FAILED run: it is never exported as zeros and never marked complete.
+A campanha final não deve usar métricas calculadas manualmente. Toda execução (run) concluída é finalizada pelo
+pipeline canônico (`run_metrics.json`, `metrics_finalized: true` no manifesto da run) e
+o runner de experimentos agrega todas as runs finalizadas em `combined_metrics.parquet`
+(`traffic-agents experiment aggregate <folder>` faz o mesmo para um experimento existente).
+A geração de relatórios e a análise pareada leem esse arquivo. Uma run cuja finalização falha é uma
+run FAILED: nunca é exportada como zeros e nunca é marcada como concluída.
 
-## Measurement and population policy
+## Política de medição e de população
 
-All scenarios share one timing: `warmup_seconds = 300`, `measurement_duration_seconds = 3600`,
-`step_length = 1.0` (total 3900 s; step `i` runs simulation time `i` to `i + 1`). Measurement
-steps are `300 <= i < 3900`. Scenario S3 places its shock at 50% of the MEASUREMENT window:
+Todos os cenários compartilham uma mesma temporização: `warmup_seconds = 300`, `measurement_duration_seconds = 3600`,
+`step_length = 1.0` (total de 3900 s; o passo `i` executa o tempo de simulação de `i` a `i + 1`). Os passos
+de medição são `300 <= i < 3900`. O cenário S3 posiciona seu choque (shock) em 50% da janela de MEDIÇÃO:
 `shock_start_seconds = 300 + 3600 / 2 = 2100` (`shock_start_step = 2100`).
 
-* **Measurement cohort**: the offered vehicles (route file) whose SCHEDULED departure lies in
-  `[warmup, warmup + measurement_duration)`. Population counts and all completed-trip metrics
-  use the cohort, so warmup demand never contaminates measurement populations.
-* **Full-run** counts (`full_run_*`) cover every offered vehicle of the whole run.
-* **Populations** are persisted as `offered`, `departed` (inserted), `arrived` (completed),
-  `never_inserted` (offered - departed) and `unfinished_in_network` (departed - arrived), both
-  for the cohort (`offered_vehicle_count`, ... and the equivalent `measurement_*` names) and for
-  the whole run (`full_run_*`). Derived ratios: `departure_ratio = departed / offered`,
+* **Coorte de medição (measurement cohort)**: os veículos ofertados (arquivo de rotas) cuja partida AGENDADA está em
+  `[warmup, warmup + measurement_duration)`. As contagens de população e todas as métricas de viagens concluídas
+  usam a coorte, de modo que a demanda do warmup nunca contamine as populações de medição.
+* As contagens de **execução completa (full-run)** (`full_run_*`) cobrem todos os veículos ofertados de toda a run.
+* As **populações** são persistidas como `offered` (ofertados), `departed` (inseridos), `arrived` (concluídos),
+  `never_inserted` (offered - departed) e `unfinished_in_network` (departed - arrived), tanto
+  para a coorte (`offered_vehicle_count`, ... e os nomes equivalentes `measurement_*`) quanto para
+  a run inteira (`full_run_*`). Razões derivadas: `departure_ratio = departed / offered`,
   `completion_ratio_offered = arrived / offered`, `completion_ratio_departed = arrived / departed`
-  (0.0 when the denominator is 0).
-* **`throughput`** is a flow count: vehicles that ARRIVE inside the measurement window (it also
-  counts vehicles scheduled during warmup that arrive in the window).
-* **Completed-trip metrics** (`mean_travel_time`, `mean_waiting_time`, `mean_time_loss`,
-  `mean_stops`, `mean_time_in_system_seconds`, `corridor_*`, `post_shock_time_loss`) are
-  CONDITIONAL on completion: they average only cohort vehicles that arrived before the run ended.
-  SUMO `duration` starts at insertion, so travel time, waiting time and time loss exclude the
-  insertion delay and every never-inserted vehicle. A controller that completes fewer trips can
-  therefore show lower completed-trip delay without being better. Final analysis must always pair
-  these metrics with `throughput`, `completion_ratio_offered`/`departure_ratio` and the queue
-  metrics (`COMPANION_METRICS` in `metric_definitions.py`) and must not read a lower
-  completed-trip delay as better when completion ratios differ.
-* **Insertion delay**: `mean_depart_delay_seconds` and `total_depart_delay_seconds` come from
-  SUMO `departDelay` of cohort vehicles that actually departed. Never-inserted vehicles are
-  reported separately (`never_inserted_vehicle_count`) and a documented LOWER BOUND of their
-  backlog delay (`never_inserted_backlog_delay_lower_bound_seconds`: run end minus scheduled
-  departure) is provided; it is never merged into completed-trip means.
+  (0.0 quando o denominador é 0).
+* **`throughput`** (vazão) é uma contagem de fluxo: veículos que CHEGAM dentro da janela de medição (também
+  conta veículos agendados durante o warmup que chegam dentro da janela).
+* As **métricas de viagens concluídas** (`mean_travel_time`, `mean_waiting_time`, `mean_time_loss`,
+  `mean_stops`, `mean_time_in_system_seconds`, `corridor_*`, `post_shock_time_loss`) são
+  CONDICIONAIS à conclusão: fazem a média apenas dos veículos da coorte que chegaram antes do fim da run.
+  A `duration` do SUMO começa na inserção, portanto o tempo de viagem, o tempo de espera e a perda de tempo (time loss) excluem o
+  atraso de inserção e todo veículo nunca inserido. Um controlador que conclui menos viagens pode,
+  portanto, apresentar menor atraso nas viagens concluídas sem ser melhor. A análise final deve sempre combinar
+  essas métricas com `throughput`, `completion_ratio_offered`/`departure_ratio` e as métricas de fila
+  (`COMPANION_METRICS` em `metric_definitions.py`) e não deve interpretar um menor
+  atraso nas viagens concluídas como melhor quando as razões de conclusão diferem.
+* **Atraso de inserção**: `mean_depart_delay_seconds` e `total_depart_delay_seconds` vêm do
+  `departDelay` do SUMO para os veículos da coorte que efetivamente partiram. Os veículos nunca inseridos são
+  reportados separadamente (`never_inserted_vehicle_count`), e um LIMITE INFERIOR documentado do atraso de
+  backlog deles (`never_inserted_backlog_delay_lower_bound_seconds`: fim da run menos partida
+  agendada) é fornecido; ele nunca é mesclado nas médias de viagens concluídas.
 
-## Queue metrics
+## Métricas de fila
 
-Queue telemetry is produced by the simulation runner for every controller (including
-`B0_FIXED`) after each simulation step. It stores one row per UNIQUE incoming lane and step
-(`lane_telemetry.parquet`) and one row per intersection and step (`junction_telemetry.parquet`).
-The former per-movement trace repeated one lane queue once per movement using the lane; sums
-over that trace overcounted queues threefold and are no longer used.
+A telemetria de fila (queue) é produzida pelo runner da simulação para todo controlador (incluindo
+`B0_FIXED`) após cada passo de simulação. Ela armazena uma linha por lane de entrada ÚNICA e por passo
+(`lane_telemetry.parquet`) e uma linha por interseção e por passo (`junction_telemetry.parquet`).
+O antigo rastreamento por movimento repetia a fila de uma lane uma vez para cada movimento que a usava; somas
+sobre esse rastreamento superestimavam as filas em três vezes e não são mais usadas.
 
-* `lane_queue`: SUMO halting-vehicle count of one incoming lane and step.
-* `intersection_total_queue`: sum of the unique incoming-lane queues of one intersection.
-* `network_total_queue`: sum of the unique incoming-lane queues of all intersections.
+* `lane_queue`: contagem de veículos parados (halting) do SUMO em uma lane de entrada e um passo.
+* `intersection_total_queue`: soma das filas das lanes de entrada únicas de uma interseção.
+* `network_total_queue`: soma das filas das lanes de entrada únicas de todas as interseções.
 
-Final queue metrics: `mean_network_queue_vehicles`, `max_network_queue_vehicles`,
+Métricas finais de fila: `mean_network_queue_vehicles`, `max_network_queue_vehicles`,
 `mean_intersection_queue_vehicles`, `max_intersection_queue_vehicles`,
-`max_lane_queue_vehicles` (plus the diagnostic `mean_lane_queue_vehicles`). There is no
-unscoped `max_queue`/`mean_queue`.
+`max_lane_queue_vehicles` (mais a `mean_lane_queue_vehicles`, de caráter diagnóstico). Não existe
+`max_queue`/`mean_queue` sem escopo definido.
 
-**Physical capacity note.** `max_lane_queue_vehicles` may saturate at the physical storage of a
-lane: a 235.6 m single-lane edge holds about 30 halted vehicles (vehicle length 5 m plus
-minimum gap 2.5 m, stop offset 7 m), a 92.8 m border edge about 12. About 30 is therefore a
-physical limit, not a software cap. In overloaded scenarios `max_lane_queue_vehicles` loses
-discriminatory power (every run reaches the same maximum); the network and intersection
-aggregates remain available for that reason and must be reported alongside it.
+**Nota sobre capacidade física.** `max_lane_queue_vehicles` pode saturar no limite de armazenamento físico de uma
+lane: uma aresta de faixa única de 235,6 m comporta cerca de 30 veículos parados (comprimento do veículo de 5 m mais
+distância mínima de 2,5 m, deslocamento de parada de 7 m), e uma aresta de borda de 92,8 m cerca de 12. Portanto, cerca de 30 é
+um limite físico, não um teto imposto pelo software. Em cenários sobrecarregados, `max_lane_queue_vehicles` perde
+poder discriminatório (todas as runs atingem o mesmo máximo); por isso, os agregados de rede e de interseção
+permanecem disponíveis e devem ser reportados junto com ela.
 
-## Post-shock queue AUC (S3, frozen definition)
+## AUC da fila pós-choque (S3, definição congelada)
 
-`post_shock_queue_auc_vehicle_seconds` is the integral of the canonical `network_total_queue`
-over the post-shock measurement interval, with trapezoidal integration over simulation time:
+`post_shock_queue_auc_vehicle_seconds` é a integral da `network_total_queue` canônica
+ao longo do intervalo de medição pós-choque, com integração trapezoidal sobre o tempo de simulação:
 
 ```text
 auc = sum((Q_i + Q_{i+1}) / 2 * (t_{i+1} - t_i))     [vehicle-seconds]
 ```
 
-* `Q_i` = `network_total_queue` = sum over UNIQUE incoming lanes of the halting count sampled
-  after step `i` (never movement-level rows, so no lane is counted twice);
-* `t_i` = telemetry timestamp of step `i` (`(i + 1) * step_length`);
-* samples are steps `shock_start_step <= i < measurement_end_step` where
-  `shock_start_step = shock_start_seconds / step_length` and `shock_start_seconds` is the
-  scenario's frozen `traffic.shock_start_seconds` (2100 s for S3 = 50% of the measurement
-  window);
-* fewer than two samples -> 0. The related `post_shock_mean_network_queue_vehicles` and
-  `post_shock_max_network_queue_vehicles` use the same samples.
+* `Q_i` = `network_total_queue` = soma, sobre as lanes de entrada ÚNICAS, da contagem de veículos parados amostrada
+  após o passo `i` (nunca linhas em nível de movimento, de modo que nenhuma lane seja contada duas vezes);
+* `t_i` = timestamp de telemetria do passo `i` (`(i + 1) * step_length`);
+* as amostras são os passos `shock_start_step <= i < measurement_end_step`, onde
+  `shock_start_step = shock_start_seconds / step_length` e `shock_start_seconds` é o
+  `traffic.shock_start_seconds` congelado do cenário (2100 s para S3 = 50% da janela de
+  medição);
+* menos de duas amostras -> 0. As métricas relacionadas `post_shock_mean_network_queue_vehicles` e
+  `post_shock_max_network_queue_vehicles` usam as mesmas amostras.
 
-`post_shock_time_loss` uses completed trips of cohort vehicles SCHEDULED at or after the shock
-start (not vehicles inserted after it), so a pre-shock entry backlog cannot masquerade as
-post-shock demand.
+`post_shock_time_loss` usa viagens concluídas de veículos da coorte AGENDADOS no início do choque ou depois
+(não veículos inseridos depois dele), de modo que um backlog de entrada pré-choque não possa se passar por
+demanda pós-choque.
 
-## Corridor Definition
+## Definição do corredor
 
-Corridor definition version: `west-east-middle-corridor-v2`
+Versão da definição do corredor: `west-east-middle-corridor-v2`
 
-Operational path:
+Caminho operacional:
 
 ```text
 West -> A4 -> A5 -> A6 -> East
 ```
 
-SUMO identifiers:
+Identificadores do SUMO:
 
-- entry edge: `left1A1`
-- controlled junction path: `A1 -> B1 -> C1`
-- through edges: `A1B1`, `B1C1`
-- exit edge: `C1right1`
+- aresta de entrada: `left1A1`
+- caminho de interseções controladas: `A1 -> B1 -> C1`
+- arestas de passagem: `A1B1`, `B1C1`
+- aresta de saída: `C1right1`
 
-Corridor membership: the vehicle route traverses edge `A1B1` immediately followed by edge
-`B1C1`. Corridor metrics are computed for those vehicles only; the corridor target is
-directional demand, not a claim that every vehicle travels straight through the whole network.
+Pertencimento ao corredor: a rota do veículo percorre a aresta `A1B1` seguida imediatamente pela aresta
+`B1C1`. As métricas do corredor são calculadas apenas para esses veículos; o alvo do corredor é uma
+demanda direcional, não uma afirmação de que todo veículo atravessa toda a rede em linha reta.
 
-## Entry accounting
+## Contabilização por entrada
 
-`run_metrics.json` also stores, per entry edge and per demand group (`base`, `dominant`,
-`residual`, `shock`, `hotspot`), the cohort `offered`, `departed`, `arrived` and
-`entry_departure_ratio` (`by_entry`, `by_group`), plus `min_entry_departure_ratio`. They let a
-run validate that the intended demand pattern (for example the 80% West dominant share of S2)
-still reaches the network and is not hidden by insertion starvation.
+`run_metrics.json` também armazena, por aresta de entrada e por grupo de demanda (`base`, `dominant`,
+`residual`, `shock`, `hotspot`), os valores da coorte `offered`, `departed`, `arrived` e
+`entry_departure_ratio` (`by_entry`, `by_group`), além de `min_entry_departure_ratio`. Eles permitem que uma
+run valide que o padrão de demanda pretendido (por exemplo, a parcela dominante de 80% do oeste em S2)
+ainda chega à rede e não é ocultado por starvation de inserção.
 
-## Scenario Metric Sets
+## Conjuntos de métricas por cenário
 
-| Scenario | Metrics |
+| Cenário | Métricas |
 |---|---|
 | `S1_BALANCED` | `throughput`, `mean_travel_time`, `mean_waiting_time`, `mean_time_loss`, `mean_stops`, `mean_network_queue_vehicles`, `max_network_queue_vehicles`, `mean_intersection_queue_vehicles`, `max_intersection_queue_vehicles`, `max_lane_queue_vehicles`, `offered_vehicle_count`, `departed_vehicle_count`, `arrived_vehicle_count`, `never_inserted_vehicle_count`, `unfinished_in_network_count`, `departure_ratio`, `completion_ratio_offered`, `completion_ratio_departed`, `mean_depart_delay_seconds` |
 | `S2_DIRECTIONAL_PEAK` | `throughput`, `mean_stops`, `mean_time_loss`, `corridor_throughput`, `corridor_mean_travel_time`, `corridor_mean_stops`, `min_entry_departure_ratio`, `mean_network_queue_vehicles`, `max_network_queue_vehicles`, `mean_intersection_queue_vehicles`, `max_intersection_queue_vehicles`, `max_lane_queue_vehicles`, `offered_vehicle_count`, `departed_vehicle_count`, `arrived_vehicle_count`, `never_inserted_vehicle_count`, `unfinished_in_network_count`, `departure_ratio`, `completion_ratio_offered`, `completion_ratio_departed`, `mean_depart_delay_seconds` |
@@ -132,85 +132,85 @@ still reaches the network and is not hidden by insertion starvation.
 | `S4_LOCAL_SATURATION` | `throughput`, `mean_time_loss`, `mean_travel_time`, `internal_lane_persistence_events`, `mean_network_queue_vehicles`, `max_network_queue_vehicles`, `mean_intersection_queue_vehicles`, `max_intersection_queue_vehicles`, `max_lane_queue_vehicles`, `offered_vehicle_count`, `departed_vehicle_count`, `arrived_vehicle_count`, `never_inserted_vehicle_count`, `unfinished_in_network_count`, `departure_ratio`, `completion_ratio_offered`, `completion_ratio_departed`, `mean_depart_delay_seconds` |
 | `S5_COMMUNICATION_DEGRADATION` | `throughput`, `mean_waiting_time`, `mean_time_loss`, `mean_network_queue_vehicles`, `messages_sent`, `messages_delivered`, `messages_dropped`, `messages_stale`, `bytes_sent`, `bytes_delivered`, `mean_message_age_steps`, `max_message_age_steps`, `throughput_change_vs_zero_loss`, `completion_ratio_offered` |
 
-`recovery_time_seconds` is not implemented for V1 because no fixed, pre-result threshold rule
-has been frozen. S3 uses post-shock queue/time-loss metrics instead.
+`recovery_time_seconds` não é implementada na V1 porque nenhuma regra de limiar fixa e definida antes
+dos resultados foi congelada. O S3 usa, em vez dela, as métricas de fila e de perda de tempo (time loss) pós-choque.
 
-Downstream occupancy is available to controller logic, but it is not aggregated as a final
-campaign metric from run artifacts. It must not be reported as a final S4 metric until an
-artifact-level aggregation is implemented and frozen.
+A ocupação downstream está disponível para a lógica do controlador, mas não é agregada como métrica final
+da campanha a partir dos artifacts das runs. Ela não deve ser reportada como métrica final do S4 até que uma
+agregação em nível de artifact seja implementada e congelada.
 
-## Metric Definitions
+## Definições das métricas
 
-| Name | Unit | Source | Population / denominator | Measurement window | Aggregation | Edge cases | Completed trips only |
+| Nome | Unidade | Fonte | População / denominador | Janela de medição | Agregação | Casos extremos | Somente viagens concluídas |
 |---|---|---|---|---|---|---|---|
-| `offered_vehicle_count` | vehicles | Route file (scheduled departures) joined with SUMO tripinfo (departed/arrived). | Measurement cohort. | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Count of offered vehicles in the measurement cohort (alias of measurement_offered_vehicle_count). | Counts are 0 when the population is empty. | no |
-| `departed_vehicle_count` | vehicles | Route file (scheduled departures) joined with SUMO tripinfo (departed/arrived). | Measurement cohort. | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Cohort vehicles that were inserted into the network before the run ended. | Counts are 0 when the population is empty. | no |
-| `arrived_vehicle_count` | vehicles | Route file (scheduled departures) joined with SUMO tripinfo (departed/arrived). | Measurement cohort. | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Cohort vehicles that arrived before the run ended. | Counts are 0 when the population is empty. | no |
-| `never_inserted_vehicle_count` | vehicles | Route file (scheduled departures) joined with SUMO tripinfo (departed/arrived). | Measurement cohort. | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Cohort vehicles that never entered the network (offered - departed). | Counts are 0 when the population is empty. | no |
-| `unfinished_in_network_count` | vehicles | Route file (scheduled departures) joined with SUMO tripinfo (departed/arrived). | Measurement cohort. | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Cohort vehicles inserted but not arrived at the end of the run (departed - arrived). | Counts are 0 when the population is empty. | no |
-| `full_run_offered_vehicle_count` | vehicles | Route file (scheduled departures) joined with SUMO tripinfo (departed/arrived). | Every offered vehicle. | Whole run, including warmup (offered/departed/arrived over every vehicle). | All vehicles offered by the route file over the whole run. | Counts are 0 when the population is empty. | no |
-| `full_run_departed_vehicle_count` | vehicles | Route file (scheduled departures) joined with SUMO tripinfo (departed/arrived). | Every offered vehicle. | Whole run, including warmup (offered/departed/arrived over every vehicle). | All vehicles inserted into the network over the whole run. | Counts are 0 when the population is empty. | no |
-| `full_run_arrived_vehicle_count` | vehicles | Route file (scheduled departures) joined with SUMO tripinfo (departed/arrived). | Every offered vehicle. | Whole run, including warmup (offered/departed/arrived over every vehicle). | All vehicles that arrived over the whole run. | Counts are 0 when the population is empty. | no |
-| `full_run_never_inserted_vehicle_count` | vehicles | Route file (scheduled departures) joined with SUMO tripinfo (departed/arrived). | Every offered vehicle. | Whole run, including warmup (offered/departed/arrived over every vehicle). | Offered vehicles that never entered the network over the whole run. | Counts are 0 when the population is empty. | no |
-| `full_run_unfinished_in_network_count` | vehicles | Route file (scheduled departures) joined with SUMO tripinfo (departed/arrived). | Every offered vehicle. | Whole run, including warmup (offered/departed/arrived over every vehicle). | Vehicles inserted but not arrived at the end of the run. | Counts are 0 when the population is empty. | no |
-| `measurement_offered_vehicle_count` | vehicles | Route file (scheduled departures) joined with SUMO tripinfo (departed/arrived). | Measurement cohort. | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Offered vehicles scheduled inside the measurement window. | Counts are 0 when the population is empty. | no |
-| `measurement_departed_vehicle_count` | vehicles | Route file (scheduled departures) joined with SUMO tripinfo (departed/arrived). | Measurement cohort. | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Cohort vehicles inserted before the run ended. | Counts are 0 when the population is empty. | no |
-| `measurement_arrived_vehicle_count` | vehicles | Route file (scheduled departures) joined with SUMO tripinfo (departed/arrived). | Measurement cohort. | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Cohort vehicles that arrived before the run ended. | Counts are 0 when the population is empty. | no |
-| `departure_ratio` | ratio | Population counts from route file and SUMO tripinfo. | Measurement cohort. | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | departed_vehicle_count / offered_vehicle_count. | Reported as 0.0 when the denominator is 0. | no |
-| `completion_ratio_offered` | ratio | Population counts from route file and SUMO tripinfo. | Measurement cohort. | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | arrived_vehicle_count / offered_vehicle_count. | Reported as 0.0 when the denominator is 0. | no |
-| `completion_ratio_departed` | ratio | Population counts from route file and SUMO tripinfo. | Measurement cohort. | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | arrived_vehicle_count / departed_vehicle_count. | Reported as 0.0 when the denominator is 0. | no |
-| `throughput` | vehicles | SUMO tripinfo arrival times (equals SUMO arrived counts per step). | Flow count: every vehicle arriving in the window, including vehicles scheduled during warmup. | Warmup excluded; measurement interval from scenario config. | Count of vehicles that arrive during the measurement window. | If no vehicles arrive, report 0. | no |
-| `completed_trip_count` | vehicles | Route file (scheduled departures) joined with SUMO tripinfo (departed/arrived). | Measurement cohort, completed trips. | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Cohort vehicles used for completed-trip metrics (arrived before the run ended). | Counts are 0 when the population is empty. | no |
-| `mean_depart_delay_seconds` | seconds/vehicle | SUMO tripinfo departDelay (insertion time - scheduled departure). | Cohort vehicles that actually departed (never-inserted vehicles excluded). | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Arithmetic mean over cohort vehicles that were inserted. | Omitted if no cohort vehicle was inserted. | no |
-| `total_depart_delay_seconds` | seconds | SUMO tripinfo departDelay. | Cohort vehicles that actually departed. | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Sum over cohort vehicles that were inserted. | 0 when no cohort vehicle was inserted. | no |
-| `never_inserted_backlog_delay_lower_bound_seconds` | seconds | Route file scheduled departure and the simulated run end. | Cohort vehicles that never entered the network. | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Sum over never-inserted cohort vehicles of (run end - scheduled departure); a LOWER BOUND of their backlog delay, never merged into completed-trip means. | 0 when every cohort vehicle was inserted. | no |
-| `mean_travel_time` | seconds/vehicle | SUMO tripinfo duration (arrival - insertion; excludes insertion delay). | Completed trips of the measurement cohort (conditional on completion). | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Arithmetic mean over completed trips of the cohort. | If no cohort vehicle completes its trip, omit the metric for that run. | yes |
-| `mean_waiting_time` | seconds/vehicle | SUMO tripinfo waitingTime for completed trips. | Completed trips of the measurement cohort (conditional on completion). | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Arithmetic mean over completed trips of the cohort. | If no cohort vehicle completes its trip, omit the metric for that run. | yes |
-| `mean_time_loss` | seconds/vehicle | SUMO tripinfo timeLoss for completed trips. | Completed trips of the measurement cohort (conditional on completion). | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Arithmetic mean over completed trips of the cohort. | If no cohort vehicle completes its trip, omit the metric for that run. | yes |
-| `mean_stops` | stops/vehicle | SUMO tripinfo waitingCount for completed trips. | Completed trips of the measurement cohort (conditional on completion). | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Arithmetic mean over completed trips of the cohort. | If no cohort vehicle completes its trip, omit the metric for that run. | yes |
-| `mean_time_in_system_seconds` | seconds/vehicle | SUMO tripinfo duration + departDelay for completed trips. | Completed trips of the measurement cohort (conditional on completion). | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Arithmetic mean of (travel time + insertion delay) over completed trips. | If no cohort vehicle completes its trip, omit the metric for that run. | yes |
-| `corridor_throughput` | vehicles | Route file corridor membership (west-east-middle-corridor-v2) and tripinfo. | Flow count of vehicles whose route traverses the middle-row corridor. | Warmup excluded; measurement interval from scenario config. | Count of corridor vehicles that arrive during the measurement window. | If no corridor vehicles arrive, report 0. | no |
-| `corridor_mean_travel_time` | seconds/vehicle | SUMO tripinfo duration filtered to west-east-middle-corridor-v2. | Completed corridor trips of the measurement cohort (conditional). | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Arithmetic mean over completed trips of the cohort. | If no cohort vehicle completes its trip, omit the metric for that run. | yes |
-| `corridor_mean_stops` | stops/vehicle | SUMO tripinfo waitingCount filtered to west-east-middle-corridor-v2. | Completed corridor trips of the measurement cohort (conditional). | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Arithmetic mean over completed trips of the cohort. | If no cohort vehicle completes its trip, omit the metric for that run. | yes |
-| `post_shock_time_loss` | seconds/vehicle | SUMO tripinfo timeLoss of completed trips scheduled at or after the shock time. | Completed trips of cohort vehicles SCHEDULED at or after the shock start (conditional on completion; population defined by scheduled, not insertion, time). | Post-shock subset of the measurement window. | Arithmetic mean over completed trips of the cohort. | If no cohort vehicle completes its trip, omit the metric for that run. | yes |
-| `pre_shock_time_loss` | seconds/vehicle | SUMO tripinfo timeLoss of completed trips scheduled before the shock time. | Completed trips of cohort vehicles scheduled before the shock start (conditional on completion). | Pre-shock subset of the measurement window. | Arithmetic mean over completed trips of the cohort. | If no cohort vehicle completes its trip, omit the metric for that run. | yes |
-| `mean_network_queue_vehicles` | vehicles | Canonical lane_telemetry.parquet / junction_telemetry.parquet (SUMO halting vehicle count per UNIQUE incoming lane, sampled by the simulation runner for every controller). | All vehicles halting on incoming lanes; each physical lane counted once. | Measurement-window steps only (warmup excluded); one sample per simulation step. | Mean over measurement steps of network_total_queue (sum of unique incoming-lane halting counts). | Omitted only if no telemetry samples exist in the window (run fails). | no |
-| `max_network_queue_vehicles` | vehicles | Canonical lane_telemetry.parquet / junction_telemetry.parquet (SUMO halting vehicle count per UNIQUE incoming lane, sampled by the simulation runner for every controller). | All vehicles halting on incoming lanes; each physical lane counted once. | Measurement-window steps only (warmup excluded); one sample per simulation step. | Maximum over measurement steps of network_total_queue. | Omitted only if no telemetry samples exist in the window (run fails). | no |
-| `mean_intersection_queue_vehicles` | vehicles | Canonical lane_telemetry.parquet / junction_telemetry.parquet (SUMO halting vehicle count per UNIQUE incoming lane, sampled by the simulation runner for every controller). | All vehicles halting on incoming lanes; each physical lane counted once. | Measurement-window steps only (warmup excluded); one sample per simulation step. | Mean over measurement steps and intersections of intersection_total_queue (sum of the unique incoming-lane halting counts of one intersection). | Omitted only if no telemetry samples exist in the window (run fails). | no |
-| `max_intersection_queue_vehicles` | vehicles | Canonical lane_telemetry.parquet / junction_telemetry.parquet (SUMO halting vehicle count per UNIQUE incoming lane, sampled by the simulation runner for every controller). | All vehicles halting on incoming lanes; each physical lane counted once. | Measurement-window steps only (warmup excluded); one sample per simulation step. | Maximum over measurement steps and intersections of intersection_total_queue. | Omitted only if no telemetry samples exist in the window (run fails). | no |
-| `mean_lane_queue_vehicles` | vehicles | Canonical lane_telemetry.parquet / junction_telemetry.parquet (SUMO halting vehicle count per UNIQUE incoming lane, sampled by the simulation runner for every controller). | All vehicles halting on incoming lanes; each physical lane counted once. | Measurement-window steps only (warmup excluded); one sample per simulation step. | Mean over measurement steps and lanes of lane_queue (diluted by idle lanes; diagnostic only). | Omitted only if no telemetry samples exist in the window (run fails). | no |
-| `max_lane_queue_vehicles` | vehicles | Canonical lane_telemetry.parquet / junction_telemetry.parquet (SUMO halting vehicle count per UNIQUE incoming lane, sampled by the simulation runner for every controller). | All vehicles halting on incoming lanes; each physical lane counted once. | Measurement-window steps only (warmup excluded); one sample per simulation step. | Maximum lane_queue over measurement steps and lanes. May saturate at the physical storage capacity of a lane (about 30 vehicles on a 235.6 m edge) in overloaded scenarios and then loses discriminatory power; use the network/intersection aggregates alongside it. | Omitted only if no telemetry samples exist in the window (run fails). | no |
-| `post_shock_mean_network_queue_vehicles` | vehicles | Canonical lane_telemetry.parquet / junction_telemetry.parquet (SUMO halting vehicle count per UNIQUE incoming lane, sampled by the simulation runner for every controller). | All vehicles halting on incoming lanes; each physical lane counted once. | Post-shock subset of the measurement window (step >= shock start step). | Mean network_total_queue over post-shock measurement steps. | Omitted only if no telemetry samples exist in the window (run fails). | no |
-| `post_shock_max_network_queue_vehicles` | vehicles | Canonical lane_telemetry.parquet / junction_telemetry.parquet (SUMO halting vehicle count per UNIQUE incoming lane, sampled by the simulation runner for every controller). | All vehicles halting on incoming lanes; each physical lane counted once. | Post-shock subset of the measurement window (step >= shock start step). | Maximum network_total_queue over post-shock measurement steps. | Omitted only if no telemetry samples exist in the window (run fails). | no |
-| `pre_shock_mean_network_queue_vehicles` | vehicles | Canonical lane_telemetry.parquet / junction_telemetry.parquet (SUMO halting vehicle count per UNIQUE incoming lane, sampled by the simulation runner for every controller). | All vehicles halting on incoming lanes; each physical lane counted once. | Pre-shock subset of the measurement window. | Mean network_total_queue over pre-shock measurement steps. | Omitted only if no telemetry samples exist in the window (run fails). | no |
-| `pre_shock_max_network_queue_vehicles` | vehicles | Canonical lane_telemetry.parquet / junction_telemetry.parquet (SUMO halting vehicle count per UNIQUE incoming lane, sampled by the simulation runner for every controller). | All vehicles halting on incoming lanes; each physical lane counted once. | Pre-shock subset of the measurement window. | Maximum network_total_queue over pre-shock measurement steps. | Omitted only if no telemetry samples exist in the window (run fails). | no |
-| `post_shock_queue_auc_vehicle_seconds` | vehicle-seconds | Canonical lane_telemetry.parquet (unique-lane halting counts). | network_total_queue = sum over unique incoming lanes; never movement rows. | Post-shock subset of the measurement window. | Trapezoidal integral of network_total_queue over simulation time from the shock start step to the last measurement step: sum((Q_i + Q_{i+1}) / 2 * (t_{i+1} - t_i)) with t_i the telemetry timestamp of step i. | 0 if fewer than two post-shock samples exist. | no |
-| `internal_lane_persistence_events` | events | Canonical junction_telemetry.parquet: vehicles present on the internal lanes of an intersection in two consecutive steps. | Vehicles on junction internal lanes. | Measurement-window steps only (warmup excluded); one sample per simulation step. | Sum over measurement steps and intersections (one row per intersection and step). Proxy of internal-junction occupancy, not a spillback or gridlock measurement. | Report 0 when no persistence events are observed. | no |
-| `offered_by_entry` | vehicles | Route file entry edges (scheduled departures). | Measurement cohort grouped by entry edge. | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Exported per entry edge as `offered_by_entry__<entry_edge>`: cohort vehicles offered at that border entry. | 0 for an entry without offered vehicles. | no |
-| `departed_by_entry` | vehicles | Route file entry edges joined with SUMO tripinfo. | Measurement cohort grouped by entry edge. | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Exported per entry edge as `departed_by_entry__<entry_edge>`: cohort vehicles of that entry that were inserted. | 0 for an entry without departures. | no |
-| `arrived_by_entry` | vehicles | Route file entry edges joined with SUMO tripinfo. | Measurement cohort grouped by entry edge. | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Exported per entry edge as `arrived_by_entry__<entry_edge>`: cohort vehicles of that entry that arrived before the run ended. | 0 for an entry without arrivals. | no |
-| `entry_departure_ratio` | ratio | Route file entry edges joined with SUMO tripinfo. | Measurement cohort grouped by entry edge. | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Exported per entry edge as `entry_departure_ratio__<entry_edge>`: departed / offered at that entry; shows whether the intended demand pattern reaches the network or is hidden by insertion starvation. | Reported as 0.0 when the entry offered no vehicles. | no |
-| `min_entry_departure_ratio` | ratio | Route file entry edges joined with SUMO tripinfo. | Measurement cohort grouped by entry edge. | Measurement window; cohort = vehicles scheduled to depart inside [warmup, warmup + measurement_duration). | Minimum over entry edges of departed / offered (cohort). | 0.0 for an entry with no departures. | no |
-| `messages_sent` | messages | MessageBus communication metrics. | Not population dependent. | Full simulated run, including warmup, unless report labels otherwise. | Total messages published by cooperative controllers. | For non-communicating controllers, report 0 or omit from communication tables. | no |
-| `messages_delivered` | messages | MessageBus communication metrics. | Not population dependent. | Full simulated run, including warmup, unless report labels otherwise. | Total messages delivered to destination inboxes. | For non-communicating controllers, report 0 or omit from communication tables. | no |
-| `messages_dropped` | messages | MessageBus communication metrics. | Not population dependent. | Full simulated run, including warmup, unless report labels otherwise. | Total messages dropped by the configured loss process. | Report 0 when no drops are observed. | no |
-| `messages_stale` | messages | Cooperative controller message freshness accounting. | Not population dependent. | Full simulated run, including warmup, unless report labels otherwise. | Total received messages rejected as stale. | Report 0 when no stale messages are observed. | no |
-| `bytes_sent` | bytes | MessageBus serialized message accounting. | Not population dependent. | Full simulated run, including warmup, unless report labels otherwise. | Total serialized bytes published. | Report 0 when no messages are sent. | no |
-| `bytes_delivered` | bytes | MessageBus serialized message accounting. | Not population dependent. | Full simulated run, including warmup, unless report labels otherwise. | Total serialized bytes delivered. | Report 0 when no messages are delivered. | no |
-| `mean_message_age_steps` | simulation steps/message | Cooperative controller message freshness accounting. | Not population dependent. | Full simulated run, including warmup, unless report labels otherwise. | Arithmetic mean age of observed messages. | Report 0 when no messages are observed. | no |
-| `max_message_age_steps` | simulation steps | Cooperative controller message freshness accounting. | Not population dependent. | Full simulated run, including warmup, unless report labels otherwise. | Maximum observed message age. | Report 0 when no messages are observed. | no |
-| `throughput_change_vs_zero_loss` | vehicles | Derived from throughput rows grouped by scenario, controller, and seed. | Not population dependent. | Same measurement window as throughput. | throughput(drop_probability=x) - throughput(drop_probability=0). | Only exported when a same-scenario/controller/seed zero-loss baseline exists. | no |
+| `offered_vehicle_count` | vehicles | Arquivo de rotas (partidas agendadas) combinado com o tripinfo do SUMO (departed/arrived). | Coorte de medição. | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Contagem de veículos ofertados na coorte de medição (alias de measurement_offered_vehicle_count). | As contagens são 0 quando a população está vazia. | não |
+| `departed_vehicle_count` | vehicles | Arquivo de rotas (partidas agendadas) combinado com o tripinfo do SUMO (departed/arrived). | Coorte de medição. | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Veículos da coorte que foram inseridos na rede antes do fim da run. | As contagens são 0 quando a população está vazia. | não |
+| `arrived_vehicle_count` | vehicles | Arquivo de rotas (partidas agendadas) combinado com o tripinfo do SUMO (departed/arrived). | Coorte de medição. | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Veículos da coorte que chegaram antes do fim da run. | As contagens são 0 quando a população está vazia. | não |
+| `never_inserted_vehicle_count` | vehicles | Arquivo de rotas (partidas agendadas) combinado com o tripinfo do SUMO (departed/arrived). | Coorte de medição. | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Veículos da coorte que nunca entraram na rede (offered - departed). | As contagens são 0 quando a população está vazia. | não |
+| `unfinished_in_network_count` | vehicles | Arquivo de rotas (partidas agendadas) combinado com o tripinfo do SUMO (departed/arrived). | Coorte de medição. | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Veículos da coorte inseridos, mas que não chegaram ao fim da run (departed - arrived). | As contagens são 0 quando a população está vazia. | não |
+| `full_run_offered_vehicle_count` | vehicles | Arquivo de rotas (partidas agendadas) combinado com o tripinfo do SUMO (departed/arrived). | Todos os veículos ofertados. | Run inteira, incluindo o warmup (offered/departed/arrived sobre todos os veículos). | Todos os veículos ofertados pelo arquivo de rotas ao longo da run inteira. | As contagens são 0 quando a população está vazia. | não |
+| `full_run_departed_vehicle_count` | vehicles | Arquivo de rotas (partidas agendadas) combinado com o tripinfo do SUMO (departed/arrived). | Todos os veículos ofertados. | Run inteira, incluindo o warmup (offered/departed/arrived sobre todos os veículos). | Todos os veículos inseridos na rede ao longo da run inteira. | As contagens são 0 quando a população está vazia. | não |
+| `full_run_arrived_vehicle_count` | vehicles | Arquivo de rotas (partidas agendadas) combinado com o tripinfo do SUMO (departed/arrived). | Todos os veículos ofertados. | Run inteira, incluindo o warmup (offered/departed/arrived sobre todos os veículos). | Todos os veículos que chegaram ao longo da run inteira. | As contagens são 0 quando a população está vazia. | não |
+| `full_run_never_inserted_vehicle_count` | vehicles | Arquivo de rotas (partidas agendadas) combinado com o tripinfo do SUMO (departed/arrived). | Todos os veículos ofertados. | Run inteira, incluindo o warmup (offered/departed/arrived sobre todos os veículos). | Veículos ofertados que nunca entraram na rede ao longo da run inteira. | As contagens são 0 quando a população está vazia. | não |
+| `full_run_unfinished_in_network_count` | vehicles | Arquivo de rotas (partidas agendadas) combinado com o tripinfo do SUMO (departed/arrived). | Todos os veículos ofertados. | Run inteira, incluindo o warmup (offered/departed/arrived sobre todos os veículos). | Veículos inseridos, mas que não chegaram ao fim da run. | As contagens são 0 quando a população está vazia. | não |
+| `measurement_offered_vehicle_count` | vehicles | Arquivo de rotas (partidas agendadas) combinado com o tripinfo do SUMO (departed/arrived). | Coorte de medição. | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Veículos ofertados agendados dentro da janela de medição. | As contagens são 0 quando a população está vazia. | não |
+| `measurement_departed_vehicle_count` | vehicles | Arquivo de rotas (partidas agendadas) combinado com o tripinfo do SUMO (departed/arrived). | Coorte de medição. | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Veículos da coorte inseridos antes do fim da run. | As contagens são 0 quando a população está vazia. | não |
+| `measurement_arrived_vehicle_count` | vehicles | Arquivo de rotas (partidas agendadas) combinado com o tripinfo do SUMO (departed/arrived). | Coorte de medição. | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Veículos da coorte que chegaram antes do fim da run. | As contagens são 0 quando a população está vazia. | não |
+| `departure_ratio` | ratio | Contagens de população do arquivo de rotas e do tripinfo do SUMO. | Coorte de medição. | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | departed_vehicle_count / offered_vehicle_count. | Reportada como 0.0 quando o denominador é 0. | não |
+| `completion_ratio_offered` | ratio | Contagens de população do arquivo de rotas e do tripinfo do SUMO. | Coorte de medição. | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | arrived_vehicle_count / offered_vehicle_count. | Reportada como 0.0 quando o denominador é 0. | não |
+| `completion_ratio_departed` | ratio | Contagens de população do arquivo de rotas e do tripinfo do SUMO. | Coorte de medição. | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | arrived_vehicle_count / departed_vehicle_count. | Reportada como 0.0 quando o denominador é 0. | não |
+| `throughput` | vehicles | Tempos de chegada do tripinfo do SUMO (igual às contagens de arrived do SUMO por passo). | Contagem de fluxo: todo veículo que chega na janela, incluindo veículos agendados durante o warmup. | Warmup excluído; intervalo de medição vindo da configuração do cenário. | Contagem de veículos que chegam durante a janela de medição. | Se nenhum veículo chega, reportar 0. | não |
+| `completed_trip_count` | vehicles | Arquivo de rotas (partidas agendadas) combinado com o tripinfo do SUMO (departed/arrived). | Coorte de medição, viagens concluídas. | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Veículos da coorte usados nas métricas de viagens concluídas (chegaram antes do fim da run). | As contagens são 0 quando a população está vazia. | não |
+| `mean_depart_delay_seconds` | seconds/vehicle | departDelay do tripinfo do SUMO (instante de inserção - partida agendada). | Veículos da coorte que efetivamente partiram (veículos nunca inseridos excluídos). | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Média aritmética sobre os veículos da coorte que foram inseridos. | Omitida se nenhum veículo da coorte foi inserido. | não |
+| `total_depart_delay_seconds` | seconds | departDelay do tripinfo do SUMO. | Veículos da coorte que efetivamente partiram. | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Soma sobre os veículos da coorte que foram inseridos. | 0 quando nenhum veículo da coorte foi inserido. | não |
+| `never_inserted_backlog_delay_lower_bound_seconds` | seconds | Partida agendada do arquivo de rotas e fim da run simulada. | Veículos da coorte que nunca entraram na rede. | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Soma, sobre os veículos da coorte nunca inseridos, de (fim da run - partida agendada); um LIMITE INFERIOR do atraso de backlog deles, nunca mesclado nas médias de viagens concluídas. | 0 quando todo veículo da coorte foi inserido. | não |
+| `mean_travel_time` | seconds/vehicle | duration do tripinfo do SUMO (chegada - inserção; exclui o atraso de inserção). | Viagens concluídas da coorte de medição (condicional à conclusão). | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Média aritmética sobre as viagens concluídas da coorte. | Se nenhum veículo da coorte conclui a viagem, omitir a métrica para essa run. | sim |
+| `mean_waiting_time` | seconds/vehicle | waitingTime do tripinfo do SUMO para viagens concluídas. | Viagens concluídas da coorte de medição (condicional à conclusão). | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Média aritmética sobre as viagens concluídas da coorte. | Se nenhum veículo da coorte conclui a viagem, omitir a métrica para essa run. | sim |
+| `mean_time_loss` | seconds/vehicle | timeLoss do tripinfo do SUMO para viagens concluídas. | Viagens concluídas da coorte de medição (condicional à conclusão). | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Média aritmética sobre as viagens concluídas da coorte. | Se nenhum veículo da coorte conclui a viagem, omitir a métrica para essa run. | sim |
+| `mean_stops` | stops/vehicle | waitingCount do tripinfo do SUMO para viagens concluídas. | Viagens concluídas da coorte de medição (condicional à conclusão). | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Média aritmética sobre as viagens concluídas da coorte. | Se nenhum veículo da coorte conclui a viagem, omitir a métrica para essa run. | sim |
+| `mean_time_in_system_seconds` | seconds/vehicle | duration + departDelay do tripinfo do SUMO para viagens concluídas. | Viagens concluídas da coorte de medição (condicional à conclusão). | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Média aritmética de (tempo de viagem + atraso de inserção) sobre as viagens concluídas. | Se nenhum veículo da coorte conclui a viagem, omitir a métrica para essa run. | sim |
+| `corridor_throughput` | vehicles | Pertencimento ao corredor no arquivo de rotas (west-east-middle-corridor-v2) e tripinfo. | Contagem de fluxo de veículos cuja rota percorre o corredor da linha central. | Warmup excluído; intervalo de medição vindo da configuração do cenário. | Contagem de veículos do corredor que chegam durante a janela de medição. | Se nenhum veículo do corredor chega, reportar 0. | não |
+| `corridor_mean_travel_time` | seconds/vehicle | duration do tripinfo do SUMO filtrada para west-east-middle-corridor-v2. | Viagens concluídas do corredor na coorte de medição (condicional). | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Média aritmética sobre as viagens concluídas da coorte. | Se nenhum veículo da coorte conclui a viagem, omitir a métrica para essa run. | sim |
+| `corridor_mean_stops` | stops/vehicle | waitingCount do tripinfo do SUMO filtrado para west-east-middle-corridor-v2. | Viagens concluídas do corredor na coorte de medição (condicional). | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Média aritmética sobre as viagens concluídas da coorte. | Se nenhum veículo da coorte conclui a viagem, omitir a métrica para essa run. | sim |
+| `post_shock_time_loss` | seconds/vehicle | timeLoss do tripinfo do SUMO de viagens concluídas agendadas no instante do choque ou depois. | Viagens concluídas de veículos da coorte AGENDADOS no início do choque ou depois (condicional à conclusão; população definida pelo instante agendado, não pelo de inserção). | Subconjunto pós-choque da janela de medição. | Média aritmética sobre as viagens concluídas da coorte. | Se nenhum veículo da coorte conclui a viagem, omitir a métrica para essa run. | sim |
+| `pre_shock_time_loss` | seconds/vehicle | timeLoss do tripinfo do SUMO de viagens concluídas agendadas antes do instante do choque. | Viagens concluídas de veículos da coorte agendados antes do início do choque (condicional à conclusão). | Subconjunto pré-choque da janela de medição. | Média aritmética sobre as viagens concluídas da coorte. | Se nenhum veículo da coorte conclui a viagem, omitir a métrica para essa run. | sim |
+| `mean_network_queue_vehicles` | vehicles | lane_telemetry.parquet / junction_telemetry.parquet canônicos (contagem de veículos parados do SUMO por lane de entrada ÚNICA, amostrada pelo runner da simulação para todo controlador). | Todos os veículos parados nas lanes de entrada; cada lane física contada uma vez. | Apenas os passos da janela de medição (warmup excluído); uma amostra por passo de simulação. | Média, sobre os passos de medição, de network_total_queue (soma das contagens de veículos parados das lanes de entrada únicas). | Omitida somente se não existirem amostras de telemetria na janela (a run falha). | não |
+| `max_network_queue_vehicles` | vehicles | lane_telemetry.parquet / junction_telemetry.parquet canônicos (contagem de veículos parados do SUMO por lane de entrada ÚNICA, amostrada pelo runner da simulação para todo controlador). | Todos os veículos parados nas lanes de entrada; cada lane física contada uma vez. | Apenas os passos da janela de medição (warmup excluído); uma amostra por passo de simulação. | Máximo, sobre os passos de medição, de network_total_queue. | Omitida somente se não existirem amostras de telemetria na janela (a run falha). | não |
+| `mean_intersection_queue_vehicles` | vehicles | lane_telemetry.parquet / junction_telemetry.parquet canônicos (contagem de veículos parados do SUMO por lane de entrada ÚNICA, amostrada pelo runner da simulação para todo controlador). | Todos os veículos parados nas lanes de entrada; cada lane física contada uma vez. | Apenas os passos da janela de medição (warmup excluído); uma amostra por passo de simulação. | Média, sobre os passos de medição e as interseções, de intersection_total_queue (soma das contagens de veículos parados das lanes de entrada únicas de uma interseção). | Omitida somente se não existirem amostras de telemetria na janela (a run falha). | não |
+| `max_intersection_queue_vehicles` | vehicles | lane_telemetry.parquet / junction_telemetry.parquet canônicos (contagem de veículos parados do SUMO por lane de entrada ÚNICA, amostrada pelo runner da simulação para todo controlador). | Todos os veículos parados nas lanes de entrada; cada lane física contada uma vez. | Apenas os passos da janela de medição (warmup excluído); uma amostra por passo de simulação. | Máximo, sobre os passos de medição e as interseções, de intersection_total_queue. | Omitida somente se não existirem amostras de telemetria na janela (a run falha). | não |
+| `mean_lane_queue_vehicles` | vehicles | lane_telemetry.parquet / junction_telemetry.parquet canônicos (contagem de veículos parados do SUMO por lane de entrada ÚNICA, amostrada pelo runner da simulação para todo controlador). | Todos os veículos parados nas lanes de entrada; cada lane física contada uma vez. | Apenas os passos da janela de medição (warmup excluído); uma amostra por passo de simulação. | Média, sobre os passos de medição e as lanes, de lane_queue (diluída por lanes ociosas; somente diagnóstica). | Omitida somente se não existirem amostras de telemetria na janela (a run falha). | não |
+| `max_lane_queue_vehicles` | vehicles | lane_telemetry.parquet / junction_telemetry.parquet canônicos (contagem de veículos parados do SUMO por lane de entrada ÚNICA, amostrada pelo runner da simulação para todo controlador). | Todos os veículos parados nas lanes de entrada; cada lane física contada uma vez. | Apenas os passos da janela de medição (warmup excluído); uma amostra por passo de simulação. | Máximo de lane_queue sobre os passos de medição e as lanes. Pode saturar na capacidade física de armazenamento de uma lane (cerca de 30 veículos em uma aresta de 235,6 m) em cenários sobrecarregados e então perde poder discriminatório; use os agregados de rede/interseção em conjunto com ela. | Omitida somente se não existirem amostras de telemetria na janela (a run falha). | não |
+| `post_shock_mean_network_queue_vehicles` | vehicles | lane_telemetry.parquet / junction_telemetry.parquet canônicos (contagem de veículos parados do SUMO por lane de entrada ÚNICA, amostrada pelo runner da simulação para todo controlador). | Todos os veículos parados nas lanes de entrada; cada lane física contada uma vez. | Subconjunto pós-choque da janela de medição (passo >= passo de início do choque). | Média de network_total_queue sobre os passos de medição pós-choque. | Omitida somente se não existirem amostras de telemetria na janela (a run falha). | não |
+| `post_shock_max_network_queue_vehicles` | vehicles | lane_telemetry.parquet / junction_telemetry.parquet canônicos (contagem de veículos parados do SUMO por lane de entrada ÚNICA, amostrada pelo runner da simulação para todo controlador). | Todos os veículos parados nas lanes de entrada; cada lane física contada uma vez. | Subconjunto pós-choque da janela de medição (passo >= passo de início do choque). | Máximo de network_total_queue sobre os passos de medição pós-choque. | Omitida somente se não existirem amostras de telemetria na janela (a run falha). | não |
+| `pre_shock_mean_network_queue_vehicles` | vehicles | lane_telemetry.parquet / junction_telemetry.parquet canônicos (contagem de veículos parados do SUMO por lane de entrada ÚNICA, amostrada pelo runner da simulação para todo controlador). | Todos os veículos parados nas lanes de entrada; cada lane física contada uma vez. | Subconjunto pré-choque da janela de medição. | Média de network_total_queue sobre os passos de medição pré-choque. | Omitida somente se não existirem amostras de telemetria na janela (a run falha). | não |
+| `pre_shock_max_network_queue_vehicles` | vehicles | lane_telemetry.parquet / junction_telemetry.parquet canônicos (contagem de veículos parados do SUMO por lane de entrada ÚNICA, amostrada pelo runner da simulação para todo controlador). | Todos os veículos parados nas lanes de entrada; cada lane física contada uma vez. | Subconjunto pré-choque da janela de medição. | Máximo de network_total_queue sobre os passos de medição pré-choque. | Omitida somente se não existirem amostras de telemetria na janela (a run falha). | não |
+| `post_shock_queue_auc_vehicle_seconds` | vehicle-seconds | lane_telemetry.parquet canônico (contagens de veículos parados por lane única). | network_total_queue = soma sobre as lanes de entrada únicas; nunca linhas de movimento. | Subconjunto pós-choque da janela de medição. | Integral trapezoidal de network_total_queue sobre o tempo de simulação, do passo de início do choque até o último passo de medição: sum((Q_i + Q_{i+1}) / 2 * (t_{i+1} - t_i)), com t_i o timestamp de telemetria do passo i. | 0 se existirem menos de duas amostras pós-choque. | não |
+| `internal_lane_persistence_events` | events | junction_telemetry.parquet canônico: veículos presentes nas lanes internas de uma interseção em dois passos consecutivos. | Veículos nas lanes internas das interseções. | Apenas os passos da janela de medição (warmup excluído); uma amostra por passo de simulação. | Soma sobre os passos de medição e as interseções (uma linha por interseção e por passo). Proxy da ocupação interna da interseção, não uma medida de spillback ou de gridlock. | Reportar 0 quando nenhum evento de persistência é observado. | não |
+| `offered_by_entry` | vehicles | Arestas de entrada do arquivo de rotas (partidas agendadas). | Coorte de medição agrupada por aresta de entrada. | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Exportada por aresta de entrada como `offered_by_entry__<entry_edge>`: veículos da coorte ofertados naquela entrada de borda. | 0 para uma entrada sem veículos ofertados. | não |
+| `departed_by_entry` | vehicles | Arestas de entrada do arquivo de rotas combinadas com o tripinfo do SUMO. | Coorte de medição agrupada por aresta de entrada. | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Exportada por aresta de entrada como `departed_by_entry__<entry_edge>`: veículos da coorte daquela entrada que foram inseridos. | 0 para uma entrada sem partidas. | não |
+| `arrived_by_entry` | vehicles | Arestas de entrada do arquivo de rotas combinadas com o tripinfo do SUMO. | Coorte de medição agrupada por aresta de entrada. | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Exportada por aresta de entrada como `arrived_by_entry__<entry_edge>`: veículos da coorte daquela entrada que chegaram antes do fim da run. | 0 para uma entrada sem chegadas. | não |
+| `entry_departure_ratio` | ratio | Arestas de entrada do arquivo de rotas combinadas com o tripinfo do SUMO. | Coorte de medição agrupada por aresta de entrada. | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Exportada por aresta de entrada como `entry_departure_ratio__<entry_edge>`: departed / offered naquela entrada; mostra se o padrão de demanda pretendido chega à rede ou é ocultado por starvation de inserção. | Reportada como 0.0 quando a entrada não ofertou veículos. | não |
+| `min_entry_departure_ratio` | ratio | Arestas de entrada do arquivo de rotas combinadas com o tripinfo do SUMO. | Coorte de medição agrupada por aresta de entrada. | Janela de medição; coorte = veículos agendados para partir dentro de [warmup, warmup + measurement_duration). | Mínimo, sobre as arestas de entrada, de departed / offered (coorte). | 0.0 para uma entrada sem partidas. | não |
+| `messages_sent` | messages | Métricas de comunicação do MessageBus. | Não depende de população. | Run simulada completa, incluindo o warmup, a menos que o relatório indique o contrário. | Total de mensagens publicadas pelos controladores cooperativos. | Para controladores que não se comunicam, reportar 0 ou omitir das tabelas de comunicação. | não |
+| `messages_delivered` | messages | Métricas de comunicação do MessageBus. | Não depende de população. | Run simulada completa, incluindo o warmup, a menos que o relatório indique o contrário. | Total de mensagens entregues às caixas de entrada de destino. | Para controladores que não se comunicam, reportar 0 ou omitir das tabelas de comunicação. | não |
+| `messages_dropped` | messages | Métricas de comunicação do MessageBus. | Não depende de população. | Run simulada completa, incluindo o warmup, a menos que o relatório indique o contrário. | Total de mensagens descartadas pelo processo de perda configurado. | Reportar 0 quando nenhum descarte é observado. | não |
+| `messages_stale` | messages | Contabilização de atualidade das mensagens dos controladores cooperativos. | Não depende de população. | Run simulada completa, incluindo o warmup, a menos que o relatório indique o contrário. | Total de mensagens recebidas rejeitadas por estarem obsoletas (stale). | Reportar 0 quando nenhuma mensagem obsoleta é observada. | não |
+| `bytes_sent` | bytes | Contabilização de mensagens serializadas do MessageBus. | Não depende de população. | Run simulada completa, incluindo o warmup, a menos que o relatório indique o contrário. | Total de bytes serializados publicados. | Reportar 0 quando nenhuma mensagem é enviada. | não |
+| `bytes_delivered` | bytes | Contabilização de mensagens serializadas do MessageBus. | Não depende de população. | Run simulada completa, incluindo o warmup, a menos que o relatório indique o contrário. | Total de bytes serializados entregues. | Reportar 0 quando nenhuma mensagem é entregue. | não |
+| `mean_message_age_steps` | simulation steps/message | Contabilização de atualidade das mensagens dos controladores cooperativos. | Não depende de população. | Run simulada completa, incluindo o warmup, a menos que o relatório indique o contrário. | Idade média aritmética das mensagens observadas. | Reportar 0 quando nenhuma mensagem é observada. | não |
+| `max_message_age_steps` | simulation steps | Contabilização de atualidade das mensagens dos controladores cooperativos. | Não depende de população. | Run simulada completa, incluindo o warmup, a menos que o relatório indique o contrário. | Idade máxima observada das mensagens. | Reportar 0 quando nenhuma mensagem é observada. | não |
+| `throughput_change_vs_zero_loss` | vehicles | Derivada das linhas de throughput agrupadas por cenário, controlador e seed. | Não depende de população. | Mesma janela de medição do throughput. | throughput(drop_probability=x) - throughput(drop_probability=0). | Exportada somente quando existe um baseline de perda zero para o mesmo cenário/controlador/seed. | não |
 
-## S4 Internal-Lane Proxy Policy
+## Política do proxy de lane interna do S4
 
-`internal_lane_persistence_events` is a proxy for persistent internal-junction occupancy. It is
-the number of vehicles present on the internal lanes of an intersection in two consecutive
-steps, summed over intersections and measurement steps (one value per intersection and step; it
-is not replicated per movement). It is not spillback duration, gridlock duration, or a universal
-direct measurement of blocked junctions.
+`internal_lane_persistence_events` é um proxy da ocupação persistente interna da interseção. É
+o número de veículos presentes nas lanes internas de uma interseção em dois passos consecutivos,
+somado sobre as interseções e os passos de medição (um valor por interseção e por passo; não
+é replicado por movimento). Não é uma duração de spillback, uma duração de gridlock, nem uma
+medição direta universal de interseções bloqueadas.
 
-## S5 Derived Metric Policy
+## Política da métrica derivada do S5
 
-`throughput_change_vs_zero_loss` is a descriptive within-controller comparison against the
-zero-loss condition for the same scenario and seed. Do not describe the value as degradation
-caused by communication without the full experimental context and controls.
+`throughput_change_vs_zero_loss` é uma comparação descritiva, dentro do mesmo controlador, contra a
+condição de perda zero para o mesmo cenário e seed. Não descreva o valor como degradação
+causada pela comunicação sem o contexto experimental completo e os controles.

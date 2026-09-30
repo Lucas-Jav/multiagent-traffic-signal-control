@@ -1,83 +1,89 @@
-# V1 Final Experimental Protocol
+# Protocolo Experimental Final V1
 
-Status: approved methodological source of truth for the V1 final experiments.
+Status: fonte de verdade metodológica aprovada para os experimentos finais da V1.
 
-This protocol defines the scientific comparisons, scenarios, metrics, fairness
-contract, and seed policy for the final campaign. It supersedes older planning
-notes when there is a conflict. The final campaign must not be executed until
-the implementation mismatches listed at the end of this document are resolved
-and frozen.
+Este protocolo define as comparações científicas, os cenários, as métricas, o
+contrato de equidade (fairness) e a política de seeds da campanha final. Ele
+substitui notas de planejamento mais antigas em caso de conflito. A campanha
+final não deve ser executada até que as divergências de implementação listadas
+ao final deste documento sejam resolvidas e congeladas.
 
-This document does not report experimental results. It must not describe any
-controller as superior before final campaign results exist.
+Este documento não reporta resultados experimentais. Ele não deve descrever
+nenhum controlador como superior antes de existirem os resultados da campanha
+final.
 
-Operational metric definitions live in `docs/methodology/metrics.md`. If a
-metric name appears in this protocol, its unit, source, aggregation, measurement
-window, and edge-case policy are defined there.
+As definições operacionais das métricas estão em `docs/methodology/metrics.md`.
+Se um nome de métrica aparecer neste protocolo, sua unidade, fonte, agregação,
+janela de medição e política para casos extremos estão definidas naquele
+documento.
 
-## Research Question
+## Pergunta de Pesquisa
 
-In a simulated urban traffic network, does local information exchange between
-decentralized traffic signal controllers improve network performance compared
-with a local adaptive controller without cooperation and with fixed-time
-control, under different traffic demand conditions?
+Em uma rede urbana simulada, a troca local de informações entre controladores
+semafóricos descentralizados melhora o desempenho da rede em comparação com um
+controlador adaptativo local sem cooperação e com o controle de tempo fixo, sob
+diferentes condições de demanda de tráfego?
 
-The expected answer is not hardcoded. All conclusions must be derived from the
-final frozen artifacts and statistical analysis.
+A resposta esperada não é definida previamente. Todas as conclusões devem ser
+derivadas dos artifacts finais congelados e da análise estatística.
 
-## Controllers and Experimental Roles
+## Controladores e Papéis Experimentais
 
-The final V1 campaign uses five controllers:
+A campanha final V1 utiliza cinco controladores:
 
-| Controller | Experimental role |
+| Controlador | Papel experimental |
 |---|---|
-| `B0_FIXED` | Traditional fixed-time baseline |
-| `B1_LOCAL_ADAPTIVE` | Secondary local adaptive controller |
-| `B2_LOCAL_PRESSURE` | Primary non-cooperative adaptive baseline |
-| `C1_COOPERATIVE_COMPACT` | Main cooperative method |
-| `C2_COOPERATIVE_EXPANDED` | Communication-rich ablation/comparison |
+| `B0_FIXED` | Controle base tradicional de tempo fixo |
+| `B1_LOCAL_ADAPTIVE` | Controlador adaptativo local secundário |
+| `B2_LOCAL_PRESSURE` | Controle base adaptativo não cooperativo primário |
+| `C1_COOPERATIVE_COMPACT` | Método cooperativo principal |
+| `C2_COOPERATIVE_EXPANDED` | Ablação/comparação com comunicação rica |
 
-The final fixed-time baseline is `B0_FIXED`.
+O controle base de tempo fixo final é o `B0_FIXED`.
 
-`B0_FIXED` must be described only as a traditional/static fixed-time baseline.
-It is not Webster-optimized. No `B0_WEBSTER_FIXED` baseline is implemented for
-V1, and V1 reports must not use "Webster" as a synonym for `B0_FIXED`.
+O `B0_FIXED` deve ser descrito apenas como um controle base (baseline)
+tradicional/estático de tempo fixo. Ele não é otimizado por Webster. Nenhum
+baseline `B0_WEBSTER_FIXED` é implementado na V1, e os relatórios da V1 não
+devem usar "Webster" como sinônimo de `B0_FIXED`.
 
-Primary scientific comparison:
+Comparação científica primária:
 
 ```text
 B2_LOCAL_PRESSURE vs C1_COOPERATIVE_COMPACT
 ```
 
-Reason: `B2_LOCAL_PRESSURE` and `C1_COOPERATIVE_COMPACT` share the local
-pressure core. The major experimental difference is the use of cooperative
-neighbor information by `C1_COOPERATIVE_COMPACT`.
+Motivo: `B2_LOCAL_PRESSURE` e `C1_COOPERATIVE_COMPACT` compartilham o núcleo de
+pressão local. A principal diferença experimental é o uso, pelo
+`C1_COOPERATIVE_COMPACT`, de informações cooperativas dos vizinhos.
 
-Secondary comparisons:
+Comparações secundárias:
 
 - `B0_FIXED` vs `B2_LOCAL_PRESSURE`
 - `B0_FIXED` vs `C1_COOPERATIVE_COMPACT`
 - `B2_LOCAL_PRESSURE` vs `C2_COOPERATIVE_EXPANDED`
 - `C1_COOPERATIVE_COMPACT` vs `C2_COOPERATIVE_EXPANDED`
 
-## Common Fairness Contract
+## Contrato Comum de Equidade (Fairness)
 
-For the same scenario and seed, all compared controllers must share:
+Para o mesmo cenário e a mesma seed, todos os controladores comparados devem
+compartilhar:
 
-- network
-- routes
-- traffic demand
-- turning ratios
+- rede
+- rotas
+- demanda de tráfego
+- razões de conversão
 - warmup
-- measurement duration
-- step length
-- phase plan
-- movement model
-- safety constraints
+- duração da medição
+- passo de simulação (step length)
+- plano de fases
+- modelo de movimentos
+- restrições de segurança
 
-Only controller behavior and, where designed, communication behavior may differ.
+Somente o comportamento do controlador e, quando projetado, o comportamento de
+comunicação podem diferir.
 
-Scientific fairness must be checked using independently recorded invariants:
+A equidade científica deve ser verificada por meio de invariantes registradas
+de forma independente:
 
 - `network_sha256`
 - `route_sha256`
@@ -85,255 +91,271 @@ Scientific fairness must be checked using independently recorded invariants:
 - `movement_model_sha256`
 - `turning_config_sha256`
 
-`scenario_sha256` may include controller or communication fields in the current
-implementation and is therefore not the primary fairness source of truth.
+O `scenario_sha256` pode incluir campos de controlador ou de comunicação na
+implementação atual e, portanto, não é a fonte de verdade primária de equidade.
 
 ## Seeds
 
-Minimum pilot: 5 distinct seeds.
+Piloto mínimo: 5 seeds distintas.
 
-Seed selection must happen before examining comparative controller results. Do
-not replace, remove, or reorder seeds because a run produces an unfavorable
-result.
+A seleção das seeds deve ocorrer antes de examinar os resultados comparativos
+dos controladores. Não substitua, remova nem reordene seeds porque uma execução
+produziu um resultado desfavorável.
 
-Use the existing planned seed pool:
+Use o pool de seeds planejado existente:
 
 ```text
 campaign_v1_seed_pool_2026-09-29
 42, 2027, 3253, 4517, 5791, 6841, 8089, 10007, 12011, 16001
 ```
 
-The minimum pilot uses the first five seeds:
+O piloto mínimo usa as cinco primeiras seeds:
 
 ```text
 42, 2027, 3253, 4517, 5791
 ```
 
-If a larger final campaign is approved, it must use the next seeds in the fixed
-order above.
+Se uma campanha final maior for aprovada, ela deve usar as próximas seeds na
+ordem fixa acima.
 
-## Scenario S1 - Balanced Traffic
+## Cenário S1 - Tráfego Balanceado
 
-Definition:
+Definição:
 
-- Scenario id: `S1_BALANCED`
-- Demand: balanced demand from all borders
-- Final turning distribution:
-  - straight: `0.70`
-  - left: `0.15`
-  - right: `0.15`
-- Goal: evaluate controller behavior under stable and predictable demand.
+- ID do cenário: `S1_BALANCED`
+- Demanda: demanda balanceada a partir de todas as bordas
+- Distribuição final de conversões:
+  - em frente: `0.70`
+  - esquerda: `0.15`
+  - direita: `0.15`
+- Objetivo: avaliar o comportamento dos controladores sob demanda estável e
+  previsível.
 
-Do not define success as "`C1_COOPERATIVE_COMPACT` must outperform fixed-time."
+Não defina sucesso como "`C1_COOPERATIVE_COMPACT` deve superar o tempo fixo."
 
-Metrics:
+Métricas:
 
-- throughput
-- mean travel time
-- mean waiting time
-- mean time loss
-- mean queue
-- max queue
-- mean stops
+- vazão (throughput)
+- tempo médio de viagem
+- tempo médio de espera
+- perda de tempo média (mean time loss)
+- fila média
+- fila máxima
+- média de paradas
 
-## Scenario S2 - Directional Peak
+## Cenário S2 - Pico Direcional
 
-Definition:
+Definição:
 
-- Scenario id: `S2_DIRECTIONAL_PEAK`
-- Demand: strong West to East demand bias
-- Target: approximately 80% of injected demand associated with the dominant
-  corridor/direction
-- Turning behavior must be preserved. The target does not mean that 80% of
-  vehicles must travel only straight through the entire network.
-- The scenario must contain straight, left, and right movements.
-- Goal: evaluate whether local and cooperative controllers handle a dominant
-  directional traffic stream and platoon-like demand.
+- ID do cenário: `S2_DIRECTIONAL_PEAK`
+- Demanda: forte viés de demanda de Oeste para Leste
+- Alvo: aproximadamente 80% da demanda injetada associada ao
+  corredor/direção dominante
+- O comportamento de conversão deve ser preservado. O alvo não significa que
+  80% dos veículos devam seguir apenas em frente por toda a rede.
+- O cenário deve conter movimentos em frente, à esquerda e à direita.
+- Objetivo: avaliar se os controladores locais e cooperativos lidam com um
+  fluxo direcional dominante e com demanda semelhante a pelotões (platoons).
 
-Do not claim that a green wave exists unless it is observed in the final
-artifacts using an explicit definition.
+Não afirme que existe uma onda verde a menos que ela seja observada nos
+artifacts finais usando uma definição explícita.
 
-Metrics:
+Métricas:
 
-- mean stops
-- time loss
-- corridor travel time
-- corridor throughput
-- network throughput
-- queues
+- média de paradas
+- perda de tempo (time loss)
+- tempo de viagem no corredor
+- vazão no corredor
+- vazão da rede
+- filas
 
-## Scenario S3 - Abrupt Demand Shift
+## Cenário S3 - Mudança Abrupta de Demanda
 
-Definition:
+Definição:
 
-- Scenario id: `S3_DEMAND_SHIFT`
-- Use two explicit demand windows.
-- First 50%: balanced traffic.
-- Second 50%: strong directional/localized demand shock.
-- The exact shock start time must be frozen before the campaign.
-- Goal: evaluate controller response after a demand regime change.
+- ID do cenário: `S3_DEMAND_SHIFT`
+- Use duas janelas de demanda explícitas.
+- Primeiros 50%: tráfego balanceado.
+- Últimos 50%: forte choque de demanda direcional/localizado.
+- O instante exato de início do choque deve ser congelado antes da campanha.
+- Objetivo: avaliar a resposta dos controladores após uma mudança de regime de
+  demanda.
 
-Selected recovery metric policy:
+Política da métrica de recuperação selecionada:
 
-The current implemented data products do not yet define a scientifically
-defensible threshold for `recovery_time_seconds` without arbitrary tuning.
-Therefore the final V1 protocol must not invent a threshold-based recovery time
-metric until such a rule is implemented and frozen.
+Os produtos de dados atualmente implementados ainda não definem um limiar
+cientificamente defensável para `recovery_time_seconds` sem ajuste arbitrário.
+Portanto, o protocolo final da V1 não deve inventar uma métrica de tempo de
+recuperação baseada em limiar até que uma regra seja implementada e congelada.
 
-Use these post-shock metrics instead:
+Use estas métricas pós-choque no lugar:
 
-- post-shock mean queue
-- post-shock max queue
-- area under queue curve after shock
-- post-shock time loss
+- fila média pós-choque
+- fila máxima pós-choque
+- área sob a curva de fila após o choque
+- perda de tempo pós-choque
 
-## Scenario S4 - Localized Saturation
+## Cenário S4 - Saturação Localizada
 
-Definition:
+Definição:
 
-- Scenario id: `S4_LOCAL_SATURATION`
-- Demand: strong demand focused toward the A5 region
-- The scenario may intentionally approach or exceed local capacity.
-- Goal: evaluate whether cooperation mitigates propagation of localized
-  congestion compared with local-only control.
+- ID do cenário: `S4_LOCAL_SATURATION`
+- Demanda: forte demanda direcionada à região A5
+- O cenário pode intencionalmente se aproximar da capacidade local ou excedê-la.
+- Objetivo: avaliar se a cooperação mitiga a propagação de congestionamento
+  localizado em comparação com o controle apenas local.
 
-Do not claim that any controller must solve overload.
+Não afirme que qualquer controlador deva resolver a sobrecarga.
 
-Metrics:
+Métricas:
 
-- mean queue
-- max queue
-- throughput
-- time loss
-- travel time
-- downstream occupancy where available
+- fila média
+- fila máxima
+- vazão
+- perda de tempo
+- tempo de viagem
+- ocupação a jusante, quando disponível
 - `internal_lane_persistence_events`
 
-`internal_lane_persistence_events` is a proxy for persistent internal-junction
-occupancy. It is not a direct universal measurement of spillback, gridlock, or
-physical blockage.
+`internal_lane_persistence_events` é um proxy para a ocupação persistente da
+interseção interna. Não é uma medição direta e universal de spillback, gridlock
+ou bloqueio físico.
 
-Do not use "gridlock duration" unless an explicit operational definition is
-implemented and frozen before the final campaign.
+Não use "duração de gridlock" a menos que uma definição operacional explícita
+seja implementada e congelada antes da campanha final.
 
-## Scenario S5 - Communication Degradation
+## Cenário S5 - Degradação da Comunicação
 
-Definition:
+Definição:
 
-- Scenario id: `S5_COMMUNICATION_DEGRADATION`
-- Use an existing traffic demand profile, preferably `S2_DIRECTIONAL_PEAK`.
-- Packet-loss experiment over `drop_probability`:
+- ID do cenário: `S5_COMMUNICATION_DEGRADATION`
+- Use um perfil de demanda de tráfego existente, preferencialmente
+  `S2_DIRECTIONAL_PEAK`.
+- Experimento de perda de pacotes sobre `drop_probability`:
   - `0.00`
   - `0.20`
   - `0.50`
   - `1.00`
-- Primary controllers:
+- Controladores primários:
   - `C1_COOPERATIVE_COMPACT`
   - `C2_COOPERATIVE_EXPANDED`
-- Reference controller:
+- Controlador de referência:
   - `B2_LOCAL_PRESSURE`
 
-At 100% packet loss, `C1_COOPERATIVE_COMPACT` and
-`C2_COOPERATIVE_EXPANDED` should rely on local fallback behavior. Do not assume
-their final metrics will exactly equal `B2_LOCAL_PRESSURE` unless implementation
-semantics guarantee exact equivalence.
+Com 100% de perda de pacotes, `C1_COOPERATIVE_COMPACT` e
+`C2_COOPERATIVE_EXPANDED` devem recorrer ao comportamento de fallback local.
+Não assuma que suas métricas finais serão exatamente iguais às do
+`B2_LOCAL_PRESSURE`, a menos que a semântica da implementação garanta
+equivalência exata.
 
-Metrics:
+Métricas:
 
-- throughput
-- waiting time
-- time loss
-- queue
-- communication messages sent
-- communication messages delivered
-- communication messages dropped
+- vazão
+- tempo de espera
+- perda de tempo
+- fila
+- mensagens de comunicação enviadas
+- mensagens de comunicação entregues
+- mensagens de comunicação descartadas
 - bytes
-- message age
+- idade da mensagem
 
-## Optional Secondary Delay Study
+## Estudo Secundário Opcional de Atraso
 
-`S5B_DELAY` is secondary and optional. It is not mandatory for the TCC core
-campaign.
+`S5B_DELAY` é secundário e opcional. Não é obrigatório para a campanha central
+do TCC.
 
-If executed, use:
+Se executado, use:
 
 - `delay_steps: 0`
 - `delay_steps: 1`
 - `delay_steps: 3`
 - `delay_steps: 5`
 
-The delay study must not be mixed with the mandatory packet-loss comparison
-unless the analysis labels it separately.
+O estudo de atraso não deve ser misturado com a comparação obrigatória de perda
+de pacotes, a menos que a análise o rotule separadamente.
 
-## Final Metric List by Scenario
+## Lista Final de Métricas por Cenário
 
-| Scenario | Final metrics |
+| Cenário | Métricas finais |
 |---|---|
-| `S1_BALANCED` | throughput; mean travel time; mean waiting time; mean time loss; mean queue; max queue; mean stops |
-| `S2_DIRECTIONAL_PEAK` | mean stops; time loss; corridor travel time; corridor throughput; network throughput; queues |
-| `S3_DEMAND_SHIFT` | post-shock mean queue; post-shock max queue; area under queue curve after shock; post-shock time loss |
-| `S4_LOCAL_SATURATION` | mean queue; max queue; throughput; time loss; travel time; downstream occupancy where available; `internal_lane_persistence_events` |
-| `S5_COMMUNICATION_DEGRADATION` | throughput; waiting time; time loss; queue; messages sent; messages delivered; messages dropped; bytes; message age |
-| `S5B_DELAY` | same as S5, reported separately as optional/secondary |
+| `S1_BALANCED` | vazão; tempo médio de viagem; tempo médio de espera; perda de tempo média; fila média; fila máxima; média de paradas |
+| `S2_DIRECTIONAL_PEAK` | média de paradas; perda de tempo; tempo de viagem no corredor; vazão no corredor; vazão da rede; filas |
+| `S3_DEMAND_SHIFT` | fila média pós-choque; fila máxima pós-choque; área sob a curva de fila após o choque; perda de tempo pós-choque |
+| `S4_LOCAL_SATURATION` | fila média; fila máxima; vazão; perda de tempo; tempo de viagem; ocupação a jusante, quando disponível; `internal_lane_persistence_events` |
+| `S5_COMMUNICATION_DEGRADATION` | vazão; tempo de espera; perda de tempo; fila; mensagens enviadas; mensagens entregues; mensagens descartadas; bytes; idade da mensagem |
+| `S5B_DELAY` | igual ao S5, reportado separadamente como opcional/secundário |
 
-## Exact Scenario Definitions to Freeze
+## Definições Exatas de Cenário a Congelar
 
-The final executable artifacts must encode these definitions before campaign
-execution:
+Os artifacts executáveis finais devem codificar estas definições antes da
+execução da campanha:
 
-| Scenario | Demand and communication definition |
+| Cenário | Definição de demanda e comunicação |
 |---|---|
-| `S1_BALANCED` | Balanced demand from all borders; turning ratios straight `0.70`, left `0.15`, right `0.15`; no special communication degradation in main campaign |
-| `S2_DIRECTIONAL_PEAK` | Strong West to East demand bias; approximately 80% of injected demand associated with the dominant corridor/direction while preserving straight, left, and right movements |
-| `S3_DEMAND_SHIFT` | Two explicit windows; first 50% balanced; second 50% strong directional/localized demand shock; shock start frozen before campaign |
-| `S4_LOCAL_SATURATION` | Strong demand focused toward A5; may approach or exceed local capacity |
-| `S5_COMMUNICATION_DEGRADATION` | Existing base demand, preferably S2; C1/C2 packet-loss matrix at drop probabilities `0.00`, `0.20`, `0.50`, `1.00`; B2 reference |
-| `S5B_DELAY` | Optional delay matrix over `delay_steps` `0`, `1`, `3`, `5`; reported separately |
+| `S1_BALANCED` | Demanda balanceada a partir de todas as bordas; razões de conversão em frente `0.70`, esquerda `0.15`, direita `0.15`; sem degradação especial de comunicação na campanha principal |
+| `S2_DIRECTIONAL_PEAK` | Forte viés de demanda de Oeste para Leste; aproximadamente 80% da demanda injetada associada ao corredor/direção dominante, preservando movimentos em frente, à esquerda e à direita |
+| `S3_DEMAND_SHIFT` | Duas janelas explícitas; primeiros 50% balanceados; últimos 50% com forte choque de demanda direcional/localizado; início do choque congelado antes da campanha |
+| `S4_LOCAL_SATURATION` | Forte demanda direcionada a A5; pode se aproximar da capacidade local ou excedê-la |
+| `S5_COMMUNICATION_DEGRADATION` | Demanda base existente, preferencialmente S2; matriz de perda de pacotes C1/C2 nas probabilidades de descarte `0.00`, `0.20`, `0.50`, `1.00`; referência B2 |
+| `S5B_DELAY` | Matriz de atraso opcional sobre `delay_steps` `0`, `1`, `3`, `5`; reportada separadamente |
 
-## Current Implementation Mismatches
+## Divergências Atuais de Implementação
 
-Status after the Pilot V1 remediation (Prompt 46.6): items 1 and 3 are resolved by the
-regenerated scenario artifacts (`scripts/generate_scenarios.py`, `docs/scenarios.md`); their
-demand intensities were calibrated in Prompt 46.7 (`docs/scenarios.md`). Item 4 is covered
-by the canonical metrics pipeline (`docs/methodology/metrics.md`). Queue metrics are named by
-scope (`mean_network_queue_vehicles`, `max_network_queue_vehicles`, ..., see the metrics
-document); "mean queue" and "max queue" in the metric lists above refer to those scoped
-metrics.
+Status após a remediação do Pilot V1 (Prompt 46.6): os itens 1 e 3 estão
+resolvidos pelos artifacts de cenário regenerados (`scripts/generate_scenarios.py`,
+`docs/scenarios.md`); suas intensidades de demanda foram calibradas no Prompt 46.7
+(`docs/scenarios.md`). O item 4 é coberto pelo pipeline canônico de métricas
+(`docs/methodology/metrics.md`). As métricas de fila são nomeadas por escopo
+(`mean_network_queue_vehicles`, `max_network_queue_vehicles`, ..., veja o
+documento de métricas); "fila média" e "fila máxima" nas listas de métricas
+acima referem-se a essas métricas com escopo.
 
-The following mismatches were listed before the final campaign can be frozen or run:
+As seguintes divergências foram listadas antes que a campanha final pudesse ser
+congelada ou executada:
 
-1. `S1_BALANCED` used turning ratios straight `0.60`, left `0.20`, right `0.20`, which were
-   metadata only; the scenarios now use the protocol distribution (straight `0.70`, left
-   `0.15`, right `0.15`) and the ratios drive the route generator. (Resolved.)
-2. Older S5 exploratory configs use `drop_probability` values `0.00`, `0.05`,
-   `0.10`, and `0.25`, and combine them with delay values. The planned core S5
-   packet-loss config uses `0.00`, `0.20`, `0.50`, and `1.00`; delay remains a
-   separate optional `S5B_DELAY` study.
-3. `S3_DEMAND_SHIFT` implementation had to be checked or updated so its first 50%
-   is balanced and its second 50% is the frozen directional/localized shock
-   specified by this protocol. It now has an S1-like first half and an abrupt
-   one-border shock routed through A5 at 50% of the MEASUREMENT window
-   (`shock_start_seconds = 2100`). (Resolved; intensity calibrated in Prompt 46.7.)
-4. Corridor-specific metrics for S2 and post-shock metrics for S3 must be
-   available in the final analysis outputs before final reporting.
+1. `S1_BALANCED` usava razões de conversão em frente `0.60`, esquerda `0.20`,
+   direita `0.20`, que eram apenas metadados; os cenários agora usam a
+   distribuição do protocolo (em frente `0.70`, esquerda `0.15`, direita
+   `0.15`) e as razões alimentam o gerador de rotas. (Resolvido.)
+2. As configs exploratórias antigas do S5 usam valores de `drop_probability`
+   `0.00`, `0.05`, `0.10` e `0.25`, e os combinam com valores de atraso. A
+   config central planejada de perda de pacotes do S5 usa `0.00`, `0.20`,
+   `0.50` e `1.00`; o atraso permanece como um estudo opcional separado,
+   `S5B_DELAY`.
+3. A implementação do `S3_DEMAND_SHIFT` precisava ser verificada ou atualizada
+   para que seus primeiros 50% fossem balanceados e seus últimos 50% fossem o
+   choque direcional/localizado congelado especificado por este protocolo. Ele
+   agora tem uma primeira metade semelhante ao S1 e um choque abrupto em uma
+   borda roteado por A5 a 50% da janela de MEDIÇÃO
+   (`shock_start_seconds = 2100`). (Resolvido; intensidade calibrada no Prompt 46.7.)
+4. As métricas específicas de corredor para o S2 e as métricas pós-choque para
+   o S3 devem estar disponíveis nas saídas da análise final antes do relatório
+   final.
 
-## Implementation Work Still Required
+## Trabalho de Implementação Ainda Necessário
 
-Before running the final campaign:
+Antes de executar a campanha final:
 
-1. Update or generate final scenario artifacts to match this protocol.
-2. Keep final seed count pending until the pilot assessment is complete.
-3. Keep delay experiments under the optional `S5B_DELAY` label if they are run.
-4. Ensure final analysis includes scenario-specific metrics listed in this
-   protocol, especially S2 corridor metrics and S3 post-shock metrics.
-5. Freeze all final inputs and verify route/config/hash invariants before
-   campaign execution.
+1. Atualizar ou gerar os artifacts de cenário finais para corresponder a este
+   protocolo.
+2. Manter a contagem final de seeds pendente até que a avaliação do piloto
+   esteja concluída.
+3. Manter os experimentos de atraso sob o rótulo opcional `S5B_DELAY`, se forem
+   executados.
+4. Garantir que a análise final inclua as métricas específicas de cenário
+   listadas neste protocolo, especialmente as métricas de corredor do S2 e as
+   métricas pós-choque do S3.
+5. Congelar todas as entradas finais e verificar as invariantes de
+   rota/config/hash antes da execução da campanha.
 
-## Prohibited Actions
+## Ações Proibidas
 
-- Do not tune controllers based on observed performance.
-- Do not select, remove, or reorder seeds based on observed performance.
-- Do not change controller logic unless explicitly required by this protocol.
-- Do not describe any controller as superior before final results exist.
-- Do not run the final campaign before final scenario artifacts and frozen
-  inputs match this protocol.
+- Não ajuste controladores com base no desempenho observado.
+- Não selecione, remova nem reordene seeds com base no desempenho observado.
+- Não altere a lógica dos controladores, a menos que explicitamente exigido por
+  este protocolo.
+- Não descreva nenhum controlador como superior antes de existirem resultados
+  finais.
+- Não execute a campanha final antes que os artifacts de cenário finais e as
+  entradas congeladas correspondam a este protocolo.

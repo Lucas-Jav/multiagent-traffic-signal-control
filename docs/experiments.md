@@ -1,45 +1,45 @@
-# Experiments
+# Experimentos
 
-## S5 Communication Degradation
+## S5 Degradação da Comunicação
 
-Objective: measure robustness of cooperative controllers under message delay and
-message loss.
+Objetivo: medir a robustez de controladores cooperativos sob atraso e perda de
+mensagens.
 
-S5 does not define a new traffic demand scenario. It uses the fixed base demand
-`S2_DIRECTIONAL_PEAK` from
-`scenarios/grid_3x3/scenario_s2_directional_peak.yaml` and varies only the
-communication channel for cooperative controllers.
+O S5 não define um novo cenário de demanda de tráfego. Ele usa a demanda base fixa
+`S2_DIRECTIONAL_PEAK` de
+`scenarios/grid_3x3/scenario_s2_directional_peak.yaml` e varia apenas o
+canal de comunicação dos controladores cooperativos.
 
-Reference controller:
+Controlador de referência:
 
 - `B2_LOCAL_PRESSURE`
 
-Cooperative controllers:
+Controladores cooperativos:
 
 - `C1_COOPERATIVE_COMPACT`
-- `C2_COOPERATIVE_EXPANDED`, generated separately as an optional config
+- `C2_COOPERATIVE_EXPANDED`, gerado separadamente como config opcional
 
-Matrix:
+Matriz:
 
 - `delay_steps`: `0`, `1`, `3`, `5`
 - `drop_probability`: `0.00`, `0.05`, `0.10`, `0.25`
 
-The matrix produces 16 cooperative combinations per cooperative controller.
-Each generated experiment file also includes one `B2_LOCAL_PRESSURE` reference
-run.
+A matriz produz 16 combinações cooperativas por controlador cooperativo.
+Cada arquivo de experimento gerado também inclui uma execução de referência com
+`B2_LOCAL_PRESSURE`.
 
-Generated configs:
+Configs geradas:
 
 - `experiments/configs/s5_communication_degradation_c1.yaml`
 - `experiments/configs/s5_communication_degradation_c2.yaml`
 
-Example generated run IDs:
+Exemplos de IDs de execução gerados:
 
 - `s5_c1_delay0_drop0`
 - `s5_c1_delay3_drop010`
 - `s5_c1_delay5_drop025`
 
-Reproducibility fields in every run config:
+Campos de reprodutibilidade em toda config de execução:
 
 - `scenario_base`
 - `scenario`
@@ -51,20 +51,20 @@ Reproducibility fields in every run config:
 - `communication.rng_seed`
 - `communication.max_message_age_steps`
 
-`communication_seed_policy: derived_from_simulation_seed_delay_drop` means the
-effective message-channel RNG seed is derived deterministically from the
-simulation seed, `delay_steps`, and `drop_probability`.
+`communication_seed_policy: derived_from_simulation_seed_delay_drop` significa que a
+seed efetiva do RNG do canal de mensagens é derivada de forma determinística da
+seed da simulação, de `delay_steps` e de `drop_probability`.
 
-`max_message_age_steps` remains fixed at `1` across the matrix. It is not
-increased automatically when delay increases, so runs with `delay_steps > 1` can
-produce stale cooperative messages.
+`max_message_age_steps` permanece fixo em `1` em toda a matriz. Ele não é
+aumentado automaticamente quando o atraso aumenta, de modo que execuções com `delay_steps > 1` podem
+produzir mensagens cooperativas obsoletas (stale).
 
-Regenerate the S5 configs deterministically:
+Regenere as configs do S5 de forma determinística:
 
 ```powershell
 python scripts\generate_s5_matrix.py
 ```
 
-Do not run S5 as part of smoke validation. S5 is a campaign config and should be
-executed only when the communication-degradation campaign is intentionally
-started.
+Não execute o S5 como parte da validação de smoke. O S5 é uma config de campanha e deve ser
+executado somente quando a campanha de degradação da comunicação for iniciada
+intencionalmente.

@@ -1,22 +1,22 @@
-# Traffic Model
+# Modelo de Tráfego
 
-This document defines the physical traffic model used by `scenarios/grid_3x3`
-before adding new scientific controllers.
+Este documento define o modelo físico de tráfego usado por `scenarios/grid_3x3`
+antes de adicionar novos controladores científicos.
 
-## Scope
+## Escopo
 
-The 3x3 scenario contains nine controlled intersections exposed to controllers
-as `A1` through `A9`. The SUMO network keeps its generated junction IDs
-(`A0`, `B1`, `C2`, etc.); `scenarios/grid_3x3/metadata.json` maps controller
-intersection IDs to SUMO traffic-light IDs.
+O cenário 3x3 contém nove interseções controladas, expostas aos controladores
+como `A1` até `A9`. A rede SUMO mantém seus IDs de junção gerados
+(`A0`, `B1`, `C2`, etc.); `scenarios/grid_3x3/metadata.json` mapeia os IDs de
+interseção dos controladores para os IDs de semáforo (traffic-light) do SUMO.
 
-Visual styling for vehicles, colors, road legibility, and GUI debug settings is
-kept in route/view files and simulation setup. It is not part of the control
-policy.
+A estilização visual de veículos, cores, legibilidade das vias e configurações de depuração da GUI é
+mantida nos arquivos de rotas/visualização e na configuração da simulação. Ela não faz parte da
+política de controle.
 
-## Movements
+## Movimentos
 
-Each intersection models movements by approach direction and exit direction:
+Cada interseção modela movimentos por direção de aproximação e direção de saída:
 
 - `north_to_south`
 - `north_to_east`
@@ -31,47 +31,47 @@ Each intersection models movements by approach direction and exit direction:
 - `west_to_north`
 - `west_to_south`
 
-U-turns are excluded. In the current 3x3 topology all nine intersections have
-the twelve non-U-turn movements above.
+Retornos em U (U-turns) são excluídos. Na topologia 3x3 atual, todas as nove interseções possuem
+os doze movimentos sem retorno em U listados acima.
 
-Code represents these as `MovementId` values using:
+O código representa esses movimentos como valores `MovementId` usando:
 
 ```text
 <intersection_id>:<from_direction>_to_<to_direction>
 ```
 
-Example:
+Exemplo:
 
 ```text
 A5:north_to_south
 A5:west_to_north
 ```
 
-The movement model is built from:
+O modelo de movimentos é construído a partir de:
 
-- ordered incoming lanes in `scenario.yaml`: north, east, south, west;
-- ordered outgoing lanes in `scenario.yaml`: north, east, south, west;
-- SUMO `<connection>` elements and their `linkIndex`;
-- SUMO junction `<request>` conflict information.
+- lanes de entrada ordenadas em `scenario.yaml`: north, east, south, west;
+- lanes de saída ordenadas em `scenario.yaml`: north, east, south, west;
+- elementos `<connection>` do SUMO e seu `linkIndex`;
+- informações de conflito `<request>` das junções do SUMO.
 
-## Conflicts
+## Conflitos
 
-Conflicts are represented explicitly per intersection as a movement conflict
-matrix. The matrix is derived from SUMO's junction request data and attached to
-the `IntersectionTrafficModel`.
+Os conflitos são representados explicitamente por interseção como uma matriz de
+conflitos entre movimentos. A matriz é derivada dos dados de request das junções do SUMO e anexada ao
+`IntersectionTrafficModel`.
 
-A movement pair is considered conflicting when SUMO marks the corresponding
-link indexes as foes or response conflicts. Movements from the same incoming
-lane are treated as compatible at signal-control level because only one vehicle
-stream can discharge from that lane at a time.
+Um par de movimentos é considerado conflitante quando o SUMO marca os link indexes
+correspondentes como foes ou conflitos de resposta. Movimentos da mesma lane de
+entrada são tratados como compatíveis no nível do controle semafórico, pois apenas um fluxo de
+veículos pode escoar dessa lane por vez.
 
-Controllers must not encode conflict rules with local `if` statements. They use
-controller intents, and phase safety validates movements against the matrix.
+Os controladores não devem codificar regras de conflito com instruções `if` locais. Eles usam
+intents de controlador, e a segurança de fase valida os movimentos contra a matriz.
 
-## Phase Plan
+## Plano de Fases
 
-The scenario uses SUMO `--tls.layout incoming`. Each green phase currently opens
-one incoming approach and all valid non-U-turn movements from that approach:
+O cenário usa `--tls.layout incoming` do SUMO. Cada fase verde atualmente abre
+uma aproximação de entrada e todos os movimentos válidos sem retorno em U dessa aproximação:
 
 ```text
 PHASE_NORTH_APPROACH: GGGrrrrrrrrr
@@ -80,59 +80,59 @@ PHASE_SOUTH_APPROACH: rrrrrrGGGrrr
 PHASE_WEST_APPROACH:  rrrrrrrrrGGG
 ```
 
-This is conservative but valid. The model does not require only one approach per
-phase forever. Future phase plans may share compatible movements from multiple
-approaches if the explicit conflict matrix allows it.
+Isso é conservador, mas válido. O modelo não exige apenas uma aproximação por
+fase para sempre. Planos de fase futuros podem compartilhar movimentos compatíveis de várias
+aproximações se a matriz explícita de conflitos permitir.
 
-Each green phase has a derived movement list. A phase is safe only when no two
-listed movements conflict.
+Cada fase verde possui uma lista de movimentos derivada. Uma fase é segura somente quando nenhum par
+de movimentos listados entra em conflito.
 
-## Yellow And All-Red
+## Amarelo e Vermelho Total (All-Red)
 
-Every transition between green phases must follow:
+Toda transição entre fases verdes deve seguir:
 
 ```text
 green -> yellow -> all-red clearance -> next green
 ```
 
-Current development timing:
+Temporização atual de desenvolvimento:
 
 - `min_green_seconds`: `10.0`
 - `yellow_seconds`: `3.0`
 - `all_red_seconds`: `2.0`
 - `max_green_seconds`: `60.0`
 
-Controllers cannot skip yellow or all-red phases. They can only return intents
-such as `KEEP_PHASE`, `REQUEST_NEXT_PHASE`, or an allowed phase target. The
-`PhaseSafetyManager` converts those intents into legal SUMO phase indexes.
+Os controladores não podem pular as fases de amarelo ou vermelho total (all-red). Eles só podem retornar intents
+como `KEEP_PHASE`, `REQUEST_NEXT_PHASE` ou um alvo de fase permitido. O
+`PhaseSafetyManager` converte esses intents em índices de fase SUMO legais.
 
-## Stop Line And Clearance
+## Linha de Retenção e Liberação (Clearance)
 
-Incoming edges have SUMO `stopOffset` for passenger vehicles, currently `7.0m`.
-This moves the visual stop position upstream so queued vehicles do not appear to
-stand on the signal line.
+As arestas de entrada têm `stopOffset` do SUMO para veículos de passeio, atualmente `7.0m`.
+Isso desloca a posição visual de parada para montante, de modo que os veículos em fila não pareçam
+parados sobre a linha do semáforo.
 
-Vehicles that already entered a junction legally may finish crossing. The safety
-requirement is not to teleport or reposition vehicles. The requirement is:
+Veículos que já entraram legalmente em uma junção podem terminar a travessia. O requisito de segurança
+é não fazer teleport nem reposicionar veículos. O requisito é:
 
-- do not admit new vehicles after their movement closes;
-- keep yellow and all-red clearance before a conflicting green opens;
-- keep internal-lane clearance checks for adaptive controllers.
+- não admitir novos veículos após o fechamento do seu movimento;
+- manter a liberação de amarelo e vermelho total (all-red) antes que um verde conflitante abra;
+- manter verificações de liberação de lanes internas para controladores adaptativos.
 
-If a vehicle appears inside the junction, inspect:
+Se um veículo aparecer dentro da junção, inspecione:
 
-- whether it entered during its legal green/yellow interval;
-- incoming lane shape and stop offset;
-- internal lane occupancy;
-- yellow and all-red timing;
-- whether the next phase opened while an internal lane was still blocked.
+- se ele entrou durante seu intervalo legal de verde/amarelo;
+- o formato da lane de entrada e o stop offset;
+- a ocupação das lanes internas;
+- a temporização de amarelo e vermelho total (all-red);
+- se a próxima fase abriu enquanto uma lane interna ainda estava bloqueada.
 
-## Turning Routes
+## Rotas de Conversão
 
-The route configuration contains straight, left-turn, and right-turn demand.
-The turning ratios are configured in the scenario YAML and drive route generation
-(`src/traffic_agents/simulation/route_walk.py`): at every signalized junction a vehicle picks
-straight/left/right with these probabilities, using only legal movements of the network:
+A configuração de rotas contém demanda de movimentos em frente (straight), conversão à esquerda (left) e conversão à direita (right).
+As razões de conversão são configuradas no YAML do cenário e conduzem a geração de rotas
+(`src/traffic_agents/simulation/route_walk.py`): em cada junção semaforizada o veículo escolhe
+straight/left/right com essas probabilidades, usando apenas movimentos legais da rede:
 
 ```yaml
 turning_ratios:
@@ -141,15 +141,15 @@ turning_ratios:
   right: 0.15
 ```
 
-These are the approved V1 protocol values. Route generation remains deterministic by seed; the
-realized movement counts and proportions are reported in the route metadata.
+Esses são os valores aprovados do protocolo V1. A geração de rotas permanece determinística por seed; as
+contagens e proporções de movimentos realizadas são reportadas nos metadados das rotas.
 
-## Safe Phase
+## Fase Segura
 
-A safe phase is a green phase that:
+Uma fase segura é uma fase verde que:
 
-- lists the movements it permits;
-- contains no conflicting movement pair;
-- is reachable through the configured SUMO yellow and all-red sequence;
-- respects minimum and maximum green constraints;
-- never requires a controller to emit a raw signal-state string.
+- lista os movimentos que ela permite;
+- não contém nenhum par de movimentos conflitantes;
+- é alcançável pela sequência configurada de amarelo e vermelho total (all-red) do SUMO;
+- respeita as restrições de verde mínimo e máximo;
+- nunca exige que um controlador emita uma string bruta de estado de sinal.
