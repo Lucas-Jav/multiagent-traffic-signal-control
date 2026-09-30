@@ -26,9 +26,9 @@ traffic:
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour: &id001
-      LOW: 180
-      MEDIUM: 240
-      HIGH: 300
+      LOW: 213.333
+      MEDIUM: 320.0
+      HIGH: 426.667
   - demand_id: dominant_left1A1
     entry_edge_id: left1A1
     group: dominant
@@ -47,9 +47,9 @@ traffic:
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour: &id002
-      LOW: 15
-      MEDIUM: 20
-      HIGH: 25
+      LOW: 17.778
+      MEDIUM: 26.666666666666668
+      HIGH: 35.556
   - demand_id: residual_right1C1
     entry_edge_id: right1C1
     group: residual

@@ -294,7 +294,7 @@ execution:
 
 Status after the Pilot V1 remediation (Prompt 46.6): items 1 and 3 are resolved by the
 regenerated scenario artifacts (`scripts/generate_scenarios.py`, `docs/scenarios.md`); their
-demand intensities are PROVISIONAL and will be calibrated in Prompt 46.7. Item 4 is covered
+demand intensities were calibrated in Prompt 46.7 (`docs/scenarios.md`). Item 4 is covered
 by the canonical metrics pipeline (`docs/methodology/metrics.md`). Queue metrics are named by
 scope (`mean_network_queue_vehicles`, `max_network_queue_vehicles`, ..., see the metrics
 document); "mean queue" and "max queue" in the metric lists above refer to those scoped
@@ -313,7 +313,7 @@ The following mismatches were listed before the final campaign can be frozen or 
    is balanced and its second 50% is the frozen directional/localized shock
    specified by this protocol. It now has an S1-like first half and an abrupt
    one-border shock routed through A5 at 50% of the MEASUREMENT window
-   (`shock_start_seconds = 2100`). (Resolved; intensity provisional.)
+   (`shock_start_seconds = 2100`). (Resolved; intensity calibrated in Prompt 46.7.)
 4. Corridor-specific metrics for S2 and post-shock metrics for S3 must be
    available in the final analysis outputs before final reporting.
 

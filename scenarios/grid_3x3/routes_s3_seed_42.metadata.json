@@ -1,5 +1,5 @@
 {
-  "config_hash": "d7e49caaa00dc3368adbe1d78ebd22f101d807997fbc07b203751575e5b6a756",
+  "config_hash": "6fdc6c0c203ebd1902eeb458f4f2d09f97c9418f49926c16fa497ed31ed9f9d0",
   "coverage": {
     "intersection_labels": {
       "A0": "A7",
@@ -13,26 +13,26 @@
       "C2": "A3"
     },
     "junction_pass_share_by_node": {
-      "A0": 0.1073208722741433,
-      "A1": 0.11806853582554518,
-      "A2": 0.10747663551401869,
-      "B0": 0.10638629283489097,
-      "B1": 0.12258566978193146,
-      "B2": 0.10996884735202492,
-      "C0": 0.10264797507788162,
-      "C1": 0.11713395638629283,
-      "C2": 0.10841121495327102
+      "A0": 0.10686567164179105,
+      "A1": 0.11970149253731344,
+      "A2": 0.10671641791044777,
+      "B0": 0.10701492537313433,
+      "B1": 0.12865671641791046,
+      "B2": 0.11,
+      "C0": 0.09835820895522387,
+      "C1": 0.11835820895522388,
+      "C2": 0.10432835820895522
     },
     "junction_passes_by_node": {
-      "A0": 689,
-      "A1": 758,
-      "A2": 690,
-      "B0": 683,
-      "B1": 787,
-      "B2": 706,
+      "A0": 716,
+      "A1": 802,
+      "A2": 715,
+      "B0": 717,
+      "B1": 862,
+      "B2": 737,
       "C0": 659,
-      "C1": 752,
-      "C2": 696
+      "C1": 793,
+      "C2": 699
     }
   },
   "demand_level": "MEDIUM",
@@ -217,7 +217,7 @@
         "right": 0.05,
         "straight": 0.9
       },
-      "vehicles_per_hour": 100.0,
+      "vehicles_per_hour": 150.0,
       "via_intersection_id": "A5"
     },
     {
@@ -231,7 +231,7 @@
         "right": 0.05,
         "straight": 0.9
       },
-      "vehicles_per_hour": 100.0,
+      "vehicles_per_hour": 150.0,
       "via_intersection_id": "A5"
     },
     {
@@ -245,41 +245,41 @@
         "right": 0.05,
         "straight": 0.9
       },
-      "vehicles_per_hour": 100.0,
+      "vehicles_per_hour": 150.0,
       "via_intersection_id": "A5"
     }
   ],
   "expected_approach_load_veh_per_hour": {
-    "A0A1": 200.159,
-    "A0B0": 200.02,
-    "A1A0": 150.394,
-    "A1A2": 150.394,
-    "A1B1": 350.016,
-    "A2A1": 200.159,
-    "A2B2": 200.02,
-    "B0A0": 153.173,
-    "B0B1": 200.024,
-    "B0C0": 152.769,
-    "B1A1": 155.015,
-    "B1B0": 205.023,
-    "B1B2": 205.023,
-    "B1C1": 335.017,
-    "B2A2": 153.173,
-    "B2B1": 200.024,
-    "B2C2": 152.769,
-    "C0B0": 150.469,
-    "C0C1": 150.138,
-    "C1B1": 150.014,
-    "C1C0": 159.375,
-    "C1C2": 159.375,
-    "C2B2": 150.469,
-    "C2C1": 150.138,
+    "A0A1": 225.238,
+    "A0B0": 225.03,
+    "A1A0": 150.59,
+    "A1A2": 150.59,
+    "A1B1": 450.024,
+    "A2A1": 225.238,
+    "A2B2": 225.03,
+    "B0A0": 154.76,
+    "B0B1": 225.037,
+    "B0C0": 154.153,
+    "B1A1": 157.522,
+    "B1B0": 232.535,
+    "B1B2": 232.535,
+    "B1C1": 427.525,
+    "B2A2": 154.76,
+    "B2B1": 225.037,
+    "B2C2": 154.153,
+    "C0B0": 150.703,
+    "C0C1": 150.208,
+    "C1B1": 150.021,
+    "C1C0": 164.063,
+    "C1C2": 164.063,
+    "C2B2": 150.703,
+    "C2C1": 150.208,
     "bottom0A0": 150.0,
     "bottom1B0": 150.0,
     "bottom2C0": 150.0,
-    "left0A0": 250.0,
-    "left1A1": 250.0,
-    "left2A2": 250.0,
+    "left0A0": 300.0,
+    "left1A1": 300.0,
+    "left2A2": 300.0,
     "right0C0": 150.0,
     "right1C1": 150.0,
     "right2C2": 150.0,
@@ -287,9 +287,9 @@
     "top1B2": 150.0,
     "top2C2": 150.0
   },
-  "generated_at": "2026-09-29T20:55:40.540011Z",
+  "generated_at": "2026-09-30T00:46:48.235659Z",
   "generator_version": "2.0.0",
-  "max_expected_approach_load_veh_per_hour": 350.016,
+  "max_expected_approach_load_veh_per_hour": 450.024,
   "network_hash": "46953c48351b0fdecf9babca662354bd5e45a5772553b153bc6f354c5332b48e",
   "offered": {
     "offered_by_demand": {
@@ -305,17 +305,17 @@
       "base_top0A2": 162,
       "base_top1B2": 162,
       "base_top2C2": 162,
-      "shock_left0A0": 50,
-      "shock_left1A1": 50,
-      "shock_left2A2": 50
+      "shock_left0A0": 75,
+      "shock_left1A1": 75,
+      "shock_left2A2": 75
     },
     "offered_by_entry": {
       "bottom0A0": 162,
       "bottom1B0": 162,
       "bottom2C0": 162,
-      "left0A0": 212,
-      "left1A1": 212,
-      "left2A2": 212,
+      "left0A0": 237,
+      "left1A1": 237,
+      "left2A2": 237,
       "right0C0": 162,
       "right1C1": 162,
       "right2C2": 162,
@@ -325,15 +325,15 @@
     },
     "offered_by_group": {
       "base": 1944,
-      "shock": 150
+      "shock": 225
     },
-    "offered_in_measurement_window": 1945,
-    "offered_vehicle_count": 2094
+    "offered_in_measurement_window": 2020,
+    "offered_vehicle_count": 2169
   },
   "route_file": "routes_s3_seed_42.rou.xml",
-  "route_hash": "aef06df3e5227b4e544618b95278e3186d7ea9554762944c29251e56d88183cb",
+  "route_hash": "897daabad4bd947643e0d9bea251d97d78062108c36b8234f7392475e243b21f",
   "routing": "turning_ratio_walk",
-  "scenario_hash": "c8fe7603de6cf6c8afe173d6c133654e263fabc9ebac8c3ad768022b4de5683e",
+  "scenario_hash": "a3a87ddfa970030f000e4577196028ee36fac5698f2192b4d50d00b178555ff7",
   "scenario_id": "grid_3x3",
   "schedule": [
     {
@@ -358,14 +358,14 @@
       "straight": 0.7
     },
     "expected_movement_proportions": {
-      "left": 0.15178856998571288,
-      "right": 0.15178856998571288,
-      "straight": 0.6964228600285742
+      "left": 0.15246875674240828,
+      "right": 0.15246875674240828,
+      "straight": 0.6950624865151834
     },
     "realized_movement_counts": {
-      "left": 943,
-      "right": 958,
-      "straight": 4519
+      "left": 981,
+      "right": 997,
+      "straight": 4722
     },
     "realized_movement_counts_by_group": {
       "base": {
@@ -374,15 +374,15 @@
         "straight": 4127
       },
       "shock": {
-        "left": 87,
-        "right": 91,
-        "straight": 392
+        "left": 125,
+        "right": 130,
+        "straight": 595
       }
     },
     "realized_movement_proportions": {
-      "left": 0.1468847352024922,
-      "right": 0.14922118380062305,
-      "straight": 0.7038940809968848
+      "left": 0.1464179104477612,
+      "right": 0.14880597014925373,
+      "straight": 0.7047761194029851
     }
   },
   "turning_ratios": {

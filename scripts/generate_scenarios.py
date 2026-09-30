@@ -13,10 +13,10 @@ All scenarios share the timing of the approved protocol: 300 s warmup, 3600 s me
 1 s steps (total 3900 s). S3 places its shock at 50% of the MEASUREMENT window
 (300 + 3600 / 2 = 2100 s of simulation time).
 
-Demand intensities below are PROVISIONAL structural values (Prompt 46.6). They are chosen
-only so that the scenario structure is exercised without deliberate overload of S1/S3; the
-final intensities are calibrated in Prompt 46.7 and must not be tuned from controller
-results.
+Demand intensities are the ``CALIBRATED`` parameters below (Prompt 46.7). They were selected
+with ``scripts/calibrate_scenarios.py`` using only ``B0_FIXED`` and dedicated calibration seeds,
+by predeclared controller-independent criteria (see the calibration artifacts). They must not
+be tuned from controller results.
 """
 
 from __future__ import annotations
@@ -54,8 +54,30 @@ STRAIGHT_BIASED_TURNING = {"straight": 0.90, "left": 0.05, "right": 0.05}
 Rates = dict[str, float]
 
 
-def _rates(low: float, medium: float, high: float) -> Rates:
-    return {"LOW": low, "MEDIUM": medium, "HIGH": high}
+@dataclass(frozen=True)
+class DemandParameters:
+    """The only calibrated degrees of freedom: border entry rates (veh/h, MEDIUM level)."""
+
+    s1_rate: float  # every one of the 12 borders
+    s2_dominant_rate: float  # each west border; every other border gets dominant / 12
+    s3_shock_rate: float  # each west border, added on top of the S1 base rate
+    s4_scale: float  # multiplies S4 background (40) and hotspot (110) veh/h per border
+
+
+S4_BACKGROUND_RATE = 40.0
+S4_HOTSPOT_RATE = 110.0
+S2_RESIDUAL_DIVISOR = 12.0  # offered dominant share = 3d / (3d + 9d/12) = 0.80
+
+# Calibrated levels (Prompt 46.7, artifacts/calibration/pilot_v2-scenario-calibration): highest
+# grid candidate satisfying every predeclared, controller-independent criterion on all three
+# calibration seeds (101, 1009, 2029), observed with B0_FIXED only.
+CALIBRATED = DemandParameters(
+    s1_rate=150.0, s2_dominant_rate=320.0, s3_shock_rate=150.0, s4_scale=2.0
+)
+
+
+def _level_rates(medium: float) -> Rates:
+    return {"LOW": round(medium * 2 / 3, 3), "MEDIUM": medium, "HIGH": round(medium * 4 / 3, 3)}
 
 
 def _entry(
@@ -91,21 +113,21 @@ class ScenarioDefinition:
     file_stem: str
     base_file: str
     description: str
-    entries: Callable[[], list[dict[str, Any]]]
+    entries: Callable[[DemandParameters], list[dict[str, Any]]]
     schedule: Callable[[], list[dict[str, Any]]]
     shock_start_seconds: float | None = None
 
 
-def s1_entries() -> list[dict[str, Any]]:
+def s1_entries(params: DemandParameters) -> list[dict[str, Any]]:
     # Balanced demand from ALL 12 borders, identical rate at every entry.
-    return [_entry(f"base_{edge}", edge, _rates(100, 150, 200)) for edge in ALL_ENTRIES]
+    return [_entry(f"base_{edge}", edge, _level_rates(params.s1_rate)) for edge in ALL_ENTRIES]
 
 
-def s2_entries() -> list[dict[str, Any]]:
+def s2_entries(params: DemandParameters) -> list[dict[str, Any]]:
     # West -> East directional peak: the three west border entries inject 80% of the offered
-    # demand (3 x 240 of 900 veh/h at MEDIUM); the other nine borders inject a residual 20%.
-    dominant = _rates(180, 240, 300)
-    residual = _rates(15, 20, 25)
+    # demand (3d of 3d + 9d/12); the other nine borders inject a residual 20%.
+    dominant = _level_rates(params.s2_dominant_rate)
+    residual = _level_rates(params.s2_dominant_rate / S2_RESIDUAL_DIVISOR)
     entries = [
         _entry(f"dominant_{edge}", edge, dominant, group="dominant") for edge in WEST_ENTRIES
     ]
@@ -117,16 +139,16 @@ def s2_entries() -> list[dict[str, Any]]:
     return entries
 
 
-def s3_entries() -> list[dict[str, Any]]:
+def s3_entries(params: DemandParameters) -> list[dict[str, Any]]:
     # First half: S1-like balanced traffic. Second half: the S1 base continues and an abrupt
     # one-border (west) directional shock is added on the three west entries; shock vehicles
     # are routed through A5.
-    entries = [_entry(f"base_{edge}", edge, _rates(100, 150, 200)) for edge in ALL_ENTRIES]
+    entries = [_entry(f"base_{edge}", edge, _level_rates(params.s1_rate)) for edge in ALL_ENTRIES]
     entries += [
         _entry(
             f"shock_{edge}",
             edge,
-            _rates(70, 100, 130),
+            _level_rates(params.s3_shock_rate),
             begin=SHOCK_START_SECONDS,
             end=TOTAL_SECONDS,
             group="shock",
@@ -138,15 +160,17 @@ def s3_entries() -> list[dict[str, Any]]:
     return entries
 
 
-def s4_entries() -> list[dict[str, Any]]:
+def s4_entries(params: DemandParameters) -> list[dict[str, Any]]:
     # Localized saturation: light S1-like background from every border plus hotspot demand from
     # every border that is routed through the central intersection A5.
-    entries = [_entry(f"base_{edge}", edge, _rates(30, 40, 50)) for edge in ALL_ENTRIES]
+    background = _level_rates(S4_BACKGROUND_RATE * params.s4_scale)
+    hotspot = _level_rates(S4_HOTSPOT_RATE * params.s4_scale)
+    entries = [_entry(f"base_{edge}", edge, background) for edge in ALL_ENTRIES]
     entries += [
         _entry(
             f"hotspot_{edge}",
             edge,
-            _rates(80, 110, 140),
+            hotspot,
             group="hotspot",
             turning=STRAIGHT_BIASED_TURNING,
             via="A5",
@@ -239,6 +263,7 @@ def build_scenario_payload(
     definition: ScenarioDefinition,
     seed: int,
     template: dict[str, Any],
+    params: DemandParameters = CALIBRATED,
 ) -> dict[str, Any]:
     traffic: dict[str, Any] = {
         "demand_profile": definition.profile,
@@ -248,7 +273,7 @@ def build_scenario_payload(
     }
     if definition.shock_start_seconds is not None:
         traffic["shock_start_seconds"] = definition.shock_start_seconds
-    traffic["entries"] = definition.entries()
+    traffic["entries"] = definition.entries(params)
     return {
         "scenario_id": template["scenario_id"],
         "network_file": template["network_file"],
@@ -271,13 +296,20 @@ def write_yaml(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(text, encoding="utf-8", newline="\n")
 
 
-def generate(scenario_dir: Path, *, seeds: tuple[int, ...]) -> list[Path]:
+def generate(
+    scenario_dir: Path,
+    *,
+    seeds: tuple[int, ...],
+    params: DemandParameters = CALIBRATED,
+    definitions: tuple[ScenarioDefinition, ...] | None = None,
+    write_base_files: bool = True,
+) -> list[Path]:
     template_path = scenario_dir / "scenario.yaml"
     template = yaml.safe_load(template_path.read_text(encoding="utf-8-sig"))
     written: list[Path] = []
-    for definition in SCENARIOS:
+    for definition in definitions or SCENARIOS:
         for seed in seeds:
-            payload = build_scenario_payload(definition, seed, template)
+            payload = build_scenario_payload(definition, seed, template, params)
             scenario_path = scenario_dir / f"{definition.file_stem}_seed_{seed}.yaml"
             write_yaml(scenario_path, payload)
             written.append(scenario_path)
@@ -289,7 +321,7 @@ def generate(scenario_dir: Path, *, seeds: tuple[int, ...]) -> list[Path]:
                 demand_profile=scenario_config.traffic.demand_profile,
             ).generate()
             written.extend([generated.route_path, generated.metadata_path])
-            if seed == seeds[0]:
+            if write_base_files and seed == seeds[0]:
                 base_path = scenario_dir / definition.base_file
                 write_yaml(base_path, payload)
                 written.append(base_path)

@@ -26,108 +26,108 @@ traffic:
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 100
-      MEDIUM: 150
-      HIGH: 200
+      LOW: 100.0
+      MEDIUM: 150.0
+      HIGH: 200.0
   - demand_id: base_left1A1
     entry_edge_id: left1A1
     group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 100
-      MEDIUM: 150
-      HIGH: 200
+      LOW: 100.0
+      MEDIUM: 150.0
+      HIGH: 200.0
   - demand_id: base_left2A2
     entry_edge_id: left2A2
     group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 100
-      MEDIUM: 150
-      HIGH: 200
+      LOW: 100.0
+      MEDIUM: 150.0
+      HIGH: 200.0
   - demand_id: base_right0C0
     entry_edge_id: right0C0
     group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 100
-      MEDIUM: 150
-      HIGH: 200
+      LOW: 100.0
+      MEDIUM: 150.0
+      HIGH: 200.0
   - demand_id: base_right1C1
     entry_edge_id: right1C1
     group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 100
-      MEDIUM: 150
-      HIGH: 200
+      LOW: 100.0
+      MEDIUM: 150.0
+      HIGH: 200.0
   - demand_id: base_right2C2
     entry_edge_id: right2C2
     group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 100
-      MEDIUM: 150
-      HIGH: 200
+      LOW: 100.0
+      MEDIUM: 150.0
+      HIGH: 200.0
   - demand_id: base_top0A2
     entry_edge_id: top0A2
     group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 100
-      MEDIUM: 150
-      HIGH: 200
+      LOW: 100.0
+      MEDIUM: 150.0
+      HIGH: 200.0
   - demand_id: base_top1B2
     entry_edge_id: top1B2
     group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 100
-      MEDIUM: 150
-      HIGH: 200
+      LOW: 100.0
+      MEDIUM: 150.0
+      HIGH: 200.0
   - demand_id: base_top2C2
     entry_edge_id: top2C2
     group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 100
-      MEDIUM: 150
-      HIGH: 200
+      LOW: 100.0
+      MEDIUM: 150.0
+      HIGH: 200.0
   - demand_id: base_bottom0A0
     entry_edge_id: bottom0A0
     group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 100
-      MEDIUM: 150
-      HIGH: 200
+      LOW: 100.0
+      MEDIUM: 150.0
+      HIGH: 200.0
   - demand_id: base_bottom1B0
     entry_edge_id: bottom1B0
     group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 100
-      MEDIUM: 150
-      HIGH: 200
+      LOW: 100.0
+      MEDIUM: 150.0
+      HIGH: 200.0
   - demand_id: base_bottom2C0
     entry_edge_id: bottom2C0
     group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 100
-      MEDIUM: 150
-      HIGH: 200
+      LOW: 100.0
+      MEDIUM: 150.0
+      HIGH: 200.0
 communication:
   delay_steps: 0
   drop_probability: 0.0

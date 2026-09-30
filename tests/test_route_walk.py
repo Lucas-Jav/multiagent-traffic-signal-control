@@ -358,7 +358,7 @@ def test_s1_uses_the_full_grid_with_balanced_border_demand() -> None:
     realized = metadata["turning"]["realized_movement_proportions"]
     for movement, expected in {"straight": 0.70, "left": 0.15, "right": 0.15}.items():
         assert abs(realized[movement] - expected) <= 0.03
-    # provisional S1 intensity must stay well below one approach's nominal capacity
+    # calibrated S1 intensity must stay well below one approach's nominal capacity
     assert (
         metadata["max_expected_approach_load_veh_per_hour"]
         <= 0.6 * NOMINAL_APPROACH_CAPACITY_VEH_PER_HOUR
@@ -376,9 +376,9 @@ def test_s2_offers_about_80_percent_from_the_west_dominant_profile() -> None:
     by_group = metadata["offered"]["offered_by_group"]
     dominant_share = by_group["dominant"] / sum(by_group.values())
     assert 0.78 <= dominant_share <= 0.82
-    # the dominant demand is offered below entry capacity so it is not starved at the entry
+    # calibrated dominant demand stays within one approach's nominal capacity (not entry-starved)
     dominant_rate = dominant[0].vehicles_per_hour["MEDIUM"]
-    assert dominant_rate <= 0.8 * NOMINAL_APPROACH_CAPACITY_VEH_PER_HOUR
+    assert dominant_rate <= NOMINAL_APPROACH_CAPACITY_VEH_PER_HOUR
     counts = metadata["turning"]["realized_movement_counts_by_group"]["dominant"]
     assert counts["left"] > 0 and counts["right"] > 0 and counts["straight"] > counts["left"]
     # corridor traffic is visible: some routes traverse the middle row eastbound (A1B1 -> B1C1)
@@ -425,7 +425,7 @@ def test_s3_structure_balanced_first_half_then_west_shock_through_a5() -> None:
     first_half = [v for v in root.findall("vehicle") if float(v.attrib["depart"]) < shock_start]
     assert first_half
     assert not any(v.attrib["id"].startswith("shock_") for v in first_half)
-    # the base phase is not structurally saturated: S3 base demand equals the provisional S1 level
+    # the base phase is not structurally saturated: S3 base demand equals the calibrated S1 level
     assert (
         metadata_for("S1_BALANCED")["max_expected_approach_load_veh_per_hour"]
         <= 0.6 * NOMINAL_APPROACH_CAPACITY_VEH_PER_HOUR

@@ -25,118 +25,85 @@ traffic:
     group: base
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 30
-      MEDIUM: 40
-      HIGH: 50
+    vehicles_per_hour: &id001
+      LOW: 53.333
+      MEDIUM: 80.0
+      HIGH: 106.667
   - demand_id: base_left1A1
     entry_edge_id: left1A1
     group: base
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 30
-      MEDIUM: 40
-      HIGH: 50
+    vehicles_per_hour: *id001
   - demand_id: base_left2A2
     entry_edge_id: left2A2
     group: base
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 30
-      MEDIUM: 40
-      HIGH: 50
+    vehicles_per_hour: *id001
   - demand_id: base_right0C0
     entry_edge_id: right0C0
     group: base
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 30
-      MEDIUM: 40
-      HIGH: 50
+    vehicles_per_hour: *id001
   - demand_id: base_right1C1
     entry_edge_id: right1C1
     group: base
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 30
-      MEDIUM: 40
-      HIGH: 50
+    vehicles_per_hour: *id001
   - demand_id: base_right2C2
     entry_edge_id: right2C2
     group: base
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 30
-      MEDIUM: 40
-      HIGH: 50
+    vehicles_per_hour: *id001
   - demand_id: base_top0A2
     entry_edge_id: top0A2
     group: base
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 30
-      MEDIUM: 40
-      HIGH: 50
+    vehicles_per_hour: *id001
   - demand_id: base_top1B2
     entry_edge_id: top1B2
     group: base
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 30
-      MEDIUM: 40
-      HIGH: 50
+    vehicles_per_hour: *id001
   - demand_id: base_top2C2
     entry_edge_id: top2C2
     group: base
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 30
-      MEDIUM: 40
-      HIGH: 50
+    vehicles_per_hour: *id001
   - demand_id: base_bottom0A0
     entry_edge_id: bottom0A0
     group: base
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 30
-      MEDIUM: 40
-      HIGH: 50
+    vehicles_per_hour: *id001
   - demand_id: base_bottom1B0
     entry_edge_id: bottom1B0
     group: base
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 30
-      MEDIUM: 40
-      HIGH: 50
+    vehicles_per_hour: *id001
   - demand_id: base_bottom2C0
     entry_edge_id: bottom2C0
     group: base
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 30
-      MEDIUM: 40
-      HIGH: 50
+    vehicles_per_hour: *id001
   - demand_id: hotspot_left0A0
     entry_edge_id: left0A0
     group: hotspot
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 80
-      MEDIUM: 110
-      HIGH: 140
+    vehicles_per_hour: &id002
+      LOW: 146.667
+      MEDIUM: 220.0
+      HIGH: 293.333
     turning_ratios:
       straight: 0.9
       left: 0.05
@@ -147,10 +114,7 @@ traffic:
     group: hotspot
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 80
-      MEDIUM: 110
-      HIGH: 140
+    vehicles_per_hour: *id002
     turning_ratios:
       straight: 0.9
       left: 0.05
@@ -161,10 +125,7 @@ traffic:
     group: hotspot
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 80
-      MEDIUM: 110
-      HIGH: 140
+    vehicles_per_hour: *id002
     turning_ratios:
       straight: 0.9
       left: 0.05
@@ -175,10 +136,7 @@ traffic:
     group: hotspot
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 80
-      MEDIUM: 110
-      HIGH: 140
+    vehicles_per_hour: *id002
     turning_ratios:
       straight: 0.9
       left: 0.05
@@ -189,10 +147,7 @@ traffic:
     group: hotspot
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 80
-      MEDIUM: 110
-      HIGH: 140
+    vehicles_per_hour: *id002
     turning_ratios:
       straight: 0.9
       left: 0.05
@@ -203,10 +158,7 @@ traffic:
     group: hotspot
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 80
-      MEDIUM: 110
-      HIGH: 140
+    vehicles_per_hour: *id002
     turning_ratios:
       straight: 0.9
       left: 0.05
@@ -217,10 +169,7 @@ traffic:
     group: hotspot
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 80
-      MEDIUM: 110
-      HIGH: 140
+    vehicles_per_hour: *id002
     turning_ratios:
       straight: 0.9
       left: 0.05
@@ -231,10 +180,7 @@ traffic:
     group: hotspot
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 80
-      MEDIUM: 110
-      HIGH: 140
+    vehicles_per_hour: *id002
     turning_ratios:
       straight: 0.9
       left: 0.05
@@ -245,10 +191,7 @@ traffic:
     group: hotspot
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 80
-      MEDIUM: 110
-      HIGH: 140
+    vehicles_per_hour: *id002
     turning_ratios:
       straight: 0.9
       left: 0.05
@@ -259,10 +202,7 @@ traffic:
     group: hotspot
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 80
-      MEDIUM: 110
-      HIGH: 140
+    vehicles_per_hour: *id002
     turning_ratios:
       straight: 0.9
       left: 0.05
@@ -273,10 +213,7 @@ traffic:
     group: hotspot
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 80
-      MEDIUM: 110
-      HIGH: 140
+    vehicles_per_hour: *id002
     turning_ratios:
       straight: 0.9
       left: 0.05
@@ -287,10 +224,7 @@ traffic:
     group: hotspot
     begin_seconds: 0
     end_seconds: 3900
-    vehicles_per_hour:
-      LOW: 80
-      MEDIUM: 110
-      HIGH: 140
+    vehicles_per_hour: *id002
     turning_ratios:
       straight: 0.9
       left: 0.05

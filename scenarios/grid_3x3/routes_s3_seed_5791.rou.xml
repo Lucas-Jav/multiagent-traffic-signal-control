@@ -238,67 +238,71 @@
     <route id="r234" edges="bottom2C0 C0C1 C1C2 C2B2 B2top1" />
     <route id="r235" edges="bottom1B0 B0B1 B1B2 B2A2 A2A1 A1A0 A0left0" />
     <route id="r236" edges="left0A0 A0B0 B0C0 C0C1 C1C2 C2B2 B2top1" />
-    <route id="r237" edges="bottom0A0 A0A1 A1B1 B1B2 B2top1" />
-    <route id="r238" edges="left2A2 A2A1 A1B1 B1B0 B0bottom1" />
-    <route id="r239" edges="top0A2 A2A1 A1B1 B1B2 B2top1" />
-    <route id="r240" edges="right2C2 C2B2 B2A2 A2A1 A1B1 B1C1 C1C0 C0right0" />
-    <route id="r241" edges="top2C2 C2C1 C1B1 B1A1 A1A2 A2left2" />
-    <route id="r242" edges="left2A2 A2A1 A1B1 B1B2 B2top1" />
-    <route id="r243" edges="right2C2 C2B2 B2A2 A2A1 A1left1" />
-    <route id="r244" edges="left1A1 A1B1 B1B0 B0C0 C0right0" />
-    <route id="r245" edges="top1B2 B2B1 B1B0 B0A0 A0bottom0" />
-    <route id="r246" edges="left0A0 A0B0 B0B1 B1B2 B2A2 A2left2" />
+    <route id="r237" edges="left2A2 A2A1 A1B1 B1B0 B0bottom1" />
+    <route id="r238" edges="bottom0A0 A0A1 A1B1 B1B2 B2top1" />
+    <route id="r239" edges="left2A2 A2A1 A1B1 B1B2 B2top1" />
+    <route id="r240" edges="left0A0 A0B0 B0B1 B1B2 B2A2 A2left2" />
+    <route id="r241" edges="top0A2 A2A1 A1B1 B1B2 B2top1" />
+    <route id="r242" edges="right2C2 C2B2 B2A2 A2A1 A1B1 B1C1 C1C0 C0right0" />
+    <route id="r243" edges="top2C2 C2C1 C1B1 B1A1 A1A2 A2left2" />
+    <route id="r244" edges="right2C2 C2B2 B2A2 A2A1 A1left1" />
+    <route id="r245" edges="left1A1 A1B1 B1B0 B0C0 C0right0" />
+    <route id="r246" edges="top1B2 B2B1 B1B0 B0A0 A0bottom0" />
     <route id="r247" edges="left0A0 A0B0 B0B1 B1A1 A1A0 A0bottom0" />
     <route id="r248" edges="top1B2 B2B1 B1C1 C1C0 C0B0 B0A0 A0left0" />
     <route id="r249" edges="left2A2 A2B2 B2B1 B1A1 A1A2 A2top0" />
     <route id="r250" edges="top0A2 A2B2 B2B1 B1C1 C1C2 C2B2 B2A2 A2left2" />
     <route id="r251" edges="bottom0A0 A0A1 A1A2 A2B2 B2B1 B1B0 B0bottom1" />
-    <route id="r252" edges="bottom0A0 A0A1 A1B1 B1B2 B2A2 A2left2" />
-    <route id="r253" edges="right2C2 C2B2 B2A2 A2A1 A1A0 A0bottom0" />
-    <route id="r254" edges="left1A1 A1A0 A0B0 B0B1 B1B2 B2top1" />
-    <route id="r255" edges="right0C0 C0B0 B0B1 B1C1 C1C0 C0bottom2" />
-    <route id="r256" edges="top0A2 A2B2 B2B1 B1B0 B0C0 C0C1 C1C2 C2B2 B2A2 A2left2" />
-    <route id="r257" edges="top2C2 C2B2 B2A2 A2top0" />
-    <route id="r258" edges="left1A1 A1B1 B1B2 B2A2 A2A1 A1A0 A0B0 B0C0 C0right0" />
-    <route id="r259" edges="bottom2C0 C0C1 C1B1 B1A1 A1A0 A0bottom0" />
-    <route id="r260" edges="right0C0 C0C1 C1C2 C2B2 B2B1 B1B0 B0bottom1" />
-    <route id="r261" edges="bottom1B0 B0B1 B1B2 B2A2 A2A1 A1A0 A0bottom0" />
-    <route id="r262" edges="bottom0A0 A0B0 B0C0 C0bottom2" />
-    <route id="r263" edges="right0C0 C0B0 B0A0 A0A1 A1B1 B1C1 C1C2 C2top2" />
-    <route id="r264" edges="top0A2 A2B2 B2C2 C2C1 C1C0 C0B0 B0bottom1" />
-    <route id="r265" edges="right1C1 C1B1 B1A1 A1A2 A2left2" />
-    <route id="r266" edges="top1B2 B2A2 A2A1 A1A0 A0B0 B0B1 B1B2 B2top1" />
-    <route id="r267" edges="left0A0 A0A1 A1B1 B1C1 C1C0 C0bottom2" />
+    <route id="r252" edges="left0A0 A0A1 A1B1 B1C1 C1C0 C0bottom2" />
+    <route id="r253" edges="bottom0A0 A0A1 A1B1 B1B2 B2A2 A2left2" />
+    <route id="r254" edges="right2C2 C2B2 B2A2 A2A1 A1A0 A0bottom0" />
+    <route id="r255" edges="left1A1 A1A0 A0B0 B0B1 B1B2 B2top1" />
+    <route id="r256" edges="right0C0 C0B0 B0B1 B1C1 C1C0 C0bottom2" />
+    <route id="r257" edges="top0A2 A2B2 B2B1 B1B0 B0C0 C0C1 C1C2 C2B2 B2A2 A2left2" />
+    <route id="r258" edges="top2C2 C2B2 B2A2 A2top0" />
+    <route id="r259" edges="left1A1 A1B1 B1B2 B2A2 A2A1 A1A0 A0B0 B0C0 C0right0" />
+    <route id="r260" edges="bottom2C0 C0C1 C1B1 B1A1 A1A0 A0bottom0" />
+    <route id="r261" edges="right0C0 C0C1 C1C2 C2B2 B2B1 B1B0 B0bottom1" />
+    <route id="r262" edges="bottom1B0 B0B1 B1B2 B2A2 A2A1 A1A0 A0bottom0" />
+    <route id="r263" edges="bottom0A0 A0B0 B0C0 C0bottom2" />
+    <route id="r264" edges="right0C0 C0B0 B0A0 A0A1 A1B1 B1C1 C1C2 C2top2" />
+    <route id="r265" edges="top0A2 A2B2 B2C2 C2C1 C1C0 C0B0 B0bottom1" />
+    <route id="r266" edges="right1C1 C1B1 B1A1 A1A2 A2left2" />
+    <route id="r267" edges="top1B2 B2A2 A2A1 A1A0 A0B0 B0B1 B1B2 B2top1" />
     <route id="r268" edges="top0A2 A2A1 A1A0 A0B0 B0C0 C0C1 C1C2 C2right2" />
-    <route id="r269" edges="right2C2 C2C1 C1B1 B1A1 A1A0 A0bottom0" />
-    <route id="r270" edges="top1B2 B2A2 A2A1 A1A0 A0bottom0" />
-    <route id="r271" edges="bottom1B0 B0A0 A0A1 A1A2 A2B2 B2C2 C2right2" />
-    <route id="r272" edges="bottom1B0 B0B1 B1C1 C1C2 C2top2" />
-    <route id="r273" edges="top2C2 C2C1 C1B1 B1B2 B2top1" />
-    <route id="r274" edges="right1C1 C1C0 C0B0 B0A0 A0A1 A1A2 A2B2 B2C2 C2right2" />
-    <route id="r275" edges="bottom0A0 A0B0 B0B1 B1A1 A1left1" />
-    <route id="r276" edges="top1B2 B2B1 B1B0 B0A0 A0A1 A1A2 A2B2 B2C2 C2top2" />
-    <route id="r277" edges="top0A2 A2A1 A1A0 A0B0 B0bottom1" />
-    <route id="r278" edges="left1A1 A1A0 A0left0" />
-    <route id="r279" edges="left2A2 A2B2 B2B1 B1A1 A1left1" />
-    <route id="r280" edges="right0C0 C0B0 B0A0 A0A1 A1A2 A2B2 B2C2 C2top2" />
-    <route id="r281" edges="right2C2 C2B2 B2B1 B1B0 B0A0 A0A1 A1B1 B1C1 C1right1" />
-    <route id="r282" edges="top2C2 C2B2 B2A2 A2A1 A1B1 B1B0 B0C0 C0right0" />
-    <route id="r283" edges="right1C1 C1B1 B1A1 A1A0 A0B0 B0bottom1" />
-    <route id="r284" edges="right0C0 C0C1 C1right1" />
-    <route id="r285" edges="right2C2 C2B2 B2B1 B1B0 B0A0 A0A1 A1B1 B1B0 B0bottom1" />
-    <route id="r286" edges="bottom1B0 B0A0 A0A1 A1A2 A2top0" />
-    <route id="r287" edges="top1B2 B2B1 B1B0 B0C0 C0C1 C1C2 C2top2" />
-    <route id="r288" edges="left0A0 A0A1 A1B1 B1B2 B2top1" />
-    <route id="r289" edges="bottom1B0 B0B1 B1B2 B2A2 A2A1 A1B1 B1C1 C1C2 C2top2" />
-    <route id="r290" edges="right0C0 C0B0 B0B1 B1B2 B2A2 A2left2" />
-    <route id="r291" edges="right2C2 C2B2 B2B1 B1A1 A1left1" />
-    <route id="r292" edges="left2A2 A2B2 B2B1 B1C1 C1right1" />
-    <route id="r293" edges="bottom0A0 A0A1 A1B1 B1C1 C1C0 C0bottom2" />
-    <route id="r294" edges="left2A2 A2B2 B2B1 B1A1 A1A0 A0bottom0" />
-    <route id="r295" edges="bottom1B0 B0A0 A0A1 A1B1 B1C1 C1right1" />
-    <route id="r296" edges="left2A2 A2B2 B2B1 B1B0 B0C0 C0C1 C1right1" />
-    <route id="r297" edges="left2A2 A2A1 A1B1 B1C1 C1C0 C0B0 B0A0 A0left0" />
+    <route id="r269" edges="left0A0 A0A1 A1B1 B1B2 B2top1" />
+    <route id="r270" edges="right2C2 C2C1 C1B1 B1A1 A1A0 A0bottom0" />
+    <route id="r271" edges="top1B2 B2A2 A2A1 A1A0 A0bottom0" />
+    <route id="r272" edges="bottom1B0 B0A0 A0A1 A1A2 A2B2 B2C2 C2right2" />
+    <route id="r273" edges="bottom1B0 B0B1 B1C1 C1C2 C2top2" />
+    <route id="r274" edges="left2A2 A2A1 A1B1 B1C1 C1C0 C0B0 B0A0 A0left0" />
+    <route id="r275" edges="top2C2 C2C1 C1B1 B1B2 B2top1" />
+    <route id="r276" edges="right1C1 C1C0 C0B0 B0A0 A0A1 A1A2 A2B2 B2C2 C2right2" />
+    <route id="r277" edges="bottom0A0 A0B0 B0B1 B1A1 A1left1" />
+    <route id="r278" edges="top1B2 B2B1 B1B0 B0A0 A0A1 A1A2 A2B2 B2C2 C2top2" />
+    <route id="r279" edges="top0A2 A2A1 A1A0 A0B0 B0bottom1" />
+    <route id="r280" edges="left1A1 A1A0 A0left0" />
+    <route id="r281" edges="left2A2 A2B2 B2B1 B1A1 A1left1" />
+    <route id="r282" edges="right0C0 C0B0 B0A0 A0A1 A1A2 A2B2 B2C2 C2top2" />
+    <route id="r283" edges="left1A1 A1B1 B1C1 C1C0 C0right0" />
+    <route id="r284" edges="right2C2 C2B2 B2B1 B1B0 B0A0 A0A1 A1B1 B1C1 C1right1" />
+    <route id="r285" edges="left2A2 A2B2 B2B1 B1C1 C1right1" />
+    <route id="r286" edges="top2C2 C2B2 B2A2 A2A1 A1B1 B1B0 B0C0 C0right0" />
+    <route id="r287" edges="right1C1 C1B1 B1A1 A1A0 A0B0 B0bottom1" />
+    <route id="r288" edges="right0C0 C0C1 C1right1" />
+    <route id="r289" edges="right2C2 C2B2 B2B1 B1B0 B0A0 A0A1 A1B1 B1B0 B0bottom1" />
+    <route id="r290" edges="bottom1B0 B0A0 A0A1 A1A2 A2top0" />
+    <route id="r291" edges="top1B2 B2B1 B1B0 B0C0 C0C1 C1C2 C2top2" />
+    <route id="r292" edges="bottom1B0 B0B1 B1B2 B2A2 A2A1 A1B1 B1C1 C1C2 C2top2" />
+    <route id="r293" edges="left2A2 A2A1 A1B1 B1C1 C1C2 C2top2" />
+    <route id="r294" edges="left0A0 A0A1 A1B1 B1B0 B0C0 C0right0" />
+    <route id="r295" edges="right0C0 C0B0 B0B1 B1B2 B2A2 A2left2" />
+    <route id="r296" edges="right2C2 C2B2 B2B1 B1A1 A1left1" />
+    <route id="r297" edges="left2A2 A2A1 A1B1 B1B0 B0C0 C0right0" />
+    <route id="r298" edges="bottom0A0 A0A1 A1B1 B1C1 C1C0 C0bottom2" />
+    <route id="r299" edges="left2A2 A2B2 B2B1 B1A1 A1A0 A0bottom0" />
+    <route id="r300" edges="bottom1B0 B0A0 A0A1 A1B1 B1C1 C1right1" />
+    <route id="r301" edges="left2A2 A2B2 B2B1 B1B0 B0C0 C0C1 C1right1" />
     <vehicle id="base_top0A2.0" type="passenger" route="r0" depart="6.06" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top2C2.0" type="passenger" route="r1" depart="7.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.0" type="passenger" route="r2" depart="8.72" departLane="best" departSpeed="max" color="#2f80ed" />
@@ -1353,39 +1357,42 @@
     <vehicle id="base_bottom1B0.87" type="passenger" route="r7" depart="2104.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.87" type="passenger" route="r8" depart="2106.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.87" type="passenger" route="r36" depart="2107.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.0" type="passenger" route="r142" depart="2107.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.87" type="passenger" route="r64" depart="2108.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.87" type="passenger" route="r191" depart="2109.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.0" type="passenger" route="r142" depart="2111.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.0" type="passenger" route="r4" depart="2112.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.88" type="passenger" route="r38" depart="2118.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.0" type="passenger" route="r4" depart="2119.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.0" type="passenger" route="r71" depart="2118.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.88" type="passenger" route="r13" depart="2119.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.88" type="passenger" route="r24" depart="2120.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.88" type="passenger" route="r49" depart="2121.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.88" type="passenger" route="r76" depart="2121.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.88" type="passenger" route="r34" depart="2121.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.88" type="passenger" route="r17" depart="2127.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.0" type="passenger" route="r71" depart="2128.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.88" type="passenger" route="r229" depart="2128.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.88" type="passenger" route="r8" depart="2130.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.88" type="passenger" route="r20" depart="2131.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.1" type="passenger" route="r142" depart="2131.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.88" type="passenger" route="r57" depart="2132.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.88" type="passenger" route="r117" depart="2133.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.1" type="passenger" route="r4" depart="2136.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.89" type="passenger" route="r12" depart="2142.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.1" type="passenger" route="r71" depart="2142.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.89" type="passenger" route="r114" depart="2143.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.89" type="passenger" route="r146" depart="2144.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.89" type="passenger" route="r25" depart="2145.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.89" type="passenger" route="r4" depart="2145.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.89" type="passenger" route="r230" depart="2145.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.1" type="passenger" route="r142" depart="2147.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.89" type="passenger" route="r43" depart="2151.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.89" type="passenger" route="r27" depart="2152.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.89" type="passenger" route="r155" depart="2154.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.1" type="passenger" route="r4" depart="2155.01" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right2C2.89" type="passenger" route="r63" depart="2155.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.2" type="passenger" route="r201" depart="2155.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.89" type="passenger" route="r107" depart="2156.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.89" type="passenger" route="r22" depart="2157.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.1" type="passenger" route="r71" depart="2164.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.2" type="passenger" route="r4" depart="2160.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.90" type="passenger" route="r38" depart="2166.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.2" type="passenger" route="r231" depart="2166.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.90" type="passenger" route="r39" depart="2167.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.90" type="passenger" route="r14" depart="2168.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.90" type="passenger" route="r173" depart="2169.70" departLane="best" departSpeed="max" color="#2f80ed" />
@@ -1395,39 +1402,42 @@
     <vehicle id="base_bottom1B0.90" type="passenger" route="r219" depart="2176.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.90" type="passenger" route="r8" depart="2178.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.90" type="passenger" route="r36" depart="2179.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.3" type="passenger" route="r166" depart="2179.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.90" type="passenger" route="r124" depart="2180.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.90" type="passenger" route="r46" depart="2181.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.2" type="passenger" route="r201" depart="2183.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.3" type="passenger" route="r4" depart="2184.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.91" type="passenger" route="r12" depart="2190.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.2" type="passenger" route="r4" depart="2191.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.3" type="passenger" route="r232" depart="2190.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.91" type="passenger" route="r13" depart="2191.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.91" type="passenger" route="r48" depart="2192.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.91" type="passenger" route="r40" depart="2193.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.91" type="passenger" route="r151" depart="2193.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.91" type="passenger" route="r5" depart="2193.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.91" type="passenger" route="r179" depart="2199.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.2" type="passenger" route="r231" depart="2200.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.91" type="passenger" route="r27" depart="2200.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.91" type="passenger" route="r157" depart="2202.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.91" type="passenger" route="r20" depart="2203.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.4" type="passenger" route="r166" depart="2203.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.91" type="passenger" route="r57" depart="2204.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.91" type="passenger" route="r22" depart="2205.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.4" type="passenger" route="r4" depart="2208.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.92" type="passenger" route="r199" depart="2214.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.4" type="passenger" route="r71" depart="2214.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.92" type="passenger" route="r13" depart="2215.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.92" type="passenger" route="r94" depart="2216.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.92" type="passenger" route="r88" depart="2217.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.92" type="passenger" route="r151" depart="2217.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.92" type="passenger" route="r16" depart="2217.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.3" type="passenger" route="r166" depart="2219.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.92" type="passenger" route="r65" depart="2223.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.92" type="passenger" route="r44" depart="2224.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.92" type="passenger" route="r206" depart="2226.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.3" type="passenger" route="r4" depart="2227.01" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right2C2.92" type="passenger" route="r36" depart="2227.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.5" type="passenger" route="r43" depart="2227.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.92" type="passenger" route="r57" depart="2228.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.92" type="passenger" route="r117" depart="2229.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.3" type="passenger" route="r232" depart="2236.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.5" type="passenger" route="r4" depart="2232.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.93" type="passenger" route="r135" depart="2238.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.5" type="passenger" route="r71" depart="2238.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.93" type="passenger" route="r98" depart="2239.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.93" type="passenger" route="r80" depart="2240.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.93" type="passenger" route="r55" depart="2241.70" departLane="best" departSpeed="max" color="#2f80ed" />
@@ -1437,39 +1447,42 @@
     <vehicle id="base_bottom1B0.93" type="passenger" route="r84" depart="2248.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.93" type="passenger" route="r8" depart="2250.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.93" type="passenger" route="r29" depart="2251.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.6" type="passenger" route="r43" depart="2251.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.93" type="passenger" route="r21" depart="2252.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.93" type="passenger" route="r37" depart="2253.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.4" type="passenger" route="r166" depart="2255.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.6" type="passenger" route="r4" depart="2256.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.94" type="passenger" route="r12" depart="2262.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.4" type="passenger" route="r4" depart="2263.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.6" type="passenger" route="r71" depart="2262.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.94" type="passenger" route="r13" depart="2263.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.94" type="passenger" route="r14" depart="2264.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.94" type="passenger" route="r49" depart="2265.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.94" type="passenger" route="r95" depart="2265.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.94" type="passenger" route="r233" depart="2265.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.94" type="passenger" route="r17" depart="2271.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.4" type="passenger" route="r71" depart="2272.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.94" type="passenger" route="r66" depart="2272.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.94" type="passenger" route="r8" depart="2274.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.94" type="passenger" route="r36" depart="2275.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.7" type="passenger" route="r142" depart="2275.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.94" type="passenger" route="r57" depart="2276.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.94" type="passenger" route="r144" depart="2277.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.7" type="passenger" route="r4" depart="2280.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.95" type="passenger" route="r23" depart="2286.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.7" type="passenger" route="r71" depart="2286.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.95" type="passenger" route="r53" depart="2287.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.95" type="passenger" route="r234" depart="2288.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.95" type="passenger" route="r173" depart="2289.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.95" type="passenger" route="r76" depart="2289.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.95" type="passenger" route="r178" depart="2289.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.5" type="passenger" route="r43" depart="2291.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.95" type="passenger" route="r65" depart="2295.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.95" type="passenger" route="r235" depart="2296.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.95" type="passenger" route="r113" depart="2298.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.5" type="passenger" route="r4" depart="2299.01" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right2C2.95" type="passenger" route="r36" depart="2299.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.8" type="passenger" route="r142" depart="2299.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.95" type="passenger" route="r107" depart="2300.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.95" type="passenger" route="r31" depart="2301.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.5" type="passenger" route="r71" depart="2308.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.8" type="passenger" route="r4" depart="2304.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.96" type="passenger" route="r93" depart="2310.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.8" type="passenger" route="r231" depart="2310.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.96" type="passenger" route="r59" depart="2311.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.96" type="passenger" route="r80" depart="2312.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.96" type="passenger" route="r88" depart="2313.70" departLane="best" departSpeed="max" color="#2f80ed" />
@@ -1479,39 +1492,42 @@
     <vehicle id="base_bottom1B0.96" type="passenger" route="r66" depart="2320.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.96" type="passenger" route="r8" depart="2322.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.96" type="passenger" route="r140" depart="2323.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.9" type="passenger" route="r43" depart="2323.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.96" type="passenger" route="r107" depart="2324.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.96" type="passenger" route="r46" depart="2325.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.6" type="passenger" route="r43" depart="2327.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.9" type="passenger" route="r4" depart="2328.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.97" type="passenger" route="r135" depart="2334.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.6" type="passenger" route="r4" depart="2335.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.9" type="passenger" route="r231" depart="2334.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.97" type="passenger" route="r160" depart="2335.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.97" type="passenger" route="r24" depart="2336.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.97" type="passenger" route="r49" depart="2337.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.97" type="passenger" route="r103" depart="2337.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.97" type="passenger" route="r34" depart="2337.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.97" type="passenger" route="r236" depart="2343.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.6" type="passenger" route="r71" depart="2344.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.97" type="passenger" route="r27" depart="2344.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.97" type="passenger" route="r8" depart="2346.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.97" type="passenger" route="r20" depart="2347.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.10" type="passenger" route="r43" depart="2347.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.97" type="passenger" route="r57" depart="2348.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.97" type="passenger" route="r31" depart="2349.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.10" type="passenger" route="r62" depart="2352.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.98" type="passenger" route="r145" depart="2358.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.10" type="passenger" route="r237" depart="2358.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.98" type="passenger" route="r98" depart="2359.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.98" type="passenger" route="r94" depart="2360.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.98" type="passenger" route="r25" depart="2361.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.98" type="passenger" route="r151" depart="2361.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.98" type="passenger" route="r181" depart="2361.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.7" type="passenger" route="r142" depart="2363.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.98" type="passenger" route="r6" depart="2367.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.98" type="passenger" route="r27" depart="2368.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.98" type="passenger" route="r91" depart="2370.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.7" type="passenger" route="r4" depart="2371.01" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right2C2.98" type="passenger" route="r63" depart="2371.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.11" type="passenger" route="r180" depart="2371.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.98" type="passenger" route="r57" depart="2372.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.98" type="passenger" route="r31" depart="2373.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.7" type="passenger" route="r71" depart="2380.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.11" type="passenger" route="r4" depart="2376.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.99" type="passenger" route="r93" depart="2382.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.11" type="passenger" route="r231" depart="2382.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.99" type="passenger" route="r13" depart="2383.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.99" type="passenger" route="r110" depart="2384.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.99" type="passenger" route="r88" depart="2385.70" departLane="best" departSpeed="max" color="#2f80ed" />
@@ -1519,41 +1535,44 @@
     <vehicle id="base_left2A2.99" type="passenger" route="r71" depart="2385.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.99" type="passenger" route="r65" depart="2391.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.99" type="passenger" route="r27" depart="2392.91" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_bottom0A0.99" type="passenger" route="r237" depart="2394.16" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_bottom0A0.99" type="passenger" route="r238" depart="2394.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.99" type="passenger" route="r36" depart="2395.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.12" type="passenger" route="r142" depart="2395.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.99" type="passenger" route="r57" depart="2396.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.99" type="passenger" route="r117" depart="2397.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.8" type="passenger" route="r142" depart="2399.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.12" type="passenger" route="r4" depart="2400.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.100" type="passenger" route="r38" depart="2406.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.8" type="passenger" route="r4" depart="2407.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.12" type="passenger" route="r239" depart="2406.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.100" type="passenger" route="r33" depart="2407.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.100" type="passenger" route="r80" depart="2408.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.100" type="passenger" route="r173" depart="2409.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.100" type="passenger" route="r121" depart="2409.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.100" type="passenger" route="r92" depart="2409.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.100" type="passenger" route="r17" depart="2415.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.8" type="passenger" route="r231" depart="2416.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.100" type="passenger" route="r90" depart="2416.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.100" type="passenger" route="r157" depart="2418.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.100" type="passenger" route="r73" depart="2419.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.13" type="passenger" route="r142" depart="2419.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.100" type="passenger" route="r107" depart="2420.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.100" type="passenger" route="r31" depart="2421.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.13" type="passenger" route="r4" depart="2424.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.101" type="passenger" route="r38" depart="2430.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.13" type="passenger" route="r71" depart="2430.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.101" type="passenger" route="r98" depart="2431.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.101" type="passenger" route="r146" depart="2432.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.101" type="passenger" route="r173" depart="2433.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.101" type="passenger" route="r76" depart="2433.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.101" type="passenger" route="r92" depart="2433.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.9" type="passenger" route="r43" depart="2435.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.101" type="passenger" route="r43" depart="2439.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.101" type="passenger" route="r27" depart="2440.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.101" type="passenger" route="r35" depart="2442.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.9" type="passenger" route="r4" depart="2443.01" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right2C2.101" type="passenger" route="r140" depart="2443.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.14" type="passenger" route="r43" depart="2443.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.101" type="passenger" route="r57" depart="2444.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.101" type="passenger" route="r31" depart="2445.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.9" type="passenger" route="r231" depart="2452.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.14" type="passenger" route="r4" depart="2448.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.102" type="passenger" route="r38" depart="2454.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.14" type="passenger" route="r71" depart="2454.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.102" type="passenger" route="r13" depart="2455.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.102" type="passenger" route="r24" depart="2456.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.102" type="passenger" route="r147" depart="2457.70" departLane="best" departSpeed="max" color="#2f80ed" />
@@ -1563,39 +1582,42 @@
     <vehicle id="base_bottom1B0.102" type="passenger" route="r7" depart="2464.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.102" type="passenger" route="r8" depart="2466.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.102" type="passenger" route="r20" depart="2467.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.15" type="passenger" route="r240" depart="2467.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.102" type="passenger" route="r45" depart="2468.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.102" type="passenger" route="r37" depart="2469.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.10" type="passenger" route="r43" depart="2471.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.15" type="passenger" route="r4" depart="2472.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.103" type="passenger" route="r38" depart="2478.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.10" type="passenger" route="r62" depart="2479.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.15" type="passenger" route="r231" depart="2478.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.103" type="passenger" route="r13" depart="2479.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.103" type="passenger" route="r110" depart="2480.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.103" type="passenger" route="r88" depart="2481.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.103" type="passenger" route="r82" depart="2481.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.103" type="passenger" route="r174" depart="2481.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.103" type="passenger" route="r17" depart="2487.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.10" type="passenger" route="r238" depart="2488.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.103" type="passenger" route="r18" depart="2488.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.103" type="passenger" route="r8" depart="2490.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.103" type="passenger" route="r140" depart="2491.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.16" type="passenger" route="r142" depart="2491.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.103" type="passenger" route="r57" depart="2492.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.103" type="passenger" route="r46" depart="2493.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_top0A2.104" type="passenger" route="r239" depart="2502.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.16" type="passenger" route="r4" depart="2496.68" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_top0A2.104" type="passenger" route="r241" depart="2502.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.16" type="passenger" route="r71" depart="2502.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.104" type="passenger" route="r33" depart="2503.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.104" type="passenger" route="r14" depart="2504.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.104" type="passenger" route="r55" depart="2505.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.104" type="passenger" route="r95" depart="2505.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.104" type="passenger" route="r5" depart="2505.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.11" type="passenger" route="r180" depart="2507.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.104" type="passenger" route="r26" depart="2511.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.104" type="passenger" route="r66" depart="2512.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.104" type="passenger" route="r157" depart="2514.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.11" type="passenger" route="r4" depart="2515.01" departLane="best" departSpeed="max" color="#e03131" />
-    <vehicle id="base_right2C2.104" type="passenger" route="r240" depart="2515.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_right2C2.104" type="passenger" route="r242" depart="2515.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.17" type="passenger" route="r142" depart="2515.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.104" type="passenger" route="r21" depart="2516.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.104" type="passenger" route="r171" depart="2517.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.11" type="passenger" route="r231" depart="2524.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.17" type="passenger" route="r4" depart="2520.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.105" type="passenger" route="r38" depart="2526.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.17" type="passenger" route="r231" depart="2526.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.105" type="passenger" route="r13" depart="2527.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.105" type="passenger" route="r24" depart="2528.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.105" type="passenger" route="r173" depart="2529.70" departLane="best" departSpeed="max" color="#2f80ed" />
@@ -1605,123 +1627,132 @@
     <vehicle id="base_bottom1B0.105" type="passenger" route="r7" depart="2536.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.105" type="passenger" route="r8" depart="2538.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.105" type="passenger" route="r119" depart="2539.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.18" type="passenger" route="r142" depart="2539.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.105" type="passenger" route="r57" depart="2540.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.105" type="passenger" route="r144" depart="2541.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.12" type="passenger" route="r142" depart="2543.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.18" type="passenger" route="r62" depart="2544.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.106" type="passenger" route="r93" depart="2550.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.12" type="passenger" route="r4" depart="2551.01" departLane="best" departSpeed="max" color="#e03131" />
-    <vehicle id="base_top2C2.106" type="passenger" route="r241" depart="2551.60" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.18" type="passenger" route="r231" depart="2550.89" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_top2C2.106" type="passenger" route="r243" depart="2551.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.106" type="passenger" route="r24" depart="2552.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.106" type="passenger" route="r3" depart="2553.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.106" type="passenger" route="r4" depart="2553.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.106" type="passenger" route="r34" depart="2553.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.106" type="passenger" route="r26" depart="2559.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.12" type="passenger" route="r242" depart="2560.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.106" type="passenger" route="r202" depart="2560.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.106" type="passenger" route="r8" depart="2562.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_right2C2.106" type="passenger" route="r243" depart="2563.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_right2C2.106" type="passenger" route="r244" depart="2563.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.19" type="passenger" route="r142" depart="2563.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.106" type="passenger" route="r78" depart="2564.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.106" type="passenger" route="r144" depart="2565.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.19" type="passenger" route="r4" depart="2568.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.107" type="passenger" route="r38" depart="2574.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.19" type="passenger" route="r231" depart="2574.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.107" type="passenger" route="r33" depart="2575.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.107" type="passenger" route="r14" depart="2576.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.107" type="passenger" route="r3" depart="2577.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.107" type="passenger" route="r76" depart="2577.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.107" type="passenger" route="r105" depart="2577.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.13" type="passenger" route="r142" depart="2579.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.107" type="passenger" route="r17" depart="2583.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.107" type="passenger" route="r27" depart="2584.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.107" type="passenger" route="r157" depart="2586.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.13" type="passenger" route="r4" depart="2587.01" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right2C2.107" type="passenger" route="r36" depart="2587.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.20" type="passenger" route="r43" depart="2587.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.107" type="passenger" route="r141" depart="2588.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.107" type="passenger" route="r31" depart="2589.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.13" type="passenger" route="r71" depart="2596.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.20" type="passenger" route="r4" depart="2592.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.108" type="passenger" route="r0" depart="2598.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.20" type="passenger" route="r231" depart="2598.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.108" type="passenger" route="r108" depart="2599.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.108" type="passenger" route="r24" depart="2600.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.108" type="passenger" route="r49" depart="2601.70" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_left1A1.108" type="passenger" route="r244" depart="2601.72" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_left1A1.108" type="passenger" route="r245" depart="2601.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.108" type="passenger" route="r92" depart="2601.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.108" type="passenger" route="r6" depart="2607.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.108" type="passenger" route="r72" depart="2608.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.108" type="passenger" route="r8" depart="2610.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.108" type="passenger" route="r36" depart="2611.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.21" type="passenger" route="r142" depart="2611.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.108" type="passenger" route="r107" depart="2612.34" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_top1B2.108" type="passenger" route="r245" depart="2613.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.14" type="passenger" route="r43" depart="2615.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_top1B2.108" type="passenger" route="r246" depart="2613.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.21" type="passenger" route="r4" depart="2616.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.109" type="passenger" route="r58" depart="2622.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.14" type="passenger" route="r4" depart="2623.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.21" type="passenger" route="r71" depart="2622.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.109" type="passenger" route="r53" depart="2623.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.109" type="passenger" route="r14" depart="2624.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.109" type="passenger" route="r173" depart="2625.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.109" type="passenger" route="r4" depart="2625.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.109" type="passenger" route="r16" depart="2625.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.109" type="passenger" route="r26" depart="2631.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.14" type="passenger" route="r71" depart="2632.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.109" type="passenger" route="r27" depart="2632.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.109" type="passenger" route="r157" depart="2634.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.109" type="passenger" route="r20" depart="2635.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.22" type="passenger" route="r43" depart="2635.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.109" type="passenger" route="r30" depart="2636.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.109" type="passenger" route="r117" depart="2637.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.22" type="passenger" route="r4" depart="2640.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.110" type="passenger" route="r38" depart="2646.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.22" type="passenger" route="r231" depart="2646.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.110" type="passenger" route="r53" depart="2647.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.110" type="passenger" route="r146" depart="2648.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.110" type="passenger" route="r227" depart="2649.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.110" type="passenger" route="r41" depart="2649.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.110" type="passenger" route="r34" depart="2649.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.15" type="passenger" route="r246" depart="2651.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.110" type="passenger" route="r247" depart="2655.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.110" type="passenger" route="r44" depart="2656.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.110" type="passenger" route="r157" depart="2658.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.15" type="passenger" route="r4" depart="2659.01" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right2C2.110" type="passenger" route="r36" depart="2659.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.23" type="passenger" route="r142" depart="2659.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.110" type="passenger" route="r107" depart="2660.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.110" type="passenger" route="r31" depart="2661.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.15" type="passenger" route="r231" depart="2668.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.23" type="passenger" route="r4" depart="2664.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.111" type="passenger" route="r12" depart="2670.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.23" type="passenger" route="r71" depart="2670.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.111" type="passenger" route="r13" depart="2671.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.111" type="passenger" route="r54" depart="2672.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.111" type="passenger" route="r177" depart="2673.70" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_left1A1.111" type="passenger" route="r244" depart="2673.72" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_left1A1.111" type="passenger" route="r245" depart="2673.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.111" type="passenger" route="r5" depart="2673.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.111" type="passenger" route="r6" depart="2679.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.111" type="passenger" route="r7" depart="2680.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.111" type="passenger" route="r8" depart="2682.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.111" type="passenger" route="r20" depart="2683.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.24" type="passenger" route="r43" depart="2683.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.111" type="passenger" route="r57" depart="2684.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.111" type="passenger" route="r46" depart="2685.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.16" type="passenger" route="r142" depart="2687.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.24" type="passenger" route="r4" depart="2688.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.112" type="passenger" route="r38" depart="2694.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.16" type="passenger" route="r4" depart="2695.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.24" type="passenger" route="r231" depart="2694.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.112" type="passenger" route="r13" depart="2695.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.112" type="passenger" route="r80" depart="2696.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.112" type="passenger" route="r222" depart="2697.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.112" type="passenger" route="r4" depart="2697.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.112" type="passenger" route="r5" depart="2697.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.112" type="passenger" route="r190" depart="2703.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.16" type="passenger" route="r71" depart="2704.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.112" type="passenger" route="r27" depart="2704.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.112" type="passenger" route="r116" depart="2706.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.112" type="passenger" route="r63" depart="2707.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.25" type="passenger" route="r180" depart="2707.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.112" type="passenger" route="r10" depart="2708.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.112" type="passenger" route="r248" depart="2709.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.25" type="passenger" route="r4" depart="2712.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.113" type="passenger" route="r172" depart="2718.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.25" type="passenger" route="r231" depart="2718.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.113" type="passenger" route="r13" depart="2719.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.113" type="passenger" route="r60" depart="2720.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.113" type="passenger" route="r49" depart="2721.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.113" type="passenger" route="r151" depart="2721.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.113" type="passenger" route="r249" depart="2721.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.17" type="passenger" route="r142" depart="2723.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.113" type="passenger" route="r17" depart="2727.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.113" type="passenger" route="r72" depart="2728.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.113" type="passenger" route="r19" depart="2730.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.17" type="passenger" route="r4" depart="2731.01" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right2C2.113" type="passenger" route="r63" depart="2731.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.26" type="passenger" route="r43" depart="2731.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.113" type="passenger" route="r57" depart="2732.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.113" type="passenger" route="r46" depart="2733.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.17" type="passenger" route="r231" depart="2740.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.26" type="passenger" route="r4" depart="2736.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.114" type="passenger" route="r250" depart="2742.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.26" type="passenger" route="r231" depart="2742.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.114" type="passenger" route="r33" depart="2743.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.114" type="passenger" route="r14" depart="2744.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.114" type="passenger" route="r49" depart="2745.70" departLane="best" departSpeed="max" color="#2f80ed" />
@@ -1731,83 +1762,89 @@
     <vehicle id="base_bottom1B0.114" type="passenger" route="r27" depart="2752.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.114" type="passenger" route="r251" depart="2754.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.114" type="passenger" route="r20" depart="2755.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.27" type="passenger" route="r252" depart="2755.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.114" type="passenger" route="r57" depart="2756.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.114" type="passenger" route="r31" depart="2757.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.18" type="passenger" route="r142" depart="2759.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.27" type="passenger" route="r4" depart="2760.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.115" type="passenger" route="r38" depart="2766.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.18" type="passenger" route="r62" depart="2767.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.27" type="passenger" route="r71" depart="2766.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.115" type="passenger" route="r39" depart="2767.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.115" type="passenger" route="r14" depart="2768.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.115" type="passenger" route="r25" depart="2769.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.115" type="passenger" route="r62" depart="2769.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.115" type="passenger" route="r16" depart="2769.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.115" type="passenger" route="r6" depart="2775.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.18" type="passenger" route="r231" depart="2776.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.115" type="passenger" route="r27" depart="2776.91" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_bottom0A0.115" type="passenger" route="r252" depart="2778.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_right2C2.115" type="passenger" route="r253" depart="2779.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_bottom0A0.115" type="passenger" route="r253" depart="2778.16" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_right2C2.115" type="passenger" route="r254" depart="2779.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.28" type="passenger" route="r142" depart="2779.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.115" type="passenger" route="r107" depart="2780.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.115" type="passenger" route="r117" depart="2781.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.28" type="passenger" route="r4" depart="2784.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.116" type="passenger" route="r52" depart="2790.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.28" type="passenger" route="r231" depart="2790.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.116" type="passenger" route="r59" depart="2791.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.116" type="passenger" route="r24" depart="2792.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.116" type="passenger" route="r55" depart="2793.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.116" type="passenger" route="r4" depart="2793.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.116" type="passenger" route="r181" depart="2793.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.19" type="passenger" route="r142" depart="2795.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.116" type="passenger" route="r26" depart="2799.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.116" type="passenger" route="r202" depart="2800.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.116" type="passenger" route="r19" depart="2802.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.19" type="passenger" route="r4" depart="2803.01" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right2C2.116" type="passenger" route="r20" depart="2803.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.29" type="passenger" route="r142" depart="2803.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.116" type="passenger" route="r64" depart="2804.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.116" type="passenger" route="r31" depart="2805.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.19" type="passenger" route="r231" depart="2812.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.29" type="passenger" route="r4" depart="2808.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.117" type="passenger" route="r38" depart="2814.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.29" type="passenger" route="r231" depart="2814.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.117" type="passenger" route="r13" depart="2815.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.117" type="passenger" route="r80" depart="2816.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.117" type="passenger" route="r40" depart="2817.70" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_left1A1.117" type="passenger" route="r254" depart="2817.72" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_left1A1.117" type="passenger" route="r255" depart="2817.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.117" type="passenger" route="r5" depart="2817.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.117" type="passenger" route="r65" depart="2823.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.117" type="passenger" route="r44" depart="2824.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.117" type="passenger" route="r19" depart="2826.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.117" type="passenger" route="r73" depart="2827.45" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_right0C0.117" type="passenger" route="r255" depart="2828.34" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.30" type="passenger" route="r142" depart="2827.77" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_right0C0.117" type="passenger" route="r256" depart="2828.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.117" type="passenger" route="r31" depart="2829.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.20" type="passenger" route="r43" depart="2831.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.30" type="passenger" route="r4" depart="2832.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.118" type="passenger" route="r38" depart="2838.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.20" type="passenger" route="r4" depart="2839.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.30" type="passenger" route="r71" depart="2838.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.118" type="passenger" route="r13" depart="2839.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.118" type="passenger" route="r110" depart="2840.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.118" type="passenger" route="r147" depart="2841.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.118" type="passenger" route="r4" depart="2841.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.118" type="passenger" route="r92" depart="2841.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.118" type="passenger" route="r6" depart="2847.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.20" type="passenger" route="r231" depart="2848.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.118" type="passenger" route="r27" depart="2848.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.118" type="passenger" route="r8" depart="2850.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.118" type="passenger" route="r73" depart="2851.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.31" type="passenger" route="r43" depart="2851.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.118" type="passenger" route="r21" depart="2852.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.118" type="passenger" route="r37" depart="2853.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_top0A2.119" type="passenger" route="r256" depart="2862.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_top2C2.119" type="passenger" route="r257" depart="2863.60" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.31" type="passenger" route="r4" depart="2856.68" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_top0A2.119" type="passenger" route="r257" depart="2862.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.31" type="passenger" route="r231" depart="2862.89" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_top2C2.119" type="passenger" route="r258" depart="2863.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.119" type="passenger" route="r14" depart="2864.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.119" type="passenger" route="r49" depart="2865.70" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_left1A1.119" type="passenger" route="r258" depart="2865.72" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_left1A1.119" type="passenger" route="r259" depart="2865.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.119" type="passenger" route="r178" depart="2865.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.21" type="passenger" route="r142" depart="2867.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.119" type="passenger" route="r6" depart="2871.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.119" type="passenger" route="r27" depart="2872.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.119" type="passenger" route="r19" depart="2874.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.21" type="passenger" route="r4" depart="2875.01" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right2C2.119" type="passenger" route="r73" depart="2875.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.32" type="passenger" route="r43" depart="2875.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.119" type="passenger" route="r107" depart="2876.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.119" type="passenger" route="r37" depart="2877.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.21" type="passenger" route="r71" depart="2884.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.32" type="passenger" route="r4" depart="2880.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.120" type="passenger" route="r135" depart="2886.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.32" type="passenger" route="r231" depart="2886.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.120" type="passenger" route="r13" depart="2887.60" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_bottom2C0.120" type="passenger" route="r259" depart="2888.72" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_bottom2C0.120" type="passenger" route="r260" depart="2888.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.120" type="passenger" route="r25" depart="2889.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.120" type="passenger" route="r4" depart="2889.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.120" type="passenger" route="r92" depart="2889.77" departLane="best" departSpeed="max" color="#2f80ed" />
@@ -1815,39 +1852,42 @@
     <vehicle id="base_bottom1B0.120" type="passenger" route="r72" depart="2896.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.120" type="passenger" route="r162" depart="2898.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.120" type="passenger" route="r20" depart="2899.45" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_right0C0.120" type="passenger" route="r260" depart="2900.34" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.33" type="passenger" route="r142" depart="2899.77" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_right0C0.120" type="passenger" route="r261" depart="2900.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.120" type="passenger" route="r31" depart="2901.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.22" type="passenger" route="r43" depart="2903.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.33" type="passenger" route="r4" depart="2904.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.121" type="passenger" route="r0" depart="2910.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.22" type="passenger" route="r4" depart="2911.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.33" type="passenger" route="r71" depart="2910.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.121" type="passenger" route="r192" depart="2911.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.121" type="passenger" route="r80" depart="2912.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.121" type="passenger" route="r81" depart="2913.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.121" type="passenger" route="r4" depart="2913.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.121" type="passenger" route="r16" depart="2913.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.121" type="passenger" route="r96" depart="2919.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.22" type="passenger" route="r231" depart="2920.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.121" type="passenger" route="r7" depart="2920.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.121" type="passenger" route="r35" depart="2922.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.121" type="passenger" route="r20" depart="2923.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.34" type="passenger" route="r43" depart="2923.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.121" type="passenger" route="r57" depart="2924.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.121" type="passenger" route="r37" depart="2925.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.34" type="passenger" route="r62" depart="2928.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.122" type="passenger" route="r23" depart="2934.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.34" type="passenger" route="r71" depart="2934.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.122" type="passenger" route="r33" depart="2935.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.122" type="passenger" route="r60" depart="2936.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.122" type="passenger" route="r173" depart="2937.70" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_left1A1.122" type="passenger" route="r254" depart="2937.72" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_left1A1.122" type="passenger" route="r255" depart="2937.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.122" type="passenger" route="r5" depart="2937.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.23" type="passenger" route="r142" depart="2939.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.122" type="passenger" route="r17" depart="2943.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.122" type="passenger" route="r27" depart="2944.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.122" type="passenger" route="r8" depart="2946.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.23" type="passenger" route="r4" depart="2947.01" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right2C2.122" type="passenger" route="r36" depart="2947.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.35" type="passenger" route="r43" depart="2947.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.122" type="passenger" route="r107" depart="2948.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.122" type="passenger" route="r31" depart="2949.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.23" type="passenger" route="r71" depart="2956.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.35" type="passenger" route="r62" depart="2952.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.123" type="passenger" route="r135" depart="2958.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.35" type="passenger" route="r71" depart="2958.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.123" type="passenger" route="r33" depart="2959.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.123" type="passenger" route="r60" depart="2960.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.123" type="passenger" route="r203" depart="2961.70" departLane="best" departSpeed="max" color="#2f80ed" />
@@ -1857,81 +1897,87 @@
     <vehicle id="base_bottom1B0.123" type="passenger" route="r66" depart="2968.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.123" type="passenger" route="r19" depart="2970.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.123" type="passenger" route="r73" depart="2971.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.36" type="passenger" route="r142" depart="2971.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.123" type="passenger" route="r143" depart="2972.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.123" type="passenger" route="r31" depart="2973.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.24" type="passenger" route="r43" depart="2975.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.36" type="passenger" route="r4" depart="2976.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.124" type="passenger" route="r93" depart="2982.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.24" type="passenger" route="r4" depart="2983.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.36" type="passenger" route="r189" depart="2982.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.124" type="passenger" route="r98" depart="2983.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.124" type="passenger" route="r14" depart="2984.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.124" type="passenger" route="r3" depart="2985.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.124" type="passenger" route="r95" depart="2985.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.124" type="passenger" route="r5" depart="2985.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.124" type="passenger" route="r96" depart="2991.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.24" type="passenger" route="r231" depart="2992.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.124" type="passenger" route="r72" depart="2992.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.124" type="passenger" route="r8" depart="2994.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.124" type="passenger" route="r36" depart="2995.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.37" type="passenger" route="r43" depart="2995.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.124" type="passenger" route="r57" depart="2996.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.124" type="passenger" route="r144" depart="2997.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.37" type="passenger" route="r62" depart="3000.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.125" type="passenger" route="r172" depart="3006.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.37" type="passenger" route="r237" depart="3006.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.125" type="passenger" route="r59" depart="3007.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.125" type="passenger" route="r14" depart="3008.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.125" type="passenger" route="r173" depart="3009.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.125" type="passenger" route="r4" depart="3009.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.125" type="passenger" route="r5" depart="3009.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.25" type="passenger" route="r180" depart="3011.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.125" type="passenger" route="r186" depart="3015.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.125" type="passenger" route="r27" depart="3016.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.125" type="passenger" route="r28" depart="3018.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.25" type="passenger" route="r4" depart="3019.01" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right2C2.125" type="passenger" route="r149" depart="3019.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.38" type="passenger" route="r180" depart="3019.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.125" type="passenger" route="r78" depart="3020.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.125" type="passenger" route="r31" depart="3021.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.25" type="passenger" route="r231" depart="3028.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.38" type="passenger" route="r4" depart="3024.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.126" type="passenger" route="r93" depart="3030.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.38" type="passenger" route="r71" depart="3030.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.126" type="passenger" route="r13" depart="3031.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.126" type="passenger" route="r54" depart="3032.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.126" type="passenger" route="r40" depart="3033.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.126" type="passenger" route="r151" depart="3033.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.126" type="passenger" route="r16" depart="3033.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.126" type="passenger" route="r17" depart="3039.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_bottom1B0.126" type="passenger" route="r261" depart="3040.91" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_bottom0A0.126" type="passenger" route="r262" depart="3042.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_right2C2.126" type="passenger" route="r253" depart="3043.45" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_right0C0.126" type="passenger" route="r263" depart="3044.34" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_bottom1B0.126" type="passenger" route="r262" depart="3040.91" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_bottom0A0.126" type="passenger" route="r263" depart="3042.16" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_right2C2.126" type="passenger" route="r254" depart="3043.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.39" type="passenger" route="r43" depart="3043.77" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_right0C0.126" type="passenger" route="r264" depart="3044.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.126" type="passenger" route="r97" depart="3045.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.26" type="passenger" route="r43" depart="3047.65" departLane="best" departSpeed="max" color="#e03131" />
-    <vehicle id="base_top0A2.127" type="passenger" route="r264" depart="3054.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.26" type="passenger" route="r4" depart="3055.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.39" type="passenger" route="r4" depart="3048.68" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_top0A2.127" type="passenger" route="r265" depart="3054.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.39" type="passenger" route="r71" depart="3054.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.127" type="passenger" route="r13" depart="3055.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.127" type="passenger" route="r60" depart="3056.72" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_right1C1.127" type="passenger" route="r265" depart="3057.70" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_right1C1.127" type="passenger" route="r266" depart="3057.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.127" type="passenger" route="r4" depart="3057.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.127" type="passenger" route="r5" depart="3057.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.127" type="passenger" route="r17" depart="3063.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.26" type="passenger" route="r231" depart="3064.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.127" type="passenger" route="r27" depart="3064.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.127" type="passenger" route="r8" depart="3066.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.127" type="passenger" route="r9" depart="3067.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.40" type="passenger" route="r142" depart="3067.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.127" type="passenger" route="r107" depart="3068.34" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_top1B2.127" type="passenger" route="r266" depart="3069.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_top1B2.127" type="passenger" route="r267" depart="3069.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.40" type="passenger" route="r4" depart="3072.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.128" type="passenger" route="r135" depart="3078.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.40" type="passenger" route="r231" depart="3078.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.128" type="passenger" route="r13" depart="3079.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.128" type="passenger" route="r80" depart="3080.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.128" type="passenger" route="r25" depart="3081.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.128" type="passenger" route="r4" depart="3081.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.128" type="passenger" route="r5" depart="3081.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.27" type="passenger" route="r267" depart="3083.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.128" type="passenger" route="r180" depart="3087.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.128" type="passenger" route="r72" depart="3088.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.128" type="passenger" route="r8" depart="3090.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.27" type="passenger" route="r4" depart="3091.01" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right2C2.128" type="passenger" route="r119" depart="3091.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.41" type="passenger" route="r142" depart="3091.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.128" type="passenger" route="r107" depart="3092.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.128" type="passenger" route="r158" depart="3093.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.27" type="passenger" route="r71" depart="3100.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.41" type="passenger" route="r4" depart="3096.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.129" type="passenger" route="r58" depart="3102.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.41" type="passenger" route="r231" depart="3102.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.129" type="passenger" route="r114" depart="3103.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.129" type="passenger" route="r60" depart="3104.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.129" type="passenger" route="r25" depart="3105.70" departLane="best" departSpeed="max" color="#2f80ed" />
@@ -1941,39 +1987,42 @@
     <vehicle id="base_bottom1B0.129" type="passenger" route="r7" depart="3112.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.129" type="passenger" route="r8" depart="3114.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.129" type="passenger" route="r36" depart="3115.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.42" type="passenger" route="r142" depart="3115.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.129" type="passenger" route="r45" depart="3116.34" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_top1B2.129" type="passenger" route="r245" depart="3117.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.28" type="passenger" route="r142" depart="3119.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_top1B2.129" type="passenger" route="r246" depart="3117.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.42" type="passenger" route="r4" depart="3120.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.130" type="passenger" route="r268" depart="3126.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.28" type="passenger" route="r4" depart="3127.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.42" type="passenger" route="r231" depart="3126.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.130" type="passenger" route="r160" depart="3127.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.130" type="passenger" route="r14" depart="3128.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.130" type="passenger" route="r222" depart="3129.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.130" type="passenger" route="r4" depart="3129.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.130" type="passenger" route="r5" depart="3129.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.130" type="passenger" route="r6" depart="3135.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.28" type="passenger" route="r231" depart="3136.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.130" type="passenger" route="r18" depart="3136.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.130" type="passenger" route="r157" depart="3138.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.130" type="passenger" route="r36" depart="3139.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.43" type="passenger" route="r269" depart="3139.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.130" type="passenger" route="r57" depart="3140.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.130" type="passenger" route="r171" depart="3141.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.43" type="passenger" route="r131" depart="3144.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.131" type="passenger" route="r0" depart="3150.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.43" type="passenger" route="r71" depart="3150.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.131" type="passenger" route="r13" depart="3151.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.131" type="passenger" route="r60" depart="3152.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.131" type="passenger" route="r173" depart="3153.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.131" type="passenger" route="r62" depart="3153.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.131" type="passenger" route="r5" depart="3153.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.29" type="passenger" route="r142" depart="3155.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.131" type="passenger" route="r96" depart="3159.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.131" type="passenger" route="r219" depart="3160.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.131" type="passenger" route="r91" depart="3162.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.29" type="passenger" route="r4" depart="3163.01" departLane="best" departSpeed="max" color="#e03131" />
-    <vehicle id="base_right2C2.131" type="passenger" route="r269" depart="3163.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_right2C2.131" type="passenger" route="r270" depart="3163.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.44" type="passenger" route="r142" depart="3163.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.131" type="passenger" route="r143" depart="3164.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.131" type="passenger" route="r144" depart="3165.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.29" type="passenger" route="r231" depart="3172.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.44" type="passenger" route="r4" depart="3168.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.132" type="passenger" route="r23" depart="3174.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.44" type="passenger" route="r71" depart="3174.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.132" type="passenger" route="r33" depart="3175.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.132" type="passenger" route="r14" depart="3176.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.132" type="passenger" route="r55" depart="3177.70" departLane="best" departSpeed="max" color="#2f80ed" />
@@ -1983,39 +2032,42 @@
     <vehicle id="base_bottom1B0.132" type="passenger" route="r27" depart="3184.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.132" type="passenger" route="r128" depart="3186.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.132" type="passenger" route="r176" depart="3187.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.45" type="passenger" route="r166" depart="3187.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.132" type="passenger" route="r21" depart="3188.34" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_top1B2.132" type="passenger" route="r270" depart="3189.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.30" type="passenger" route="r142" depart="3191.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_top1B2.132" type="passenger" route="r271" depart="3189.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.45" type="passenger" route="r4" depart="3192.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.133" type="passenger" route="r58" depart="3198.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.30" type="passenger" route="r4" depart="3199.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.45" type="passenger" route="r231" depart="3198.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.133" type="passenger" route="r59" depart="3199.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.133" type="passenger" route="r14" depart="3200.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.133" type="passenger" route="r55" depart="3201.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.133" type="passenger" route="r4" depart="3201.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.133" type="passenger" route="r152" depart="3201.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.133" type="passenger" route="r17" depart="3207.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.30" type="passenger" route="r71" depart="3208.34" departLane="best" departSpeed="max" color="#e03131" />
-    <vehicle id="base_bottom1B0.133" type="passenger" route="r271" depart="3208.91" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_bottom1B0.133" type="passenger" route="r272" depart="3208.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.133" type="passenger" route="r8" depart="3210.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.133" type="passenger" route="r36" depart="3211.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.46" type="passenger" route="r142" depart="3211.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.133" type="passenger" route="r141" depart="3212.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.133" type="passenger" route="r46" depart="3213.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.46" type="passenger" route="r4" depart="3216.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.134" type="passenger" route="r135" depart="3222.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.46" type="passenger" route="r71" depart="3222.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.134" type="passenger" route="r13" depart="3223.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.134" type="passenger" route="r14" depart="3224.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.134" type="passenger" route="r88" depart="3225.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.134" type="passenger" route="r76" depart="3225.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.134" type="passenger" route="r16" depart="3225.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.31" type="passenger" route="r43" depart="3227.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.134" type="passenger" route="r26" depart="3231.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_bottom1B0.134" type="passenger" route="r272" depart="3232.91" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_bottom0A0.134" type="passenger" route="r237" depart="3234.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.31" type="passenger" route="r4" depart="3235.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_bottom1B0.134" type="passenger" route="r273" depart="3232.91" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_bottom0A0.134" type="passenger" route="r238" depart="3234.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.134" type="passenger" route="r63" depart="3235.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.47" type="passenger" route="r142" depart="3235.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.134" type="passenger" route="r45" depart="3236.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.134" type="passenger" route="r31" depart="3237.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.31" type="passenger" route="r231" depart="3244.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.47" type="passenger" route="r4" depart="3240.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.135" type="passenger" route="r38" depart="3246.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.47" type="passenger" route="r71" depart="3246.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.135" type="passenger" route="r13" depart="3247.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.135" type="passenger" route="r14" depart="3248.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.135" type="passenger" route="r177" depart="3249.70" departLane="best" departSpeed="max" color="#2f80ed" />
@@ -2025,39 +2077,42 @@
     <vehicle id="base_bottom1B0.135" type="passenger" route="r72" depart="3256.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.135" type="passenger" route="r8" depart="3258.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.135" type="passenger" route="r9" depart="3259.45" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_right0C0.135" type="passenger" route="r255" depart="3260.34" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.48" type="passenger" route="r142" depart="3259.77" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_right0C0.135" type="passenger" route="r256" depart="3260.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.135" type="passenger" route="r31" depart="3261.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.32" type="passenger" route="r43" depart="3263.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.48" type="passenger" route="r4" depart="3264.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.136" type="passenger" route="r12" depart="3270.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.32" type="passenger" route="r4" depart="3271.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.48" type="passenger" route="r71" depart="3270.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.136" type="passenger" route="r13" depart="3271.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.136" type="passenger" route="r14" depart="3272.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.136" type="passenger" route="r49" depart="3273.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.136" type="passenger" route="r4" depart="3273.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.136" type="passenger" route="r5" depart="3273.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.136" type="passenger" route="r17" depart="3279.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.32" type="passenger" route="r231" depart="3280.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.136" type="passenger" route="r27" depart="3280.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.136" type="passenger" route="r8" depart="3282.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.136" type="passenger" route="r140" depart="3283.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.49" type="passenger" route="r43" depart="3283.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.136" type="passenger" route="r57" depart="3284.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.136" type="passenger" route="r31" depart="3285.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.49" type="passenger" route="r4" depart="3288.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.137" type="passenger" route="r23" depart="3294.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_top2C2.137" type="passenger" route="r273" depart="3295.60" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.49" type="passenger" route="r274" depart="3294.89" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_top2C2.137" type="passenger" route="r275" depart="3295.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.137" type="passenger" route="r146" depart="3296.72" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_right1C1.137" type="passenger" route="r274" depart="3297.70" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_right1C1.137" type="passenger" route="r276" depart="3297.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.137" type="passenger" route="r95" depart="3297.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.137" type="passenger" route="r181" depart="3297.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.33" type="passenger" route="r142" depart="3299.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.137" type="passenger" route="r247" depart="3303.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.137" type="passenger" route="r27" depart="3304.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.137" type="passenger" route="r91" depart="3306.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.33" type="passenger" route="r4" depart="3307.01" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right2C2.137" type="passenger" route="r36" depart="3307.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.50" type="passenger" route="r142" depart="3307.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.137" type="passenger" route="r21" depart="3308.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.137" type="passenger" route="r46" depart="3309.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.33" type="passenger" route="r71" depart="3316.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.50" type="passenger" route="r4" depart="3312.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.138" type="passenger" route="r38" depart="3318.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.50" type="passenger" route="r71" depart="3318.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.138" type="passenger" route="r33" depart="3319.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.138" type="passenger" route="r110" depart="3320.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.138" type="passenger" route="r40" depart="3321.70" departLane="best" departSpeed="max" color="#2f80ed" />
@@ -2067,81 +2122,87 @@
     <vehicle id="base_bottom1B0.138" type="passenger" route="r27" depart="3328.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.138" type="passenger" route="r8" depart="3330.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.138" type="passenger" route="r73" depart="3331.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.51" type="passenger" route="r142" depart="3331.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.138" type="passenger" route="r45" depart="3332.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.138" type="passenger" route="r171" depart="3333.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.34" type="passenger" route="r43" depart="3335.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.51" type="passenger" route="r4" depart="3336.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.139" type="passenger" route="r38" depart="3342.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.34" type="passenger" route="r62" depart="3343.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.51" type="passenger" route="r71" depart="3342.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.139" type="passenger" route="r59" depart="3343.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.139" type="passenger" route="r14" depart="3344.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.139" type="passenger" route="r88" depart="3345.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.139" type="passenger" route="r151" depart="3345.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.139" type="passenger" route="r5" depart="3345.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.139" type="passenger" route="r26" depart="3351.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.34" type="passenger" route="r71" depart="3352.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.139" type="passenger" route="r27" depart="3352.91" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_bottom0A0.139" type="passenger" route="r275" depart="3354.16" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_bottom0A0.139" type="passenger" route="r277" depart="3354.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.139" type="passenger" route="r36" depart="3355.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.52" type="passenger" route="r142" depart="3355.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.139" type="passenger" route="r21" depart="3356.34" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_top1B2.139" type="passenger" route="r276" depart="3357.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_top0A2.140" type="passenger" route="r277" depart="3366.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_top1B2.139" type="passenger" route="r278" depart="3357.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.52" type="passenger" route="r4" depart="3360.68" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_top0A2.140" type="passenger" route="r279" depart="3366.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.52" type="passenger" route="r237" depart="3366.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.140" type="passenger" route="r33" depart="3367.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.140" type="passenger" route="r54" depart="3368.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.140" type="passenger" route="r49" depart="3369.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.140" type="passenger" route="r4" depart="3369.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.140" type="passenger" route="r5" depart="3369.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.35" type="passenger" route="r43" depart="3371.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.140" type="passenger" route="r65" depart="3375.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.140" type="passenger" route="r84" depart="3376.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.140" type="passenger" route="r8" depart="3378.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.35" type="passenger" route="r62" depart="3379.01" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right2C2.140" type="passenger" route="r9" depart="3379.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.53" type="passenger" route="r252" depart="3379.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.140" type="passenger" route="r141" depart="3380.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.140" type="passenger" route="r97" depart="3381.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.35" type="passenger" route="r71" depart="3388.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.53" type="passenger" route="r4" depart="3384.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.141" type="passenger" route="r52" depart="3390.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.53" type="passenger" route="r231" depart="3390.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.141" type="passenger" route="r53" depart="3391.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.141" type="passenger" route="r14" depart="3392.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.141" type="passenger" route="r3" depart="3393.70" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_left1A1.141" type="passenger" route="r278" depart="3393.72" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_left2A2.141" type="passenger" route="r279" depart="3393.77" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_left1A1.141" type="passenger" route="r280" depart="3393.72" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_left2A2.141" type="passenger" route="r281" depart="3393.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.141" type="passenger" route="r17" depart="3399.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.141" type="passenger" route="r90" depart="3400.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.141" type="passenger" route="r8" depart="3402.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.141" type="passenger" route="r168" depart="3403.45" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_right0C0.141" type="passenger" route="r280" depart="3404.34" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.54" type="passenger" route="r43" depart="3403.77" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_right0C0.141" type="passenger" route="r282" depart="3404.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.141" type="passenger" route="r46" depart="3405.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.36" type="passenger" route="r142" depart="3407.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.54" type="passenger" route="r283" depart="3408.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.142" type="passenger" route="r0" depart="3414.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.36" type="passenger" route="r4" depart="3415.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.54" type="passenger" route="r71" depart="3414.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.142" type="passenger" route="r13" depart="3415.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.142" type="passenger" route="r14" depart="3416.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.142" type="passenger" route="r173" depart="3417.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.142" type="passenger" route="r4" depart="3417.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.142" type="passenger" route="r152" depart="3417.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.142" type="passenger" route="r96" depart="3423.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.36" type="passenger" route="r189" depart="3424.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.142" type="passenger" route="r90" depart="3424.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.142" type="passenger" route="r28" depart="3426.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_right2C2.142" type="passenger" route="r281" depart="3427.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_right2C2.142" type="passenger" route="r284" depart="3427.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.55" type="passenger" route="r240" depart="3427.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.142" type="passenger" route="r107" depart="3428.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.142" type="passenger" route="r97" depart="3429.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.55" type="passenger" route="r4" depart="3432.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.143" type="passenger" route="r38" depart="3438.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_top2C2.143" type="passenger" route="r282" depart="3439.60" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.55" type="passenger" route="r285" depart="3438.89" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_top2C2.143" type="passenger" route="r286" depart="3439.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.143" type="passenger" route="r14" depart="3440.72" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_right1C1.143" type="passenger" route="r283" depart="3441.70" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_right1C1.143" type="passenger" route="r287" depart="3441.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.143" type="passenger" route="r76" depart="3441.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.143" type="passenger" route="r231" depart="3441.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.37" type="passenger" route="r43" depart="3443.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.143" type="passenger" route="r17" depart="3447.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.143" type="passenger" route="r27" depart="3448.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.143" type="passenger" route="r19" depart="3450.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.37" type="passenger" route="r62" depart="3451.01" departLane="best" departSpeed="max" color="#e03131" />
-    <vehicle id="base_right2C2.143" type="passenger" route="r269" depart="3451.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_right2C2.143" type="passenger" route="r270" depart="3451.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.56" type="passenger" route="r43" depart="3451.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.143" type="passenger" route="r57" depart="3452.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.143" type="passenger" route="r31" depart="3453.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.37" type="passenger" route="r238" depart="3460.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.56" type="passenger" route="r4" depart="3456.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.144" type="passenger" route="r38" depart="3462.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.56" type="passenger" route="r231" depart="3462.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.144" type="passenger" route="r13" depart="3463.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.144" type="passenger" route="r60" depart="3464.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.144" type="passenger" route="r3" depart="3465.70" departLane="best" departSpeed="max" color="#2f80ed" />
@@ -2151,39 +2212,42 @@
     <vehicle id="base_bottom1B0.144" type="passenger" route="r7" depart="3472.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.144" type="passenger" route="r19" depart="3474.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.144" type="passenger" route="r36" depart="3475.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.57" type="passenger" route="r142" depart="3475.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.144" type="passenger" route="r10" depart="3476.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.144" type="passenger" route="r117" depart="3477.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.38" type="passenger" route="r180" depart="3479.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.57" type="passenger" route="r4" depart="3480.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.145" type="passenger" route="r220" depart="3486.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.38" type="passenger" route="r4" depart="3487.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.57" type="passenger" route="r285" depart="3486.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.145" type="passenger" route="r98" depart="3487.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.145" type="passenger" route="r146" depart="3488.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.145" type="passenger" route="r88" depart="3489.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.145" type="passenger" route="r76" depart="3489.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.145" type="passenger" route="r5" depart="3489.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.145" type="passenger" route="r65" depart="3495.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.38" type="passenger" route="r71" depart="3496.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.145" type="passenger" route="r27" depart="3496.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.145" type="passenger" route="r8" depart="3498.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_right2C2.145" type="passenger" route="r253" depart="3499.45" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_right0C0.145" type="passenger" route="r284" depart="3500.34" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_right2C2.145" type="passenger" route="r254" depart="3499.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.58" type="passenger" route="r43" depart="3499.77" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_right0C0.145" type="passenger" route="r288" depart="3500.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.145" type="passenger" route="r97" depart="3501.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.58" type="passenger" route="r41" depart="3504.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.146" type="passenger" route="r38" depart="3510.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.58" type="passenger" route="r71" depart="3510.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.146" type="passenger" route="r59" depart="3511.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.146" type="passenger" route="r14" depart="3512.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.146" type="passenger" route="r49" depart="3513.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.146" type="passenger" route="r4" depart="3513.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.146" type="passenger" route="r5" depart="3513.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.39" type="passenger" route="r43" depart="3515.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.146" type="passenger" route="r26" depart="3519.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.146" type="passenger" route="r27" depart="3520.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.146" type="passenger" route="r128" depart="3522.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.39" type="passenger" route="r4" depart="3523.01" departLane="best" departSpeed="max" color="#e03131" />
-    <vehicle id="base_right2C2.146" type="passenger" route="r285" depart="3523.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_right2C2.146" type="passenger" route="r289" depart="3523.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.59" type="passenger" route="r142" depart="3523.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.146" type="passenger" route="r57" depart="3524.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.146" type="passenger" route="r37" depart="3525.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.39" type="passenger" route="r71" depart="3532.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.59" type="passenger" route="r4" depart="3528.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.147" type="passenger" route="r38" depart="3534.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.59" type="passenger" route="r71" depart="3534.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.147" type="passenger" route="r13" depart="3535.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.147" type="passenger" route="r146" depart="3536.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.147" type="passenger" route="r3" depart="3537.70" departLane="best" departSpeed="max" color="#2f80ed" />
@@ -2193,81 +2257,87 @@
     <vehicle id="base_bottom1B0.147" type="passenger" route="r27" depart="3544.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.147" type="passenger" route="r8" depart="3546.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.147" type="passenger" route="r9" depart="3547.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.60" type="passenger" route="r43" depart="3547.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.147" type="passenger" route="r141" depart="3548.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.147" type="passenger" route="r11" depart="3549.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.40" type="passenger" route="r142" depart="3551.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.60" type="passenger" route="r4" depart="3552.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.148" type="passenger" route="r12" depart="3558.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.40" type="passenger" route="r4" depart="3559.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.60" type="passenger" route="r231" depart="3558.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.148" type="passenger" route="r13" depart="3559.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.148" type="passenger" route="r14" depart="3560.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.148" type="passenger" route="r61" depart="3561.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.148" type="passenger" route="r76" depart="3561.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.148" type="passenger" route="r5" depart="3561.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.148" type="passenger" route="r6" depart="3567.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.40" type="passenger" route="r231" depart="3568.34" departLane="best" departSpeed="max" color="#e03131" />
-    <vehicle id="base_bottom1B0.148" type="passenger" route="r286" depart="3568.91" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_bottom1B0.148" type="passenger" route="r290" depart="3568.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.148" type="passenger" route="r106" depart="3570.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.148" type="passenger" route="r140" depart="3571.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.61" type="passenger" route="r166" depart="3571.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.148" type="passenger" route="r21" depart="3572.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.148" type="passenger" route="r22" depart="3573.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.61" type="passenger" route="r103" depart="3576.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.149" type="passenger" route="r93" depart="3582.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.61" type="passenger" route="r71" depart="3582.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.149" type="passenger" route="r13" depart="3583.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.149" type="passenger" route="r24" depart="3584.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.149" type="passenger" route="r49" depart="3585.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.149" type="passenger" route="r4" depart="3585.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.149" type="passenger" route="r92" depart="3585.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.41" type="passenger" route="r142" depart="3587.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.149" type="passenger" route="r96" depart="3591.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.149" type="passenger" route="r27" depart="3592.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.149" type="passenger" route="r19" depart="3594.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.41" type="passenger" route="r4" depart="3595.01" departLane="best" departSpeed="max" color="#e03131" />
-    <vehicle id="base_right2C2.149" type="passenger" route="r253" depart="3595.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_right2C2.149" type="passenger" route="r254" depart="3595.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.62" type="passenger" route="r43" depart="3595.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.149" type="passenger" route="r215" depart="3596.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.149" type="passenger" route="r37" depart="3597.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.41" type="passenger" route="r231" depart="3604.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.62" type="passenger" route="r4" depart="3600.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.150" type="passenger" route="r23" depart="3606.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.62" type="passenger" route="r189" depart="3606.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.150" type="passenger" route="r160" depart="3607.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.150" type="passenger" route="r146" depart="3608.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.150" type="passenger" route="r25" depart="3609.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.150" type="passenger" route="r4" depart="3609.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.150" type="passenger" route="r16" depart="3609.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.150" type="passenger" route="r6" depart="3615.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_bottom1B0.150" type="passenger" route="r272" depart="3616.91" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_bottom1B0.150" type="passenger" route="r273" depart="3616.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.150" type="passenger" route="r28" depart="3618.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.150" type="passenger" route="r119" depart="3619.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.63" type="passenger" route="r43" depart="3619.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.150" type="passenger" route="r57" depart="3620.34" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_top1B2.150" type="passenger" route="r287" depart="3621.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.42" type="passenger" route="r142" depart="3623.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_top1B2.150" type="passenger" route="r291" depart="3621.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.63" type="passenger" route="r4" depart="3624.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.151" type="passenger" route="r23" depart="3630.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.42" type="passenger" route="r4" depart="3631.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.63" type="passenger" route="r231" depart="3630.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.151" type="passenger" route="r59" depart="3631.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.151" type="passenger" route="r60" depart="3632.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.151" type="passenger" route="r49" depart="3633.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.151" type="passenger" route="r151" depart="3633.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.151" type="passenger" route="r5" depart="3633.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.151" type="passenger" route="r17" depart="3639.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.42" type="passenger" route="r231" depart="3640.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.151" type="passenger" route="r44" depart="3640.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.151" type="passenger" route="r91" depart="3642.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.151" type="passenger" route="r36" depart="3643.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.64" type="passenger" route="r43" depart="3643.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.151" type="passenger" route="r57" depart="3644.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.151" type="passenger" route="r134" depart="3645.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.64" type="passenger" route="r95" depart="3648.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.152" type="passenger" route="r58" depart="3654.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.64" type="passenger" route="r71" depart="3654.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.152" type="passenger" route="r13" depart="3655.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.152" type="passenger" route="r14" depart="3656.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.152" type="passenger" route="r3" depart="3657.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.152" type="passenger" route="r4" depart="3657.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.152" type="passenger" route="r92" depart="3657.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.43" type="passenger" route="r288" depart="3659.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.152" type="passenger" route="r17" depart="3663.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_bottom1B0.152" type="passenger" route="r289" depart="3664.91" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_bottom1B0.152" type="passenger" route="r292" depart="3664.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.152" type="passenger" route="r128" depart="3666.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.43" type="passenger" route="r131" depart="3667.01" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right2C2.152" type="passenger" route="r36" depart="3667.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.65" type="passenger" route="r43" depart="3667.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.152" type="passenger" route="r57" depart="3668.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.152" type="passenger" route="r117" depart="3669.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.43" type="passenger" route="r71" depart="3676.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.65" type="passenger" route="r103" depart="3672.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.153" type="passenger" route="r79" depart="3678.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.65" type="passenger" route="r293" depart="3678.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.153" type="passenger" route="r39" depart="3679.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.153" type="passenger" route="r14" depart="3680.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.153" type="passenger" route="r49" depart="3681.70" departLane="best" departSpeed="max" color="#2f80ed" />
@@ -2277,39 +2347,42 @@
     <vehicle id="base_bottom1B0.153" type="passenger" route="r7" depart="3688.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.153" type="passenger" route="r157" depart="3690.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.153" type="passenger" route="r36" depart="3691.45" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_right0C0.153" type="passenger" route="r290" depart="3692.34" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.66" type="passenger" route="r294" depart="3691.77" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_right0C0.153" type="passenger" route="r295" depart="3692.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.153" type="passenger" route="r37" depart="3693.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.44" type="passenger" route="r142" depart="3695.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.66" type="passenger" route="r4" depart="3696.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.154" type="passenger" route="r38" depart="3702.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.44" type="passenger" route="r4" depart="3703.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.66" type="passenger" route="r71" depart="3702.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.154" type="passenger" route="r13" depart="3703.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.154" type="passenger" route="r80" depart="3704.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.154" type="passenger" route="r49" depart="3705.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.154" type="passenger" route="r4" depart="3705.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.154" type="passenger" route="r174" depart="3705.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.154" type="passenger" route="r6" depart="3711.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.44" type="passenger" route="r71" depart="3712.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.154" type="passenger" route="r90" depart="3712.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.154" type="passenger" route="r128" depart="3714.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_right2C2.154" type="passenger" route="r291" depart="3715.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_right2C2.154" type="passenger" route="r296" depart="3715.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.67" type="passenger" route="r142" depart="3715.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.154" type="passenger" route="r57" depart="3716.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.154" type="passenger" route="r31" depart="3717.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.67" type="passenger" route="r4" depart="3720.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.155" type="passenger" route="r172" depart="3726.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.67" type="passenger" route="r231" depart="3726.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.155" type="passenger" route="r13" depart="3727.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.155" type="passenger" route="r14" depart="3728.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.155" type="passenger" route="r222" depart="3729.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.155" type="passenger" route="r103" depart="3729.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.155" type="passenger" route="r92" depart="3729.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.45" type="passenger" route="r166" depart="3731.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.155" type="passenger" route="r17" depart="3735.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.155" type="passenger" route="r27" depart="3736.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.155" type="passenger" route="r8" depart="3738.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.45" type="passenger" route="r4" depart="3739.01" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right2C2.155" type="passenger" route="r36" depart="3739.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.68" type="passenger" route="r142" depart="3739.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.155" type="passenger" route="r143" depart="3740.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.155" type="passenger" route="r46" depart="3741.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.45" type="passenger" route="r231" depart="3748.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.68" type="passenger" route="r4" depart="3744.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.156" type="passenger" route="r0" depart="3750.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.68" type="passenger" route="r297" depart="3750.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.156" type="passenger" route="r59" depart="3751.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.156" type="passenger" route="r80" depart="3752.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.156" type="passenger" route="r55" depart="3753.70" departLane="best" departSpeed="max" color="#2f80ed" />
@@ -2319,78 +2392,84 @@
     <vehicle id="base_bottom1B0.156" type="passenger" route="r27" depart="3760.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.156" type="passenger" route="r8" depart="3762.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.156" type="passenger" route="r36" depart="3763.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.69" type="passenger" route="r43" depart="3763.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.156" type="passenger" route="r45" depart="3764.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.156" type="passenger" route="r46" depart="3765.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.46" type="passenger" route="r142" depart="3767.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.69" type="passenger" route="r4" depart="3768.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.157" type="passenger" route="r93" depart="3774.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.46" type="passenger" route="r4" depart="3775.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.69" type="passenger" route="r231" depart="3774.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.157" type="passenger" route="r13" depart="3775.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.157" type="passenger" route="r80" depart="3776.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.157" type="passenger" route="r49" depart="3777.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.157" type="passenger" route="r41" depart="3777.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.157" type="passenger" route="r34" depart="3777.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.157" type="passenger" route="r26" depart="3783.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.46" type="passenger" route="r71" depart="3784.34" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_bottom1B0.157" type="passenger" route="r18" depart="3784.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.157" type="passenger" route="r8" depart="3786.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.157" type="passenger" route="r36" depart="3787.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.70" type="passenger" route="r43" depart="3787.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.157" type="passenger" route="r45" depart="3788.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.157" type="passenger" route="r134" depart="3789.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.70" type="passenger" route="r4" depart="3792.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.158" type="passenger" route="r12" depart="3798.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.70" type="passenger" route="r71" depart="3798.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.158" type="passenger" route="r33" depart="3799.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.158" type="passenger" route="r87" depart="3800.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.158" type="passenger" route="r3" depart="3801.70" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_left1A1.158" type="passenger" route="r278" depart="3801.72" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_left1A1.158" type="passenger" route="r280" depart="3801.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left2A2.158" type="passenger" route="r5" depart="3801.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.47" type="passenger" route="r142" depart="3803.65" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_left0A0.158" type="passenger" route="r17" depart="3807.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.158" type="passenger" route="r84" depart="3808.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.158" type="passenger" route="r157" depart="3810.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.47" type="passenger" route="r4" depart="3811.01" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right2C2.158" type="passenger" route="r20" depart="3811.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.71" type="passenger" route="r43" depart="3811.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.158" type="passenger" route="r57" depart="3812.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.158" type="passenger" route="r171" depart="3813.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.47" type="passenger" route="r71" depart="3820.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.71" type="passenger" route="r4" depart="3816.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.159" type="passenger" route="r38" depart="3822.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.71" type="passenger" route="r71" depart="3822.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.159" type="passenger" route="r39" depart="3823.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.159" type="passenger" route="r80" depart="3824.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.159" type="passenger" route="r55" depart="3825.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.159" type="passenger" route="r4" depart="3825.72" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_left2A2.159" type="passenger" route="r292" depart="3825.77" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_left2A2.159" type="passenger" route="r285" depart="3825.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.159" type="passenger" route="r175" depart="3831.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.159" type="passenger" route="r7" depart="3832.91" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_bottom0A0.159" type="passenger" route="r293" depart="3834.16" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_bottom0A0.159" type="passenger" route="r298" depart="3834.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.159" type="passenger" route="r63" depart="3835.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.72" type="passenger" route="r43" depart="3835.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.159" type="passenger" route="r21" depart="3836.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.159" type="passenger" route="r37" depart="3837.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.48" type="passenger" route="r142" depart="3839.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.72" type="passenger" route="r95" depart="3840.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.160" type="passenger" route="r12" depart="3846.06" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.48" type="passenger" route="r4" depart="3847.01" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.72" type="passenger" route="r237" depart="3846.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.160" type="passenger" route="r192" depart="3847.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.160" type="passenger" route="r146" depart="3848.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.160" type="passenger" route="r3" depart="3849.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.160" type="passenger" route="r4" depart="3849.72" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_left2A2.160" type="passenger" route="r294" depart="3849.77" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_left2A2.160" type="passenger" route="r299" depart="3849.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.160" type="passenger" route="r17" depart="3855.43" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.48" type="passenger" route="r71" depart="3856.34" departLane="best" departSpeed="max" color="#e03131" />
-    <vehicle id="base_bottom1B0.160" type="passenger" route="r295" depart="3856.91" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="base_bottom1B0.160" type="passenger" route="r300" depart="3856.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.160" type="passenger" route="r8" depart="3858.16" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right2C2.160" type="passenger" route="r73" depart="3859.45" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_right0C0.160" type="passenger" route="r284" depart="3860.34" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.73" type="passenger" route="r43" depart="3859.77" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_right0C0.160" type="passenger" route="r288" depart="3860.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.160" type="passenger" route="r31" depart="3861.59" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left1A1.73" type="passenger" route="r4" depart="3864.68" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top0A2.161" type="passenger" route="r135" depart="3870.06" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left2A2.73" type="passenger" route="r71" depart="3870.89" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_top2C2.161" type="passenger" route="r160" depart="3871.60" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom2C0.161" type="passenger" route="r14" depart="3872.72" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_right1C1.161" type="passenger" route="r49" depart="3873.70" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left1A1.161" type="passenger" route="r95" depart="3873.72" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="base_left2A2.161" type="passenger" route="r296" depart="3873.77" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left0A0.49" type="passenger" route="r43" depart="3875.65" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="base_left2A2.161" type="passenger" route="r301" depart="3873.77" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_left0A0.161" type="passenger" route="r17" depart="3879.43" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom1B0.161" type="passenger" route="r27" depart="3880.91" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_bottom0A0.161" type="passenger" route="r91" depart="3882.16" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left1A1.49" type="passenger" route="r4" depart="3883.01" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right2C2.161" type="passenger" route="r9" depart="3883.45" departLane="best" departSpeed="max" color="#2f80ed" />
+    <vehicle id="shock_left0A0.74" type="passenger" route="r269" depart="3883.77" departLane="best" departSpeed="max" color="#e03131" />
     <vehicle id="base_right0C0.161" type="passenger" route="r57" depart="3884.34" departLane="best" departSpeed="max" color="#2f80ed" />
     <vehicle id="base_top1B2.161" type="passenger" route="r144" depart="3885.59" departLane="best" departSpeed="max" color="#2f80ed" />
-    <vehicle id="shock_left2A2.49" type="passenger" route="r297" depart="3892.34" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left1A1.74" type="passenger" route="r4" depart="3888.68" departLane="best" departSpeed="max" color="#e03131" />
+    <vehicle id="shock_left2A2.74" type="passenger" route="r71" depart="3894.89" departLane="best" departSpeed="max" color="#e03131" />
 </routes>

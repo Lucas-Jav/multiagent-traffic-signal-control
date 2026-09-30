@@ -28,11 +28,13 @@ Controllers must not receive scenario-specific configuration. A controller may b
 run time with `--controller`, but the scenario files do not define special controller
 parameters.
 
-The demand intensities below are PROVISIONAL structural values (Prompt 46.6): they were chosen
-only so that each scenario structure is exercised (S1 and the S3 base well below one approach's
-nominal capacity of about 320 veh/h; S4 intentionally above it around A5). The final
-intensities are calibrated in Prompt 46.7 and must not be tuned from controller results. They
-are not scientific results.
+The demand intensities below were CALIBRATED in Prompt 46.7 with controller-independent criteria
+(`scripts/calibrate_scenarios.py`, `B0_FIXED` only, calibration seeds `101, 1009, 2029`, which
+are disjoint from the fixed seed pool). Each level is the highest candidate of a predeclared
+grid that satisfied every predeclared criterion on all calibration seeds; the criteria, the
+candidate results and the selection are in `artifacts/calibration/pilot_v2-scenario-calibration/`
+(`calibration-plan.md`, `candidate-results.parquet`, `selected-scenario-levels.md`). Calibration
+is scenario calibration, not controller tuning, and is not a scientific result.
 
 ## Demand model
 
@@ -70,7 +72,7 @@ are `<demand_id>.<index>`.
 Config: `scenarios/grid_3x3/scenario.yaml` (seed 42), per-seed files
 `scenario_s1_balanced_seed_<seed>.yaml`. Routes: `routes_s1_seed_<seed>.rou.xml`.
 
-- All 12 border entries inject the same rate (MEDIUM 150 veh/h each, provisional).
+- All 12 border entries inject the same rate (MEDIUM 150 veh/h each, calibrated).
 - Every route follows the 70/15/15 walk; no intersection is forced into every route.
 - Expected coverage: each of the nine intersections carries about 11% of all junction passes
   (A1 10.9%, A5 10.9%, A9 11.2% for seed 42); no idle corners.
@@ -81,13 +83,13 @@ Config: `scenarios/grid_3x3/scenario.yaml` (seed 42), per-seed files
 
 Config: `scenario_s2_directional_peak.yaml`. Routes: `routes_s2_seed_<seed>.rou.xml`.
 
-- Dominant West -> East profile: the three west border entries (`dominant` group, MEDIUM 240
-  veh/h each) inject about 80% of the offered demand; the other nine borders (`residual`, 20
-  veh/h each) inject the remaining 20%.
+- Dominant West -> East profile: the three west border entries (`dominant` group, MEDIUM 320
+  veh/h each) inject about 80% of the offered demand; the other nine borders (`residual`,
+  320 / 12 = 26.67 veh/h each) inject the remaining 20%.
 - The same 70/15/15 walk applies, so straight, left and right movements exist in the dominant
   stream; the 80% share refers to offered demand from the dominant profile, not to vehicles
   travelling straight through the whole network.
-- The dominant entries stay below the nominal entry capacity so the offered bias is not hidden
+- The dominant entries stay below the entry capacity (calibrated so that dominant departure ratio stays >= 0.90) so the offered bias is not hidden
   by entry starvation; `run_metrics.json` reports `offered/departed/arrived` and
   `entry_departure_ratio` by entry and group to verify this at run time.
 
@@ -97,24 +99,24 @@ Config: `scenario_s3_demand_shift.yaml`. Routes: `routes_s3_seed_<seed>.rou.xml`
 
 - First half: the S1 balanced base (same 12 entries and rates, from t = 0).
 - Second half: the base continues and an abrupt ONE-BORDER (west) shock is added on the three
-  west entries (`shock` group, MEDIUM 100 veh/h each, straight-biased 0.90/0.05/0.05) with
+  west entries (`shock` group, MEDIUM 150 veh/h each, straight-biased 0.90/0.05/0.05) with
   `via_intersection_id: A5`, so shock vehicles are routed through the central intersection.
 - The shock starts at 50% of the MEASUREMENT window: `traffic.shock_start_seconds = 2100`
   (`warmup_seconds + measurement_duration_seconds / 2`), 1800 s after the measurement start.
   The scenario validator rejects any other value.
-- The base phase is not structurally saturated (provisional base rate = S1), so the shock is
-  visible shortly after it starts instead of being masked by an entry backlog.
+- The base phase equals the calibrated S1 level exactly (stable, no insertion backlog), so the
+  shock is visible shortly after it starts instead of being masked by an entry backlog.
 
 ## S4_LOCAL_SATURATION
 
 Config: `scenario_s4_local_saturation.yaml`. Routes: `routes_s4_seed_<seed>.rou.xml`.
 
-- Light S1-like background (`base`, MEDIUM 40 veh/h at all 12 borders) plus `hotspot` demand
-  (MEDIUM 110 veh/h at all 12 borders, straight-biased 0.90/0.05/0.05) routed through A5
+- Light S1-like background (`base`, MEDIUM 80 veh/h at all 12 borders) plus `hotspot` demand
+  (MEDIUM 220 veh/h at all 12 borders, straight-biased 0.90/0.05/0.05) routed through A5
   (`via_intersection_id: A5`).
-- Expected share of junction passes: A5 22.9%, neighbours A2/A4/A6/A8 about 13%
+- Expected share of junction passes: A5 23.0%, neighbours A2/A4/A6/A8 about 13%
   each, corners about 6% each (seed 42). A5's four incoming approaches carry an expected
-  370.086 veh/h, above the nominal approach capacity, so congestion concentrates around
+  740.173 veh/h, above the nominal approach capacity, so congestion concentrates around
   A5 and can propagate to A2/A4/A6/A8. Capacity is not modified artificially and the scenario
   does not require a total deadlock.
 
@@ -140,9 +142,9 @@ Current generated hashes (seed 42):
 | Profile | Scenario hash | Route hash |
 | --- | --- | --- |
 | `S1_BALANCED` | `c89f2064578bc07cf351110bbe5c490ff3a942175f8de0b642576ba5e1f1ae69` | `00860fbd03473c5a5c9552e18ce09003d097603f917f3f443f43dfa22f7d4354` |
-| `S2_DIRECTIONAL_PEAK` | `a8d0562b812d1bc40e33aef2795f4f63e001670e5330fd831fb41470dbc6b9de` | `1421073c405a4123a243f03428571139b572d7ae32b430d1c39a5d84200d4adb` |
-| `S3_DEMAND_SHIFT` | `c8fe7603de6cf6c8afe173d6c133654e263fabc9ebac8c3ad768022b4de5683e` | `aef06df3e5227b4e544618b95278e3186d7ea9554762944c29251e56d88183cb` |
-| `S4_LOCAL_SATURATION` | `5f53971df8578b0b894e33d191d3ea3d12138618551ebd35e29e5ab9dfa1d9d7` | `693bd6dee063bd7a68df0add6d3cfc2002d625fdffd57d91f4cc6ad4bef42275` |
+| `S2_DIRECTIONAL_PEAK` | `bea562c329950a32a74f5c68478d6d1fa7ac50357faae36ac56f60adf6a18d34` | `75e1c16967c6b35389dd923e535a82935bf9d9611dcd48ee1d448d3d4c596a85` |
+| `S3_DEMAND_SHIFT` | `a3a87ddfa970030f000e4577196028ee36fac5698f2192b4d50d00b178555ff7` | `897daabad4bd947643e0d9bea251d97d78062108c36b8234f7392475e243b21f` |
+| `S4_LOCAL_SATURATION` | `55426d1f4ca02cd8af5e636bc440c1a49152986277f9ab09a5d61e1a4693cf62` | `df6aaf38486f3515a9b0f48af8c93b6fa053ed157b15a3d467502d742517fee2` |
 
 ## Validation Procedure
 
