@@ -104,6 +104,7 @@ def test_experiment_runner_rejects_frozen_route_mismatch(
 
     with pytest.raises(ExperimentFreezeError, match="route_file"):
         ExperimentRunner(
+            aggregate_metrics=False,
             config=config,
             artifacts_dir=tmp_path / "artifacts",
             frozen_config=frozen_config,

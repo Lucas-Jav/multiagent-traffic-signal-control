@@ -11,178 +11,291 @@ traffic:
   demand_profile: S4_LOCAL_SATURATION
   demand_level: MEDIUM
   turning_ratios:
-    straight: 0.5
-    left: 0.25
-    right: 0.25
+    straight: 0.7
+    left: 0.15
+    right: 0.15
   schedule:
   - window_id: full_run
     begin_seconds: 0
     end_seconds: 3900
-    description: Localized high demand around project intersections A1, A2, A4, and
-      A5.
-  flows:
-  - flow_id: left2_to_right2_upper_straight
-    origin_edge_id: left2A2
-    destination_edge_id: C2right2
+    description: Background demand plus hotspot demand routed through A5.
+  entries:
+  - demand_id: base_left0A0
+    entry_edge_id: left0A0
+    group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 250
-      MEDIUM: 500
-      HIGH: 750
-  - flow_id: left2_to_top1_turn
-    origin_edge_id: left2A2
-    destination_edge_id: B2top1
+      LOW: 30
+      MEDIUM: 40
+      HIGH: 50
+  - demand_id: base_left1A1
+    entry_edge_id: left1A1
+    group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 125
-      MEDIUM: 250
-      HIGH: 375
-  - flow_id: left2_to_bottom0_turn
-    origin_edge_id: left2A2
-    destination_edge_id: A0bottom0
+      LOW: 30
+      MEDIUM: 40
+      HIGH: 50
+  - demand_id: base_left2A2
+    entry_edge_id: left2A2
+    group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 125
-      MEDIUM: 250
-      HIGH: 375
-  - flow_id: top0_to_bottom0_left_straight
-    origin_edge_id: top0A2
-    destination_edge_id: A0bottom0
+      LOW: 30
+      MEDIUM: 40
+      HIGH: 50
+  - demand_id: base_right0C0
+    entry_edge_id: right0C0
+    group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 250
-      MEDIUM: 500
-      HIGH: 750
-  - flow_id: top0_to_left1_turn
-    origin_edge_id: top0A2
-    destination_edge_id: A1left1
+      LOW: 30
+      MEDIUM: 40
+      HIGH: 50
+  - demand_id: base_right1C1
+    entry_edge_id: right1C1
+    group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 125
-      MEDIUM: 250
-      HIGH: 375
-  - flow_id: top0_to_right2_turn
-    origin_edge_id: top0A2
-    destination_edge_id: C2right2
+      LOW: 30
+      MEDIUM: 40
+      HIGH: 50
+  - demand_id: base_right2C2
+    entry_edge_id: right2C2
+    group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 125
-      MEDIUM: 250
-      HIGH: 375
-  - flow_id: west_to_east_middle
-    origin_edge_id: left1A1
-    destination_edge_id: C1right1
+      LOW: 30
+      MEDIUM: 40
+      HIGH: 50
+  - demand_id: base_top0A2
+    entry_edge_id: top0A2
+    group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 163
-      MEDIUM: 326
-      HIGH: 489
-  - flow_id: west_to_north_turn
-    origin_edge_id: left1A1
-    destination_edge_id: B2top1
+      LOW: 30
+      MEDIUM: 40
+      HIGH: 50
+  - demand_id: base_top1B2
+    entry_edge_id: top1B2
+    group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 82
-      MEDIUM: 163
-      HIGH: 245
-  - flow_id: west_to_south_turn
-    origin_edge_id: left1A1
-    destination_edge_id: B0bottom1
+      LOW: 30
+      MEDIUM: 40
+      HIGH: 50
+  - demand_id: base_top2C2
+    entry_edge_id: top2C2
+    group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 82
-      MEDIUM: 163
-      HIGH: 245
-  - flow_id: north_to_south_middle
-    origin_edge_id: top1B2
-    destination_edge_id: B0bottom1
+      LOW: 30
+      MEDIUM: 40
+      HIGH: 50
+  - demand_id: base_bottom0A0
+    entry_edge_id: bottom0A0
+    group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 163
-      MEDIUM: 326
-      HIGH: 489
-  - flow_id: north_to_west_turn
-    origin_edge_id: top1B2
-    destination_edge_id: A1left1
+      LOW: 30
+      MEDIUM: 40
+      HIGH: 50
+  - demand_id: base_bottom1B0
+    entry_edge_id: bottom1B0
+    group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 82
-      MEDIUM: 163
-      HIGH: 245
-  - flow_id: north_to_east_turn
-    origin_edge_id: top1B2
-    destination_edge_id: C1right1
+      LOW: 30
+      MEDIUM: 40
+      HIGH: 50
+  - demand_id: base_bottom2C0
+    entry_edge_id: bottom2C0
+    group: base
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 82
-      MEDIUM: 163
-      HIGH: 245
-  - flow_id: east_to_west_middle
-    origin_edge_id: right1C1
-    destination_edge_id: A1left1
+      LOW: 30
+      MEDIUM: 40
+      HIGH: 50
+  - demand_id: hotspot_left0A0
+    entry_edge_id: left0A0
+    group: hotspot
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 55
+      LOW: 80
       MEDIUM: 110
-      HIGH: 165
-  - flow_id: south_to_north_middle
-    origin_edge_id: bottom1B0
-    destination_edge_id: B2top1
+      HIGH: 140
+    turning_ratios:
+      straight: 0.9
+      left: 0.05
+      right: 0.05
+    via_intersection_id: A5
+  - demand_id: hotspot_left1A1
+    entry_edge_id: left1A1
+    group: hotspot
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 55
+      LOW: 80
       MEDIUM: 110
-      HIGH: 165
-  - flow_id: east_to_north_turn
-    origin_edge_id: right1C1
-    destination_edge_id: B2top1
+      HIGH: 140
+    turning_ratios:
+      straight: 0.9
+      left: 0.05
+      right: 0.05
+    via_intersection_id: A5
+  - demand_id: hotspot_left2A2
+    entry_edge_id: left2A2
+    group: hotspot
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 28
-      MEDIUM: 55
-      HIGH: 83
-  - flow_id: east_to_south_turn
-    origin_edge_id: right1C1
-    destination_edge_id: B0bottom1
+      LOW: 80
+      MEDIUM: 110
+      HIGH: 140
+    turning_ratios:
+      straight: 0.9
+      left: 0.05
+      right: 0.05
+    via_intersection_id: A5
+  - demand_id: hotspot_right0C0
+    entry_edge_id: right0C0
+    group: hotspot
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 28
-      MEDIUM: 55
-      HIGH: 83
-  - flow_id: south_to_west_turn
-    origin_edge_id: bottom1B0
-    destination_edge_id: A1left1
+      LOW: 80
+      MEDIUM: 110
+      HIGH: 140
+    turning_ratios:
+      straight: 0.9
+      left: 0.05
+      right: 0.05
+    via_intersection_id: A5
+  - demand_id: hotspot_right1C1
+    entry_edge_id: right1C1
+    group: hotspot
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 28
-      MEDIUM: 55
-      HIGH: 83
-  - flow_id: south_to_east_turn
-    origin_edge_id: bottom1B0
-    destination_edge_id: C1right1
+      LOW: 80
+      MEDIUM: 110
+      HIGH: 140
+    turning_ratios:
+      straight: 0.9
+      left: 0.05
+      right: 0.05
+    via_intersection_id: A5
+  - demand_id: hotspot_right2C2
+    entry_edge_id: right2C2
+    group: hotspot
     begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 28
-      MEDIUM: 55
-      HIGH: 83
+      LOW: 80
+      MEDIUM: 110
+      HIGH: 140
+    turning_ratios:
+      straight: 0.9
+      left: 0.05
+      right: 0.05
+    via_intersection_id: A5
+  - demand_id: hotspot_top0A2
+    entry_edge_id: top0A2
+    group: hotspot
+    begin_seconds: 0
+    end_seconds: 3900
+    vehicles_per_hour:
+      LOW: 80
+      MEDIUM: 110
+      HIGH: 140
+    turning_ratios:
+      straight: 0.9
+      left: 0.05
+      right: 0.05
+    via_intersection_id: A5
+  - demand_id: hotspot_top1B2
+    entry_edge_id: top1B2
+    group: hotspot
+    begin_seconds: 0
+    end_seconds: 3900
+    vehicles_per_hour:
+      LOW: 80
+      MEDIUM: 110
+      HIGH: 140
+    turning_ratios:
+      straight: 0.9
+      left: 0.05
+      right: 0.05
+    via_intersection_id: A5
+  - demand_id: hotspot_top2C2
+    entry_edge_id: top2C2
+    group: hotspot
+    begin_seconds: 0
+    end_seconds: 3900
+    vehicles_per_hour:
+      LOW: 80
+      MEDIUM: 110
+      HIGH: 140
+    turning_ratios:
+      straight: 0.9
+      left: 0.05
+      right: 0.05
+    via_intersection_id: A5
+  - demand_id: hotspot_bottom0A0
+    entry_edge_id: bottom0A0
+    group: hotspot
+    begin_seconds: 0
+    end_seconds: 3900
+    vehicles_per_hour:
+      LOW: 80
+      MEDIUM: 110
+      HIGH: 140
+    turning_ratios:
+      straight: 0.9
+      left: 0.05
+      right: 0.05
+    via_intersection_id: A5
+  - demand_id: hotspot_bottom1B0
+    entry_edge_id: bottom1B0
+    group: hotspot
+    begin_seconds: 0
+    end_seconds: 3900
+    vehicles_per_hour:
+      LOW: 80
+      MEDIUM: 110
+      HIGH: 140
+    turning_ratios:
+      straight: 0.9
+      left: 0.05
+      right: 0.05
+    via_intersection_id: A5
+  - demand_id: hotspot_bottom2C0
+    entry_edge_id: bottom2C0
+    group: hotspot
+    begin_seconds: 0
+    end_seconds: 3900
+    vehicles_per_hour:
+      LOW: 80
+      MEDIUM: 110
+      HIGH: 140
+    turning_ratios:
+      straight: 0.9
+      left: 0.05
+      right: 0.05
+    via_intersection_id: A5
 communication:
   delay_steps: 0
   drop_probability: 0.0

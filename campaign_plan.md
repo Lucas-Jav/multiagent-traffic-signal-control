@@ -90,12 +90,16 @@ Mini pilot executed:
 
 ## Turning Ratios
 
-Turning ratios are scenario inputs and remain fixed across controllers:
+Turning ratios are scenario inputs and remain fixed across controllers. Since Prompt 46.6
+they drive the seeded route generator (they are no longer metadata only) and all scenarios use
+the approved protocol distribution:
 
-- `S1_BALANCED`: straight `0.60`, left `0.20`, right `0.20`
-- `S2_DIRECTIONAL_PEAK`: straight `0.55`, left `0.25`, right `0.20`
-- `S3_DEMAND_SHIFT`: straight `0.55`, left `0.25`, right `0.20`
-- `S4_LOCAL_SATURATION`: straight `0.50`, left `0.25`, right `0.25`
+- `S1_BALANCED`, `S2_DIRECTIONAL_PEAK`, `S3_DEMAND_SHIFT`, `S4_LOCAL_SATURATION`: straight
+  `0.70`, left `0.15`, right `0.15` (S3 shock and S4 hotspot entries override the ratios
+  per entry; see `docs/scenarios.md`)
+
+Pilot V1 (`pilot_v1`) ran with the earlier scenario definitions (declared ratios such as
+`0.60/0.20/0.20` that did not shape the routes); it is an infrastructure-validation pilot only.
 
 Turning ratios must not be altered between controllers.
 

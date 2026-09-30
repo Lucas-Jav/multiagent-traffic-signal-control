@@ -1,124 +1,342 @@
 {
-  "config_hash": "1fac90345e95c76322caab964f7e9e4a89106fe8066945f2934a905b4f9e75fb",
+  "config_hash": "1ecb57cd2400b6a61c35c3a229a66b4684cd5d6275be4efbffb1872a66431633",
+  "coverage": {
+    "intersection_labels": {
+      "A0": "A7",
+      "A1": "A4",
+      "A2": "A1",
+      "B0": "A8",
+      "B1": "A5",
+      "B2": "A2",
+      "C0": "A9",
+      "C1": "A6",
+      "C2": "A3"
+    },
+    "junction_pass_share_by_node": {
+      "A0": 0.13931362555215765,
+      "A1": 0.1399932042133877,
+      "A2": 0.13285762827047232,
+      "B0": 0.10669384981311587,
+      "B1": 0.11009174311926606,
+      "B2": 0.10703363914373089,
+      "C0": 0.08460754332313965,
+      "C1": 0.09276248725790011,
+      "C2": 0.08664627930682976
+    },
+    "junction_passes_by_node": {
+      "A0": 410,
+      "A1": 412,
+      "A2": 391,
+      "B0": 314,
+      "B1": 324,
+      "B2": 315,
+      "C0": 249,
+      "C1": 273,
+      "C2": 255
+    }
+  },
   "demand_level": "MEDIUM",
   "demand_profile": "S2_DIRECTIONAL_PEAK",
-  "flows": [
+  "entries": [
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "C1right1",
+      "demand_id": "dominant_left0A0",
       "end_seconds": 3900.0,
-      "flow_id": "west_to_east_middle",
-      "origin_edge_id": "left1A1",
-      "vehicles_per_hour": 660.0
+      "entry_edge_id": "left0A0",
+      "group": "dominant",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 240.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "A1left1",
+      "demand_id": "dominant_left1A1",
       "end_seconds": 3900.0,
-      "flow_id": "east_to_west_middle",
-      "origin_edge_id": "right1C1",
-      "vehicles_per_hour": 495.0
+      "entry_edge_id": "left1A1",
+      "group": "dominant",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 240.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "B0bottom1",
+      "demand_id": "dominant_left2A2",
       "end_seconds": 3900.0,
-      "flow_id": "north_to_south_middle",
-      "origin_edge_id": "top1B2",
-      "vehicles_per_hour": 165.0
+      "entry_edge_id": "left2A2",
+      "group": "dominant",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 240.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "B2top1",
+      "demand_id": "residual_right0C0",
       "end_seconds": 3900.0,
-      "flow_id": "south_to_north_middle",
-      "origin_edge_id": "bottom1B0",
-      "vehicles_per_hour": 165.0
+      "entry_edge_id": "right0C0",
+      "group": "residual",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 20.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "B2top1",
+      "demand_id": "residual_right1C1",
       "end_seconds": 3900.0,
-      "flow_id": "west_to_north_turn",
-      "origin_edge_id": "left1A1",
-      "vehicles_per_hour": 300.0
+      "entry_edge_id": "right1C1",
+      "group": "residual",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 20.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "B0bottom1",
+      "demand_id": "residual_right2C2",
       "end_seconds": 3900.0,
-      "flow_id": "west_to_south_turn",
-      "origin_edge_id": "left1A1",
-      "vehicles_per_hour": 240.0
+      "entry_edge_id": "right2C2",
+      "group": "residual",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 20.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "B2top1",
+      "demand_id": "residual_top0A2",
       "end_seconds": 3900.0,
-      "flow_id": "east_to_north_turn",
-      "origin_edge_id": "right1C1",
-      "vehicles_per_hour": 180.0
+      "entry_edge_id": "top0A2",
+      "group": "residual",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 20.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "B0bottom1",
+      "demand_id": "residual_top1B2",
       "end_seconds": 3900.0,
-      "flow_id": "east_to_south_turn",
-      "origin_edge_id": "right1C1",
-      "vehicles_per_hour": 225.0
+      "entry_edge_id": "top1B2",
+      "group": "residual",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 20.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "A1left1",
+      "demand_id": "residual_top2C2",
       "end_seconds": 3900.0,
-      "flow_id": "north_to_west_turn",
-      "origin_edge_id": "top1B2",
-      "vehicles_per_hour": 75.0
+      "entry_edge_id": "top2C2",
+      "group": "residual",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 20.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "C1right1",
+      "demand_id": "residual_bottom0A0",
       "end_seconds": 3900.0,
-      "flow_id": "north_to_east_turn",
-      "origin_edge_id": "top1B2",
-      "vehicles_per_hour": 60.0
+      "entry_edge_id": "bottom0A0",
+      "group": "residual",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 20.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "A1left1",
+      "demand_id": "residual_bottom1B0",
       "end_seconds": 3900.0,
-      "flow_id": "south_to_west_turn",
-      "origin_edge_id": "bottom1B0",
-      "vehicles_per_hour": 75.0
+      "entry_edge_id": "bottom1B0",
+      "group": "residual",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 20.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "C1right1",
+      "demand_id": "residual_bottom2C0",
       "end_seconds": 3900.0,
-      "flow_id": "south_to_east_turn",
-      "origin_edge_id": "bottom1B0",
-      "vehicles_per_hour": 60.0
+      "entry_edge_id": "bottom2C0",
+      "group": "residual",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 20.0,
+      "via_intersection_id": null
     }
   ],
-  "generated_at": "2026-09-29T16:59:22.039106Z",
-  "generator_version": "1.0.0",
+  "expected_approach_load_veh_per_hour": {
+    "A0A1": 54.457,
+    "A0B0": 182.823,
+    "A1A0": 78.82,
+    "A1A2": 78.82,
+    "A1B1": 184.337,
+    "A2A1": 54.457,
+    "A2B2": 182.823,
+    "B0A0": 29.716,
+    "B0B1": 45.122,
+    "B0C0": 140.433,
+    "B1A1": 31.33,
+    "B1B0": 63.049,
+    "B1B2": 63.049,
+    "B1C1": 142.573,
+    "B2A2": 29.716,
+    "B2B1": 45.122,
+    "B2C2": 140.433,
+    "C0B0": 24.655,
+    "C0C1": 38.065,
+    "C1B1": 25.42,
+    "C1C0": 51.031,
+    "C1C2": 51.031,
+    "C2B2": 24.655,
+    "C2C1": 38.065,
+    "bottom0A0": 20.0,
+    "bottom1B0": 20.0,
+    "bottom2C0": 20.0,
+    "left0A0": 240.0,
+    "left1A1": 240.0,
+    "left2A2": 240.0,
+    "right0C0": 20.0,
+    "right1C1": 20.0,
+    "right2C2": 20.0,
+    "top0A2": 20.0,
+    "top1B2": 20.0,
+    "top2C2": 20.0
+  },
+  "generated_at": "2026-09-29T20:55:40.356448Z",
+  "generator_version": "2.0.0",
+  "max_expected_approach_load_veh_per_hour": 240.0,
   "network_hash": "46953c48351b0fdecf9babca662354bd5e45a5772553b153bc6f354c5332b48e",
+  "offered": {
+    "offered_by_demand": {
+      "dominant_left0A0": 260,
+      "dominant_left1A1": 260,
+      "dominant_left2A2": 260,
+      "residual_bottom0A0": 21,
+      "residual_bottom1B0": 21,
+      "residual_bottom2C0": 21,
+      "residual_right0C0": 21,
+      "residual_right1C1": 21,
+      "residual_right2C2": 21,
+      "residual_top0A2": 21,
+      "residual_top1B2": 21,
+      "residual_top2C2": 21
+    },
+    "offered_by_entry": {
+      "bottom0A0": 21,
+      "bottom1B0": 21,
+      "bottom2C0": 21,
+      "left0A0": 260,
+      "left1A1": 260,
+      "left2A2": 260,
+      "right0C0": 21,
+      "right1C1": 21,
+      "right2C2": 21,
+      "top0A2": 21,
+      "top1B2": 21,
+      "top2C2": 21
+    },
+    "offered_by_group": {
+      "dominant": 780,
+      "residual": 189
+    },
+    "offered_in_measurement_window": 898,
+    "offered_vehicle_count": 969
+  },
   "route_file": "routes_s2_seed_2027.rou.xml",
-  "route_hash": "38c454b205798d96adcbe63054d4253c2934d312e5b727b00d882de4281bf707",
-  "scenario_hash": "b62b2264f6dc37bf01319e0829f9aecc3ad85426cb2bf03f4258dd40cc27810e",
+  "route_hash": "342da42050ba0e1d0c71ed41bd91926ec532d3ffc838b49e205fb32a6936578a",
+  "routing": "turning_ratio_walk",
+  "scenario_hash": "efd6f92b55434750e4193b369f9d06129ae2c4051e6ac6f345de47456606259b",
   "scenario_id": "grid_3x3",
   "schedule": [
     {
       "begin_seconds": 0.0,
-      "description": "East-west corridor peak with background north-south demand.",
+      "description": "West-border dominant demand with residual demand elsewhere.",
       "end_seconds": 3900.0,
       "window_id": "full_run"
     }
   ],
   "seed": 2027,
+  "shock_start_seconds": null,
+  "turning": {
+    "configured": {
+      "left": 0.15,
+      "right": 0.15,
+      "straight": 0.7
+    },
+    "expected_movement_proportions": {
+      "left": 0.15000000000000005,
+      "right": 0.15000000000000005,
+      "straight": 0.7
+    },
+    "realized_movement_counts": {
+      "left": 411,
+      "right": 453,
+      "straight": 2079
+    },
+    "realized_movement_counts_by_group": {
+      "dominant": {
+        "left": 337,
+        "right": 351,
+        "straight": 1678
+      },
+      "residual": {
+        "left": 74,
+        "right": 102,
+        "straight": 401
+      }
+    },
+    "realized_movement_proportions": {
+      "left": 0.1396534148827727,
+      "right": 0.15392456676860347,
+      "straight": 0.7064220183486238
+    }
+  },
   "turning_ratios": {
-    "left": 0.25,
-    "right": 0.2,
-    "straight": 0.55
+    "left": 0.15,
+    "right": 0.15,
+    "straight": 0.7
   }
 }

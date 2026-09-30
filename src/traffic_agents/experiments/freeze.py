@@ -23,7 +23,7 @@ from traffic_agents.experiments.run_invariants import (
     movement_model_sha256,
     phase_plan_sha256,
     route_generator_config_sha256,
-    turning_config_sha256,
+    scenario_turning_config_sha256,
 )
 from traffic_agents.simulation.sumo_environment import (
     SumoEnvironmentInfo,
@@ -201,10 +201,6 @@ def build_freeze_checksums(
             scenario_config=scenario_config,
             scenario_dir=scenario_dir,
         )
-        turning_ratios = {
-            key: float(value)
-            for key, value in scenario_config.traffic.turning_ratios.model_dump().items()
-        }
         scenario_id = scenario_path.as_posix()
         derived_entries.extend(
             [
@@ -228,7 +224,7 @@ def build_freeze_checksums(
                 {
                     "label": "turning_ratio_config",
                     "scenario_path": scenario_id,
-                    "sha256": turning_config_sha256(turning_ratios),
+                    "sha256": scenario_turning_config_sha256(scenario_config),
                 },
             ]
         )
@@ -361,11 +357,7 @@ def _derived_checksum(entry: Mapping[str, Any]) -> str:
     if label == "route_generator_config":
         return route_generator_config_sha256(scenario_config)
     if label == "turning_ratio_config":
-        turning_ratios = {
-            key: float(value)
-            for key, value in scenario_config.traffic.turning_ratios.model_dump().items()
-        }
-        return turning_config_sha256(turning_ratios)
+        return scenario_turning_config_sha256(scenario_config)
 
     traffic_models = load_grid_traffic_models(
         scenario_config=scenario_config,

@@ -78,19 +78,16 @@ def test_each_grid_3x3_intersection_has_valid_phase_plan() -> None:
 
 def test_turning_routes_exist_and_ratios_are_configured() -> None:
     scenario_config = load_scenario_config(SCENARIO_PATH)
-    flow_ids = {flow.flow_id for flow in scenario_config.traffic.flows}
 
-    assert scenario_config.traffic.turning_ratios.straight == pytest.approx(0.60)
-    assert scenario_config.traffic.turning_ratios.left == pytest.approx(0.20)
-    assert scenario_config.traffic.turning_ratios.right == pytest.approx(0.20)
-    assert any("_middle" in flow_id for flow_id in flow_ids)
-    assert any("_to_north_turn" in flow_id or "_to_south_turn" in flow_id for flow_id in flow_ids)
-    assert any("_to_east_turn" in flow_id or "_to_west_turn" in flow_id for flow_id in flow_ids)
+    assert scenario_config.traffic.turning_ratios.straight == pytest.approx(0.70)
+    assert scenario_config.traffic.turning_ratios.left == pytest.approx(0.15)
+    assert scenario_config.traffic.turning_ratios.right == pytest.approx(0.15)
+    assert scenario_config.traffic.uses_turning_ratio_routing
 
     route_tree = ET.parse(SCENARIO_DIR / scenario_config.route_file)
     route_edges = {
         route.attrib["edges"]
-        for route in route_tree.getroot().findall("./flow/route")
+        for route in route_tree.getroot().findall("./route")
         if "edges" in route.attrib
     }
     assert any(" B1C1 " in f" {edges} " for edges in route_edges)

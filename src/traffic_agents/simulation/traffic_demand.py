@@ -14,7 +14,19 @@ from pathlib import Path
 
 from traffic_agents.config import DemandLevel, DemandProfileId, ScenarioConfig
 from traffic_agents.config.scenario import FlowDefinitionConfig
-from traffic_agents.experiments.run_invariants import route_artifact_scenario_sha256
+from traffic_agents.experiments.run_invariants import (
+    route_artifact_scenario_sha256,
+    route_generator_config_sha256,
+)
+from traffic_agents.simulation.route_walk import (
+    GeneratedVehicle,
+    RoutingGraph,
+    effective_ratios,
+    expected_edge_flows,
+    generate_vehicles,
+    resolve_via_node,
+    summarize_vehicles,
+)
 from traffic_agents.simulation.sumo_environment import SumoEnvironmentInfo, detect_sumo_environment
 
 GENERATED_COMMENT_PATTERN = re.compile(
@@ -29,7 +41,14 @@ PASSENGER_VEHICLE_VISUAL_STYLE: Mapping[str, str] = {
     "width": "1.80",
 }
 DEFAULT_FLOW_COLOR = "#2f80ed"
-TRAFFIC_DEMAND_GENERATOR_VERSION = "1.0.0"
+TRAFFIC_DEMAND_GENERATOR_VERSION = "2.0.0"
+ENTRY_GROUP_COLORS: Mapping[str, str] = {
+    "base": "#2f80ed",
+    "dominant": "#1971c2",
+    "residual": "#74c0fc",
+    "shock": "#e03131",
+    "hotspot": "#f59f00",
+}
 FLOW_VISUAL_COLORS: Mapping[str, str] = {
     "east_to_north_turn": "#ff6b6b",
     "east_to_south_turn": "#f59f00",
@@ -95,6 +114,8 @@ class TrafficDemandGenerator:
         self._sumo_info = sumo_info
 
     def generate(self) -> GeneratedTrafficDemandInfo:
+        if self._scenario_config.traffic.uses_turning_ratio_routing:
+            return self._generate_turning_ratio_demand()
         sumo_info = self._sumo_info or detect_sumo_environment()
         route_path = self._scenario_dir / self._scenario_config.route_file
         metadata_path = _metadata_path_for(route_path)
@@ -133,6 +154,125 @@ class TrafficDemandGenerator:
             scenario_hash=scenario_hash,
             route_hash=route_hash,
             flow_count=len(selected_flows),
+        )
+
+    def _generate_turning_ratio_demand(self) -> GeneratedTrafficDemandInfo:
+        config = self._scenario_config
+        traffic = config.traffic
+        route_path = self._scenario_dir / config.route_file
+        metadata_path = _metadata_path_for(route_path)
+        network_path = self._scenario_dir / config.network_file
+        route_path.parent.mkdir(parents=True, exist_ok=True)
+
+        graph = RoutingGraph.from_network(network_path)
+        via_nodes = _via_node_lookup(self._scenario_dir)
+        vehicles = generate_vehicles(
+            graph=graph,
+            entries=traffic.entries,
+            demand_level=traffic.demand_level,
+            default_ratios=traffic.turning_ratios,
+            seed=self._seed,
+            via_nodes=via_nodes,
+        )
+        _write_vehicle_routes(route_path, vehicles)
+        _validate_route_file(route_path)
+
+        config_hash = route_generator_config_sha256(config)
+        scenario_hash = self._scenario_hash()
+        route_hash = _file_sha256(route_path)
+        network_hash = _file_sha256(network_path)
+        summary = summarize_vehicles(
+            graph=graph,
+            vehicles=vehicles,
+            measurement_start_seconds=float(config.warmup_seconds),
+            measurement_end_seconds=float(config.total_duration_seconds),
+        )
+        expected_flows: dict[str, float] = {}
+        expected_movements: dict[str, float] = {}
+        for entry in traffic.entries:
+            entry_flows, entry_movements = expected_edge_flows(
+                graph,
+                {entry.entry_edge_id: entry.rate_for(traffic.demand_level)},
+                {entry.entry_edge_id: effective_ratios(entry, traffic.turning_ratios)},
+                via_node_by_entry={entry.entry_edge_id: resolve_via_node(entry, via_nodes)},
+            )
+            for edge_id, volume in entry_flows.items():
+                expected_flows[edge_id] = expected_flows.get(edge_id, 0.0) + volume
+            for movement, volume in entry_movements.items():
+                expected_movements[movement] = expected_movements.get(movement, 0.0) + volume
+        approach_loads = {
+            edge_id: round(volume, 3)
+            for edge_id, volume in sorted(expected_flows.items())
+            if edge_id not in graph.exit_edges
+        }
+        total_expected = sum(expected_movements.values())
+        payload = {
+            "scenario_id": config.scenario_id,
+            "route_file": config.route_file.as_posix(),
+            "seed": self._seed,
+            "demand_profile": self._demand_profile,
+            "demand_level": traffic.demand_level,
+            "routing": "turning_ratio_walk",
+            "turning_ratios": traffic.turning_ratios.model_dump(),
+            "schedule": [window.model_dump(mode="json") for window in traffic.schedule],
+            "shock_start_seconds": traffic.shock_start_seconds,
+            "generated_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            "generator_version": TRAFFIC_DEMAND_GENERATOR_VERSION,
+            "config_hash": config_hash,
+            "scenario_hash": scenario_hash,
+            "route_hash": route_hash,
+            "network_hash": network_hash,
+            "entries": [
+                {
+                    "demand_id": entry.demand_id,
+                    "entry_edge_id": entry.entry_edge_id,
+                    "group": entry.group,
+                    "begin_seconds": float(entry.begin_seconds),
+                    "end_seconds": float(entry.end_seconds),
+                    "vehicles_per_hour": entry.rate_for(traffic.demand_level),
+                    "turning_ratios": effective_ratios(entry, traffic.turning_ratios),
+                    "via_intersection_id": entry.via_intersection_id,
+                }
+                for entry in traffic.entries
+            ],
+            "turning": {
+                "configured": traffic.turning_ratios.model_dump(),
+                "expected_movement_proportions": {
+                    movement: (volume / total_expected if total_expected else 0.0)
+                    for movement, volume in sorted(expected_movements.items())
+                },
+                "realized_movement_counts": summary["realized_movement_counts"],
+                "realized_movement_proportions": summary["realized_movement_proportions"],
+                "realized_movement_counts_by_group": summary["realized_movement_counts_by_group"],
+            },
+            "offered": {
+                "offered_vehicle_count": summary["offered_vehicle_count"],
+                "offered_in_measurement_window": summary["offered_in_measurement_window"],
+                "offered_by_entry": summary["offered_by_entry"],
+                "offered_by_group": summary["offered_by_group"],
+                "offered_by_demand": summary["offered_by_demand"],
+            },
+            "coverage": {
+                "junction_passes_by_node": summary["junction_passes_by_node"],
+                "junction_pass_share_by_node": summary["junction_pass_share_by_node"],
+                "intersection_labels": _intersection_labels(self._scenario_dir),
+            },
+            "expected_approach_load_veh_per_hour": approach_loads,
+            "max_expected_approach_load_veh_per_hour": max(approach_loads.values(), default=0.0),
+        }
+        metadata_path.write_text(
+            json.dumps(payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        return GeneratedTrafficDemandInfo(
+            route_path=route_path,
+            metadata_path=metadata_path,
+            seed=self._seed,
+            demand_profile=self._demand_profile,
+            config_hash=config_hash,
+            scenario_hash=scenario_hash,
+            route_hash=route_hash,
+            flow_count=len(traffic.entries),
         )
 
     def _selected_flows(self) -> tuple[SelectedFlow, ...]:
@@ -262,6 +402,76 @@ class TrafficDemandGenerator:
             json.dumps(payload, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
+
+
+def _write_vehicle_routes(route_path: Path, vehicles: tuple[GeneratedVehicle, ...]) -> None:
+    root = ET.Element("routes")
+    ET.SubElement(
+        root,
+        "vType",
+        {
+            "id": "passenger",
+            "vClass": "passenger",
+            "accel": "2.6",
+            "decel": "4.5",
+            "sigma": "0.5",
+            "length": PASSENGER_VEHICLE_VISUAL_STYLE["length"],
+            "width": PASSENGER_VEHICLE_VISUAL_STYLE["width"],
+            "height": PASSENGER_VEHICLE_VISUAL_STYLE["height"],
+            "minGap": "2.5",
+            "maxSpeed": "13.89",
+            "color": PASSENGER_VEHICLE_VISUAL_STYLE["color"],
+            "guiShape": PASSENGER_VEHICLE_VISUAL_STYLE["guiShape"],
+        },
+    )
+    route_ids: dict[tuple[str, ...], str] = {}
+    for vehicle in vehicles:
+        if vehicle.route not in route_ids:
+            route_ids[vehicle.route] = f"r{len(route_ids)}"
+            ET.SubElement(
+                root,
+                "route",
+                {"id": route_ids[vehicle.route], "edges": " ".join(vehicle.route)},
+            )
+    for vehicle in vehicles:
+        ET.SubElement(
+            root,
+            "vehicle",
+            {
+                "id": vehicle.vehicle_id,
+                "type": "passenger",
+                "route": route_ids[vehicle.route],
+                "depart": f"{vehicle.depart_seconds:.2f}",
+                "departLane": "best",
+                "departSpeed": "max",
+                "color": ENTRY_GROUP_COLORS.get(vehicle.group, DEFAULT_FLOW_COLOR),
+            },
+        )
+    tree = ET.ElementTree(root)
+    ET.indent(tree, space="    ")
+    tree.write(route_path, encoding="utf-8", xml_declaration=True)
+
+
+def _via_node_lookup(scenario_dir: Path) -> dict[str, str]:
+    metadata_path = scenario_dir / "metadata.json"
+    if not metadata_path.exists():
+        return {}
+    payload = json.loads(metadata_path.read_text(encoding="utf-8"))
+    traffic_light_ids = payload.get("traffic_light_ids", {})
+    if not isinstance(traffic_light_ids, dict):
+        return {}
+    return {str(label): str(tls_id) for label, tls_id in traffic_light_ids.items()}
+
+
+def _intersection_labels(scenario_dir: Path) -> dict[str, str]:
+    metadata_path = scenario_dir / "metadata.json"
+    if not metadata_path.exists():
+        return {}
+    payload = json.loads(metadata_path.read_text(encoding="utf-8"))
+    traffic_light_ids = payload.get("traffic_light_ids", {})
+    if not isinstance(traffic_light_ids, dict):
+        return {}
+    return {str(tls_id): str(label) for label, tls_id in sorted(traffic_light_ids.items())}
 
 
 def normalize_generated_route_header(route_path: Path) -> None:

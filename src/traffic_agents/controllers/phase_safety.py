@@ -55,13 +55,25 @@ class PhaseCommand:
     kind: PhaseCommandKind
     phase_id: str
     phase_index: int
+    hold_remaining_seconds: float | None = None
+    """Remaining green time the actuator must grant a kept green phase.
+
+    ``None`` means the command does not extend the SUMO phase timer (transition
+    phases, or a safety manager without a configured ``max_green_seconds``).
+    """
 
     @classmethod
-    def keep_phase(cls, phase: PhaseDefinition) -> PhaseCommand:
+    def keep_phase(
+        cls,
+        phase: PhaseDefinition,
+        *,
+        hold_remaining_seconds: float | None = None,
+    ) -> PhaseCommand:
         return cls(
             kind=PhaseCommandKind.KEEP_PHASE,
             phase_id=phase.phase_id,
             phase_index=phase.phase_index,
+            hold_remaining_seconds=hold_remaining_seconds,
         )
 
     @classmethod
@@ -78,18 +90,23 @@ class PhaseSafetyManager:
     phases: tuple[PhaseDefinition, ...]
     min_green_seconds: float
     allowed_green_transitions: Mapping[str, tuple[str, ...]]
+    max_green_seconds: float | None
 
     def __init__(
         self,
         *,
         phases: tuple[PhaseDefinition, ...],
         min_green_seconds: float,
+        max_green_seconds: float | None = None,
         allowed_green_transitions: Mapping[str, tuple[str, ...]] | None = None,
         conflicting_signal_groups: tuple[tuple[int, ...], ...] = (),
         movement_conflicts: Mapping[MovementId, tuple[MovementId, ...]] | None = None,
     ) -> None:
         if min_green_seconds < 0:
             msg = "min_green_seconds must be non-negative"
+            raise ValueError(msg)
+        if max_green_seconds is not None and max_green_seconds < min_green_seconds:
+            msg = "max_green_seconds must be greater than or equal to min_green_seconds"
             raise ValueError(msg)
         if not phases:
             msg = "phases must not be empty"
@@ -100,6 +117,7 @@ class PhaseSafetyManager:
 
         object.__setattr__(self, "phases", phases)
         object.__setattr__(self, "min_green_seconds", min_green_seconds)
+        object.__setattr__(self, "max_green_seconds", max_green_seconds)
         object.__setattr__(self, "allowed_green_transitions", MappingProxyType(transition_map))
 
     def resolve(self, observation: AgentObservation, decision: ControllerDecision) -> PhaseCommand:
@@ -121,15 +139,20 @@ class PhaseSafetyManager:
         if current_phase.kind != PhaseKind.GREEN:
             return self._resolve_transition_phase(observation, current_phase)
 
-        if action.kind == TrafficLightActionKind.KEEP_PHASE:
-            return PhaseCommand.keep_phase(current_phase)
+        elapsed = observation.state.phase_elapsed
+        if self.max_green_seconds is not None and elapsed >= self.max_green_seconds:
+            # max_green reached: force the regular yellow/all-red sequence.
+            return PhaseCommand.set_phase(self._next_phase_after(current_phase))
 
-        if observation.state.phase_elapsed < self.min_green_seconds:
-            return PhaseCommand.keep_phase(current_phase)
+        if action.kind == TrafficLightActionKind.KEEP_PHASE:
+            return self._hold_green(current_phase, elapsed)
+
+        if elapsed < self.min_green_seconds:
+            return self._hold_green(current_phase, elapsed)
 
         target_phase_id = self._target_phase_id(current_phase, action)
         if target_phase_id == current_phase.phase_id:
-            return PhaseCommand.keep_phase(current_phase)
+            return self._hold_green(current_phase, elapsed)
 
         allowed_targets = self.allowed_green_transitions[current_phase.phase_id]
         if target_phase_id not in allowed_targets:
@@ -137,6 +160,14 @@ class PhaseSafetyManager:
             raise PhaseSafetyViolationError(msg)
 
         return PhaseCommand.set_phase(self._next_phase_after(current_phase))
+
+    def _hold_green(self, current_phase: PhaseDefinition, elapsed: float) -> PhaseCommand:
+        if self.max_green_seconds is None:
+            return PhaseCommand.keep_phase(current_phase)
+        return PhaseCommand.keep_phase(
+            current_phase,
+            hold_remaining_seconds=self.max_green_seconds - elapsed,
+        )
 
     def _resolve_transition_phase(
         self,

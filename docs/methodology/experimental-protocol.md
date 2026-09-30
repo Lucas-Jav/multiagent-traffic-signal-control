@@ -292,18 +292,28 @@ execution:
 
 ## Current Implementation Mismatches
 
-These mismatches must be resolved before the final campaign is frozen or run:
+Status after the Pilot V1 remediation (Prompt 46.6): items 1 and 3 are resolved by the
+regenerated scenario artifacts (`scripts/generate_scenarios.py`, `docs/scenarios.md`); their
+demand intensities are PROVISIONAL and will be calibrated in Prompt 46.7. Item 4 is covered
+by the canonical metrics pipeline (`docs/methodology/metrics.md`). Queue metrics are named by
+scope (`mean_network_queue_vehicles`, `max_network_queue_vehicles`, ..., see the metrics
+document); "mean queue" and "max queue" in the metric lists above refer to those scoped
+metrics.
 
-1. `S1_BALANCED` currently uses turning ratios straight `0.60`, left `0.20`,
-   right `0.20` in `scenarios/grid_3x3/scenario.yaml`; this protocol requires
-   straight `0.70`, left `0.15`, right `0.15`.
+The following mismatches were listed before the final campaign can be frozen or run:
+
+1. `S1_BALANCED` used turning ratios straight `0.60`, left `0.20`, right `0.20`, which were
+   metadata only; the scenarios now use the protocol distribution (straight `0.70`, left
+   `0.15`, right `0.15`) and the ratios drive the route generator. (Resolved.)
 2. Older S5 exploratory configs use `drop_probability` values `0.00`, `0.05`,
    `0.10`, and `0.25`, and combine them with delay values. The planned core S5
    packet-loss config uses `0.00`, `0.20`, `0.50`, and `1.00`; delay remains a
    separate optional `S5B_DELAY` study.
-3. `S3_DEMAND_SHIFT` implementation must be checked or updated so its first 50%
+3. `S3_DEMAND_SHIFT` implementation had to be checked or updated so its first 50%
    is balanced and its second 50% is the frozen directional/localized shock
-   specified by this protocol.
+   specified by this protocol. It now has an S1-like first half and an abrupt
+   one-border shock routed through A5 at 50% of the MEASUREMENT window
+   (`shock_start_seconds = 2100`). (Resolved; intensity provisional.)
 4. Corridor-specific metrics for S2 and post-shock metrics for S3 must be
    available in the final analysis outputs before final reporting.
 

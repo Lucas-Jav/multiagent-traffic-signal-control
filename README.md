@@ -157,11 +157,18 @@ O projeto constroi e valida uma matriz de conflitos de movimentos a partir da re
 
 O plano de fases inclui fases seguras, tempo minimo de verde, amarelo e all-red/clearance. O `PhaseSafetyManager` aplica restricoes de seguranca antes de enviar a fase ao SUMO. Veiculos que ja estao comprometidos com a junction podem concluir a travessia conforme a dinamica do SUMO.
 
-Os turning ratios sao parametros do cenario. No cenario 3x3 versionado, os valores sao:
+Os turning ratios sao parametros do cenario e controlam de fato as rotas geradas (caminhada
+sorteada por semente, deterministica, em cada juncao semaforizada). Nos cenarios 3x3
+versionados (S1-S4), os valores sao os do protocolo aprovado:
 
-- `straight: 0.60`
-- `left: 0.20`
-- `right: 0.20`
+- `straight: 0.70`
+- `left: 0.15`
+- `right: 0.15`
+
+Os cenarios sao gerados por `uv run python scripts/generate_scenarios.py` (ver
+`docs/scenarios.md`). As metricas finais sao calculadas por um pipeline canonico
+(`run_metrics.json` por run e `combined_metrics.parquet` por experimento; ver
+`docs/methodology/metrics.md`).
 
 ## 9. 3x3 Scenario
 
@@ -278,15 +285,22 @@ artifacts/runs/<run_id>/
 
 Arquivos atualmente gerados por run:
 
-- `manifest.json`
-- `intersection_trace.csv`, quando o controlador emite telemetria por intersecao
+- `manifest.json` (`metrics_finalized: true` somente apos a finalizacao canonica de metricas)
+- `run_metrics.json`: metricas finais do run (populacoes, atraso de insercao, filas por escopo, throughput, metricas por cenario)
+- `lane_telemetry.parquet` e `junction_telemetry.parquet`: telemetria canonica (uma linha por faixa unica e passo; produzida pelo runner para todos os controladores, inclusive `B0_FIXED`)
+- `performance.json`, `sumo_traffic_metrics.json` e `sumo/tripinfo.xml`/`sumo/statistics.xml`
+- `intersection_trace.csv`: apenas para depuracao, quando `tracing.intersection_trace: true` (nao usado por metricas cientificas)
 
 Experimentos gravam:
 
 ```text
 artifacts/experiments/<experiment_id>/manifest.json
+artifacts/experiments/<experiment_id>/combined_metrics.parquet
 artifacts/experiments/<experiment_id>/runs/<batch_id>/<run_id>/manifest.json
 ```
+
+`combined_metrics.parquet` e gerado automaticamente ao fim do experimento (ou por
+`traffic-agents experiment aggregate <pasta>`) a partir dos `run_metrics.json` finalizados.
 
 Os arquivos abaixo nao sao produzidos pelo codigo MVP1 atual:
 

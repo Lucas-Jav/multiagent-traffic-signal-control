@@ -12,6 +12,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, NonNegativeInt, PositiveInt, model_validator
 
 from traffic_agents.config import CommunicationConfig, get_settings, load_scenario_config
+from traffic_agents.experiments.aggregate import build_combined_metrics
 from traffic_agents.experiments.freeze import FrozenExperimentConfig
 from traffic_agents.simulation import SimulationRunSummary, TraCISimulationRunner
 
@@ -89,12 +90,14 @@ class ExperimentRunner:
         frozen_config: FrozenExperimentConfig | None = None,
         resume: bool = False,
         retry_failed: bool = False,
+        aggregate_metrics: bool = True,
     ) -> None:
         self._config = config
         self._artifacts_dir = artifacts_dir
         self._frozen_config = frozen_config
         self._resume = resume
         self._retry_failed = retry_failed
+        self._aggregate_metrics = aggregate_metrics
 
     def run(self) -> ExperimentRunSummary:
         if self._frozen_config is not None:
@@ -188,6 +191,17 @@ class ExperimentRunner:
             + "\n",
             encoding="utf-8",
         )
+
+        if self._aggregate_metrics and any(
+            record.get("status") == "COMPLETED" for record in records
+        ):
+            combined_path = build_combined_metrics(experiment_dir)
+            manifest_payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest_payload["combined_metrics_file"] = combined_path.name
+            manifest_path.write_text(
+                json.dumps(manifest_payload, indent=2) + "\n",
+                encoding="utf-8",
+            )
 
         return ExperimentRunSummary(
             experiment_id=self._config.experiment_id,

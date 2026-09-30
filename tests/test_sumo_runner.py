@@ -14,7 +14,7 @@ from traffic_agents.communication import (
     grid_3x3_communication_topology,
 )
 from traffic_agents.communication_seed import derive_communication_rng_seed
-from traffic_agents.config import ScenarioConfig
+from traffic_agents.config import ScenarioConfig, TracingConfig
 from traffic_agents.experiments import RunInvariantValidationError
 from traffic_agents.experiments.run_invariants import (
     route_artifact_scenario_sha256,
@@ -657,6 +657,7 @@ def test_traci_runner_writes_run_manifest(
 
     scenario_dir = make_scenario_dir(tmp_path)
     runner = TraCISimulationRunner(
+        collect_network_telemetry=False,
         scenario_config=make_scenario_config(),
         scenario_dir=scenario_dir,
         sumo_info=make_sumo_info(tmp_path),
@@ -688,7 +689,7 @@ def test_traci_runner_writes_run_manifest(
     assert len(manifest["phase_plan_sha256"]) == 64
     assert manifest["movement_model_version"] == MOVEMENT_MODEL_VERSION
     assert len(manifest["movement_model_sha256"]) == 64
-    assert manifest["turning_ratios"] == {"straight": 0.6, "left": 0.2, "right": 0.2}
+    assert manifest["turning_ratios"] == {"straight": 0.7, "left": 0.15, "right": 0.15}
     assert len(manifest["turning_config_sha256"]) == 64
     assert manifest["communication"] == {
         "delay_steps": 0,
@@ -744,6 +745,7 @@ def test_traci_runner_writes_demo_run_mode_to_manifest(
 
     scenario_config = make_scenario_config(duration_seconds=1)
     runner = TraCISimulationRunner(
+        collect_network_telemetry=False,
         scenario_config=scenario_config,
         scenario_dir=make_scenario_dir(tmp_path, scenario_config),
         sumo_info=make_sumo_info(tmp_path),
@@ -808,9 +810,12 @@ def test_traci_runner_writes_intersection_trace_for_telemetry_controller(
         "build_controller",
         lambda _controller_id: FakeTelemetryController(),
     )
-    scenario_config = make_scenario_config(duration_seconds=1)
+    scenario_config = make_scenario_config(duration_seconds=1).model_copy(
+        update={"tracing": TracingConfig(intersection_trace=True)}
+    )
     scenario_dir = make_scenario_dir(tmp_path, scenario_config)
     runner = TraCISimulationRunner(
+        collect_network_telemetry=False,
         scenario_config=scenario_config,
         scenario_dir=scenario_dir,
         sumo_info=make_sumo_info(tmp_path),
@@ -844,7 +849,7 @@ def _sha256(path: Path) -> str:
 
 
 @pytest.mark.sumo
-def test_real_sumo_simulation_smoke() -> None:
+def test_real_sumo_simulation_smoke(tmp_path: Path) -> None:
     scenario_path = Path("scenarios/grid_3x3/scenario.yaml")
     from traffic_agents.config import load_scenario_config
 
@@ -853,11 +858,19 @@ def test_real_sumo_simulation_smoke() -> None:
         scenario_config=scenario_config,
         scenario_dir=scenario_path.parent,
         label="integration-sumo-smoke",
+        max_steps=scenario_config.measurement_start_step + 60,
+        artifacts_dir=tmp_path / "runs",
     )
 
     summary = runner.run()
 
-    assert summary.steps_executed == scenario_config.total_simulation_steps
-    assert summary.measurement_steps_executed == scenario_config.simulation.measurement_steps
+    assert summary.steps_executed == scenario_config.measurement_start_step + 60
+    assert summary.measurement_steps_executed == 60
     assert summary.vehicles_departed > 0
-    assert summary.vehicles_arrived > 0
+    assert summary.manifest_path is not None
+    run_dir = summary.manifest_path.parent
+    manifest = json.loads(summary.manifest_path.read_text(encoding="utf-8"))
+    assert manifest["metrics_finalized"] is True
+    assert (run_dir / "run_metrics.json").exists()
+    assert (run_dir / "lane_telemetry.parquet").exists()
+    assert (run_dir / "junction_telemetry.parquet").exists()

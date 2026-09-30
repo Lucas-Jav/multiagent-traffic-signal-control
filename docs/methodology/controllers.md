@@ -3,6 +3,31 @@
 This document is part of the V1 methodology freeze material. It documents the
 controller inputs and formulas without tuning controller parameters.
 
+## Actuation semantics (B1, B2, C1, C2)
+
+The adaptive controllers express intent as `KEEP_PHASE` or a request for the next valid green
+phase. `PhaseSafetyManager` validates it (minimum green, maximum green, yellow and all-red
+sequence, allowed transitions) and `TrafficLightActuator` applies the validated command:
+
+- `KEEP_PHASE` in a green phase extends the SUMO phase with the TraCI phase-duration mechanism
+  (`trafficlight.setPhaseDuration`) so the current green stays active beyond the static SUMO
+  program duration (18/20 s in the grid programs) while `elapsed_green < max_green_seconds`.
+  The remaining hold is `max_green_seconds - elapsed_green`, so a controller that repeatedly
+  keeps the phase can hold green up to `max_green_seconds`.
+- At `elapsed_green >= max_green_seconds` the safety manager forces the transition to the next
+  program phase (the yellow), never skipping yellow or all-red.
+- A phase change is still refused before `min_green_seconds` and only follows the SUMO
+  yellow/all-red sequence; raw signal states are never commanded.
+- `B0_FIXED` issues no actuation and is unchanged.
+
+Before Prompt 46.6 `KEEP_PHASE` was a no-op, so SUMO's own program ended every green at its
+static duration and `max_green_seconds` was unreachable. The controller scoring, weights and
+thresholds were not changed by that correction.
+
+Note: the cooperative turn weights (`straight=0.60`, `left=0.20`, `right=0.20`) below are
+controller parameters of the cooperative adjustment; they are independent of the scenario
+turning ratios (S1-S4: 0.70/0.15/0.15) and were not modified.
+
 ## B0_FIXED
 
 - Inputs permitted: none from the adaptive observation stream.

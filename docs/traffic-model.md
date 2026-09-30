@@ -130,17 +130,19 @@ If a vehicle appears inside the junction, inspect:
 ## Turning Routes
 
 The route configuration contains straight, left-turn, and right-turn demand.
-The current development turning ratios are configured in `scenario.yaml`:
+The turning ratios are configured in the scenario YAML and drive route generation
+(`src/traffic_agents/simulation/route_walk.py`): at every signalized junction a vehicle picks
+straight/left/right with these probabilities, using only legal movements of the network:
 
 ```yaml
 turning_ratios:
-  straight: 0.60
-  left: 0.20
-  right: 0.20
+  straight: 0.70
+  left: 0.15
+  right: 0.15
 ```
 
-These are defaults for development stability, not final scientific parameters.
-Route generation remains deterministic by seed.
+These are the approved V1 protocol values. Route generation remains deterministic by seed; the
+realized movement counts and proportions are reported in the route metadata.
 
 ## Safe Phase
 

@@ -126,7 +126,7 @@ def test_traffic_demand_generator_writes_routes_and_metadata(
     assert metadata["generated_at"]
     assert metadata["flows"]
     assert metadata["flows"][0]["vehicles_per_hour"] == 600
-    assert metadata["turning_ratios"] == {"straight": 0.6, "left": 0.2, "right": 0.2}
+    assert metadata["turning_ratios"] == {"straight": 0.7, "left": 0.15, "right": 0.15}
     assert metadata["schedule"] == []
     assert metadata["config_hash"]
     assert metadata["scenario_hash"] == generated.scenario_hash

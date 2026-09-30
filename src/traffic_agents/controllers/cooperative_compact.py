@@ -407,6 +407,7 @@ class CooperativeCompactController:
         repr=False,
     )
     _message_bus: MessageBus | None = field(default=None, init=False, repr=False)
+    debug_telemetry_enabled: bool = True
     _step_index: int = field(default=0, init=False, repr=False)
     _sequence_by_source: dict[IntersectionId, int] = field(
         default_factory=lambda: defaultdict(int),
@@ -631,41 +632,45 @@ class CooperativeCompactController:
                         },
                     )
                 )
-            junction_metrics = self._junction_flow_tracker.update(
-                intersection_id=intersection.intersection_id,
-                internal_lane_ids=runtime.internal_lane_ids,
-                lane_reader=internal_lane_vehicle_reader(cooperative_connection),
-            )
-            movement_queue_stats = self._movement_queue_tracker.update(
-                observation=observation,
-                traffic_model=runtime.traffic_model,
-                include_sample=not is_warmup,
-            )
-            self._telemetry_records.extend(
-                build_step_telemetry_records(
-                    step_index=self._step_index,
-                    observation=observation,
-                    action=action,
-                    command=command,
-                    safety=runtime.safety,
-                    traffic_model=runtime.traffic_model,
-                    turning_ratios=scenario_config.traffic.turning_ratios,
-                    junction_metrics=junction_metrics,
-                    movement_queue_stats=movement_queue_stats,
-                    is_warmup=is_warmup,
+            if self.debug_telemetry_enabled:
+                junction_metrics = self._junction_flow_tracker.update(
+                    intersection_id=intersection.intersection_id,
+                    internal_lane_ids=runtime.internal_lane_ids,
+                    lane_reader=internal_lane_vehicle_reader(cooperative_connection),
                 )
-            )
-            if command.kind == PhaseCommandKind.SET_PHASE:
-                if _opens_green(command.phase_id, runtime.safety) and _has_stopped_internal_vehicle(
+                movement_queue_stats = self._movement_queue_tracker.update(
+                    observation=observation,
+                    traffic_model=runtime.traffic_model,
+                    include_sample=not is_warmup,
+                )
+                self._telemetry_records.extend(
+                    build_step_telemetry_records(
+                        step_index=self._step_index,
+                        observation=observation,
+                        action=action,
+                        command=command,
+                        safety=runtime.safety,
+                        traffic_model=runtime.traffic_model,
+                        turning_ratios=scenario_config.traffic.turning_ratios,
+                        junction_metrics=junction_metrics,
+                        movement_queue_stats=movement_queue_stats,
+                        is_warmup=is_warmup,
+                    )
+                )
+            if (
+                command.kind == PhaseCommandKind.SET_PHASE
+                and _opens_green(command.phase_id, runtime.safety)
+                and _has_stopped_internal_vehicle(
                     cooperative_connection,
                     runtime.internal_lane_ids,
                     self.config.local_pressure.internal_clearance_halting_threshold,
-                ):
-                    continue
-                TrafficLightActuator.from_connection(cooperative_connection).apply(
-                    traffic_light_id=runtime.traffic_light_id,
-                    command=command,
                 )
+            ):
+                continue
+            TrafficLightActuator.from_connection(cooperative_connection).apply(
+                traffic_light_id=runtime.traffic_light_id,
+                command=command,
+            )
         self._step_index += 1
 
     def after_simulation_step(self, connection: Any) -> None:

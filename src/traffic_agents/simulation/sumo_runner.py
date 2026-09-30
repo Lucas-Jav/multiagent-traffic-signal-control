@@ -10,7 +10,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal, Protocol, cast
+from typing import Any, Literal, Protocol, cast
 from uuid import uuid4
 
 from traffic_agents.config import ScenarioConfig, get_settings
@@ -22,6 +22,7 @@ from traffic_agents.controllers import (
     build_controller,
 )
 from traffic_agents.domain import IntersectionId
+from traffic_agents.experiments.route_artifacts import route_metadata_path
 from traffic_agents.experiments.run_invariants import (
     RunInvariantFingerprint,
     build_run_invariant_fingerprint,
@@ -30,16 +31,22 @@ from traffic_agents.experiments.run_invariants import (
 from traffic_agents.metrics import (
     AGENT_TRACE_FILE,
     PERFORMANCE_FILE,
+    RUN_METRICS_FILE,
     SUMO_TRAFFIC_METRICS_FILE,
     AgentDecisionTraceSettings,
     AgentDecisionTraceWriter,
     ControllerPerformanceTimings,
+    MetricsFinalizationError,
+    NetworkTelemetryCollector,
+    NetworkTelemetrySink,
     StepTelemetryRecord,
     append_step_telemetry,
     build_performance_payload,
+    finalize_run_metrics,
     missing_sumo_trip_metrics,
     parse_sumo_trip_metrics,
     write_performance_json,
+    write_run_metrics,
     write_sumo_trip_metrics,
 )
 from traffic_agents.simulation.sumo_environment import SumoEnvironmentInfo, detect_sumo_environment
@@ -135,6 +142,9 @@ class TraCISimulationRunner:
         run_manifest_extra: Mapping[str, object] | None = None,
         step_telemetry_consumer: Callable[[tuple[StepTelemetryRecord, ...]], None] | None = None,
         run_id: str | None = None,
+        collect_network_telemetry: bool | None = None,
+        finalize_metrics: bool | None = None,
+        network_telemetry_factory: Callable[[_TraCIConnection], NetworkTelemetrySink] | None = None,
     ) -> None:
         if step_delay_seconds < 0:
             msg = "step_delay_seconds must be non-negative"
@@ -165,6 +175,26 @@ class TraCISimulationRunner:
         self._run_manifest_extra = dict(run_manifest_extra or {})
         self._step_telemetry_consumer = step_telemetry_consumer
         self._configured_run_id = run_id
+        self._collect_network_telemetry = (
+            write_manifest if collect_network_telemetry is None else collect_network_telemetry
+        )
+        self._finalize_metrics = (
+            (write_manifest and self._collect_network_telemetry)
+            if finalize_metrics is None
+            else finalize_metrics
+        )
+        if self._finalize_metrics and not (write_manifest and self._collect_network_telemetry):
+            msg = "finalize_metrics requires write_manifest and collect_network_telemetry"
+            raise ValueError(msg)
+        self._network_telemetry_factory = network_telemetry_factory
+        self._network_telemetry: NetworkTelemetrySink | None = None
+        self._network_telemetry_files: tuple[Path, ...] = ()
+        tracing_config = getattr(scenario_config, "tracing", None)
+        self._debug_intersection_trace = bool(getattr(tracing_config, "intersection_trace", False))
+        if hasattr(self._controller, "debug_telemetry_enabled"):
+            self._controller.debug_telemetry_enabled = (
+                self._debug_intersection_trace or step_telemetry_consumer is not None
+            )
         self._active_run_dir: Path | None = None
         self._telemetry_path: Path | None = None
         self._agent_trace_path: Path | None = None
@@ -198,6 +228,7 @@ class TraCISimulationRunner:
         traci.start(command, label=self._label)
         self._traci = traci
         self._connection = traci.getConnection(self._label)
+        self._network_telemetry = self._create_network_telemetry(self._connection)
         self._started = True
 
     def step(self) -> None:
@@ -216,6 +247,7 @@ class TraCISimulationRunner:
             self._vehicles_departed += departed
             self._vehicles_arrived += arrived
         self._controller.after_simulation_step(connection)
+        self._record_network_telemetry(step_index)
         self._write_step_telemetry()
 
     def stop(self) -> None:
@@ -271,8 +303,11 @@ class TraCISimulationRunner:
         )
         self._write_performance(summary)
         self._write_sumo_metrics()
+        self._write_network_telemetry()
         if self._write_manifest:
-            return self._write_run_manifest(summary)
+            summary = self._write_run_manifest(summary)
+            if self._finalize_metrics:
+                self._finalize_run_metrics(summary)
         return summary
 
     def make_sensor_provider(
@@ -317,7 +352,13 @@ class TraCISimulationRunner:
             "--quit-on-end",
         ]
         if self._tripinfo_path is not None:
-            command.extend(["--tripinfo-output", str(self._tripinfo_path)])
+            command.extend(
+                [
+                    "--tripinfo-output",
+                    str(self._tripinfo_path),
+                    "--tripinfo-output.write-unfinished",
+                ]
+            )
         if self._statistics_path is not None:
             command.extend(["--statistic-output", str(self._statistics_path)])
         if self._use_gui:
@@ -399,6 +440,7 @@ class TraCISimulationRunner:
                     self._sumo_metrics_path.name
                     if self._sumo_metrics_path is not None and self._sumo_metrics_path.exists()
                     else None,
+                    tuple(path.name for path in self._network_telemetry_files),
                 ),
                 indent=2,
             )
@@ -428,7 +470,8 @@ class TraCISimulationRunner:
         self._active_run_dir = self._manifest_dir(run_id)
         self._active_run_dir.mkdir(parents=True, exist_ok=False)
         if self._write_manifest:
-            self._telemetry_path = self._active_run_dir / "intersection_trace.csv"
+            if self._debug_intersection_trace:
+                self._telemetry_path = self._active_run_dir / "intersection_trace.csv"
             self._performance_path = self._active_run_dir / PERFORMANCE_FILE
             self._sumo_dir = self._active_run_dir / "sumo"
             self._sumo_dir.mkdir()
@@ -456,6 +499,68 @@ class TraCISimulationRunner:
                 settings=trace_settings,
             )
         )
+
+    def _create_network_telemetry(
+        self,
+        connection: _TraCIConnection,
+    ) -> NetworkTelemetrySink | None:
+        if not self._collect_network_telemetry:
+            return None
+        if self._network_telemetry_factory is not None:
+            return self._network_telemetry_factory(connection)
+        return NetworkTelemetryCollector(
+            connection=cast(Any, connection),
+            scenario_config=self._scenario_config,
+            scenario_dir=self._scenario_dir,
+            expected_steps=self._target_steps(),
+        )
+
+    def _record_network_telemetry(self, step_index: int) -> None:
+        if self._network_telemetry is None:
+            return
+        started_at = time.perf_counter()
+        try:
+            self._network_telemetry.record(step_index)
+        finally:
+            self._result_collector_time_ms += (time.perf_counter() - started_at) * 1000
+
+    def _write_network_telemetry(self) -> None:
+        if self._network_telemetry is None or self._active_run_dir is None:
+            return
+        self._network_telemetry_files = self._network_telemetry.write(self._active_run_dir)
+
+    def _finalize_run_metrics(self, summary: SimulationRunSummary) -> None:
+        manifest_path = summary.manifest_path
+        if manifest_path is None or self._active_run_dir is None:
+            return
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        route_path = self._scenario_dir / self._scenario_config.route_file
+        performance: dict[str, Any] | None = None
+        if self._performance_path is not None and self._performance_path.exists():
+            performance = json.loads(self._performance_path.read_text(encoding="utf-8"))
+        try:
+            payload = finalize_run_metrics(
+                run_dir=self._active_run_dir,
+                manifest=manifest,
+                scenario_config=self._scenario_config,
+                route_path=route_path,
+                route_metadata_path=route_metadata_path(route_path),
+                steps_executed=self._steps_executed,
+                performance=performance,
+            )
+            write_run_metrics(self._active_run_dir / RUN_METRICS_FILE, payload)
+        except Exception as exc:
+            manifest["metrics_finalized"] = False
+            manifest["metrics_finalization_error"] = {
+                "type": type(exc).__name__,
+                "message": str(exc),
+            }
+            manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+            msg = f"metrics finalization failed for run {summary.run_id}: {exc}"
+            raise MetricsFinalizationError(msg) from exc
+        manifest["metrics_finalized"] = True
+        manifest["run_metrics_file"] = RUN_METRICS_FILE
+        manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
     def _write_step_telemetry(self) -> None:
         if self._telemetry_path is None and self._step_telemetry_consumer is None:
@@ -539,6 +644,7 @@ def _manifest_payload(
     agent_trace_file: str | None = None,
     performance_file: str | None = None,
     sumo_metrics_file: str | None = None,
+    network_telemetry_files: tuple[str, ...] = (),
 ) -> dict[str, object]:
     fingerprint = run_invariant_fingerprint or build_run_invariant_fingerprint(
         scenario_config=scenario_config,
@@ -607,6 +713,8 @@ def _manifest_payload(
         payload["performance_file"] = performance_file
     if sumo_metrics_file is not None:
         payload["sumo_traffic_metrics_file"] = sumo_metrics_file
+    if network_telemetry_files:
+        payload["network_telemetry_files"] = list(network_telemetry_files)
     communication_metrics = getattr(controller, "communication_metrics", None)
     if callable(communication_metrics):
         payload["communication_metrics"] = communication_metrics()

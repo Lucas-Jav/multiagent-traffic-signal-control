@@ -113,7 +113,7 @@ def build_run_invariant_fingerprint(
         movement_model_version=MOVEMENT_MODEL_VERSION,
         movement_model_sha256=movement_model_sha256(traffic_models),
         turning_ratios=turning_ratios,
-        turning_config_sha256=turning_config_sha256(turning_ratios),
+        turning_config_sha256=scenario_turning_config_sha256(scenario_config),
         communication_topology_sha256=grid_3x3_communication_topology().topology_hash,
     )
 
@@ -233,12 +233,30 @@ def route_generator_config_sha256(scenario_config: ScenarioConfig) -> str:
         }
         for flow in scenario_config.traffic.flows
     ]
-    payload = {
+    payload: dict[str, object] = {
         "scenario": route_artifact_scenario_payload(scenario_config),
         "seed": int(scenario_config.seed),
         "demand_profile": scenario_config.traffic.demand_profile,
         "selected_flows": selected_flows,
     }
+    if scenario_config.traffic.entries:
+        payload["selected_entries"] = [
+            {
+                "demand_id": entry.demand_id,
+                "entry_edge_id": entry.entry_edge_id,
+                "group": entry.group,
+                "begin_seconds": float(entry.begin_seconds),
+                "end_seconds": float(entry.end_seconds),
+                "vehicles_per_hour": float(
+                    entry.vehicles_per_hour[scenario_config.traffic.demand_level]
+                ),
+                "turning_ratios": (
+                    entry.turning_ratios.model_dump() if entry.turning_ratios is not None else None
+                ),
+                "via_intersection_id": entry.via_intersection_id,
+            }
+            for entry in scenario_config.traffic.entries
+        ]
     return json_sha256(payload)
 
 
@@ -283,6 +301,26 @@ def movement_model_sha256(
 
 def turning_config_sha256(turning_ratios: Mapping[str, float]) -> str:
     return json_sha256({key: float(value) for key, value in sorted(turning_ratios.items())})
+
+
+def scenario_turning_config_sha256(scenario_config: ScenarioConfig) -> str:
+    """Hash of the scenario turning configuration, including per-entry overrides.
+
+    Without per-entry overrides this equals ``turning_config_sha256`` of the scenario-level
+    ratios, so scenarios that do not override ratios keep their historical hash.
+    """
+
+    base = _turning_ratios_payload(scenario_config)
+    overrides = {
+        entry.demand_id: {
+            key: float(value) for key, value in entry.turning_ratios.model_dump().items()
+        }
+        for entry in scenario_config.traffic.entries
+        if entry.turning_ratios is not None
+    }
+    if not overrides:
+        return turning_config_sha256(base)
+    return json_sha256({"base": base, "entry_overrides": overrides})
 
 
 def json_sha256(payload: object) -> str:

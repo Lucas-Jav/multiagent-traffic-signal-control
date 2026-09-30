@@ -212,6 +212,9 @@ def test_has_stopped_internal_vehicle_detects_halting_lane() -> None:
         def setPhase(self, tls_id: str, index: int) -> None:  # noqa: N802
             return None
 
+        def setPhaseDuration(self, tls_id: str, duration: float) -> None:  # noqa: N802
+            return None
+
     class FakeConnection:
         def __init__(self) -> None:
             self.lane = FakeLane()

@@ -35,7 +35,7 @@ def test_run_fingerprint_records_required_comparison_invariants(tmp_path: Path) 
     assert len(fingerprint.phase_plan_sha256) == 64
     assert fingerprint.movement_model_version == MOVEMENT_MODEL_VERSION
     assert len(fingerprint.movement_model_sha256) == 64
-    assert fingerprint.turning_ratios == {"straight": 0.6, "left": 0.2, "right": 0.2}
+    assert fingerprint.turning_ratios == {"straight": 0.7, "left": 0.15, "right": 0.15}
     assert len(fingerprint.turning_config_sha256) == 64
     assert len(fingerprint.communication_topology_sha256) == 64
 

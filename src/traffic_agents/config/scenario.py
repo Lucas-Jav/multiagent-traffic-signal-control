@@ -143,9 +143,17 @@ class DemandScheduleWindowConfig(ConfigModel):
 
 
 class TurningRatiosConfig(ConfigModel):
-    straight: NonNegativeFloat = 0.60
-    left: NonNegativeFloat = 0.20
-    right: NonNegativeFloat = 0.20
+    """Probability of each movement at every signalized junction.
+
+    For ``entries``-based demand these ratios drive the seeded route generator (a
+    junction-turning random walk from each border entry to a border exit), so they
+    shape the movements that vehicles actually perform. The default is the approved
+    V1 protocol distribution (S1: 0.70 straight, 0.15 left, 0.15 right).
+    """
+
+    straight: NonNegativeFloat = 0.70
+    left: NonNegativeFloat = 0.15
+    right: NonNegativeFloat = 0.15
 
     @model_validator(mode="after")
     def validate_total(self) -> Self:
@@ -156,12 +164,80 @@ class TurningRatiosConfig(ConfigModel):
         return self
 
 
+class EntryDemandConfig(ConfigModel):
+    """Demand injected at one border entry edge and routed by turning ratios.
+
+    ``begin_seconds``/``end_seconds`` are absolute simulation seconds (warmup included).
+    ``turning_ratios`` optionally overrides the scenario-level ratios for this entry.
+    ``via_intersection_id`` (a project intersection id such as ``A5``) makes every vehicle of
+    this demand first follow a shortest legal path to that intersection and then continue
+    with the turning-ratio walk; it is used to build deliberate convergence (S3 shock, S4
+    hotspot).
+    ``group`` labels the role of the demand (for example ``base``, ``dominant``,
+    ``residual``, ``shock``, ``hotspot``) and is reported in the route metadata.
+    """
+
+    demand_id: Annotated[str, Field(min_length=1)]
+    entry_edge_id: EdgeId
+    begin_seconds: NonNegativeFloat
+    end_seconds: PositiveFloat
+    vehicles_per_hour: VehicleRateByDemandLevel
+    turning_ratios: TurningRatiosConfig | None = None
+    via_intersection_id: IntersectionId | None = None
+    group: Annotated[str, Field(min_length=1)] = "base"
+
+    @model_validator(mode="after")
+    def validate_time_window(self) -> Self:
+        if self.end_seconds <= self.begin_seconds:
+            msg = "end_seconds must be greater than begin_seconds"
+            raise ValueError(msg)
+        return self
+
+    @model_validator(mode="after")
+    def validate_demand_levels(self) -> Self:
+        if set(self.vehicles_per_hour) != {"LOW", "MEDIUM", "HIGH"}:
+            msg = "vehicles_per_hour must define LOW, MEDIUM, and HIGH"
+            raise ValueError(msg)
+        return self
+
+    def rate_for(self, demand_level: DemandLevel) -> float:
+        return self.vehicles_per_hour[demand_level]
+
+
 class TrafficDemandConfig(ConfigModel):
+    """Traffic demand definition.
+
+    Exactly one demand form is used:
+
+    * ``entries``: per-border-entry rates routed by the turning ratios (seeded,
+      deterministic). This is the form used by the V1 scenarios.
+    * ``flows``: explicit origin/destination flows routed by SUMO ``duarouter``
+      (legacy form; turning ratios are metadata only in this form).
+    """
+
     demand_profile: DemandProfileId
     demand_level: DemandLevel
     turning_ratios: TurningRatiosConfig = Field(default_factory=TurningRatiosConfig)
     schedule: tuple[DemandScheduleWindowConfig, ...] = ()
-    flows: Annotated[tuple[FlowDefinitionConfig, ...], Field(min_length=1)]
+    flows: tuple[FlowDefinitionConfig, ...] = ()
+    entries: tuple[EntryDemandConfig, ...] = ()
+    shock_start_seconds: PositiveFloat | None = None
+
+    @model_validator(mode="after")
+    def validate_demand_form(self) -> Self:
+        if bool(self.flows) == bool(self.entries):
+            msg = "traffic must define exactly one of flows or entries"
+            raise ValueError(msg)
+        if self.entries:
+            demand_ids = [entry.demand_id for entry in self.entries]
+            if len(set(demand_ids)) != len(demand_ids):
+                msg = "entries must not contain duplicate demand_id values"
+                raise ValueError(msg)
+        return self
+
+    @property
+    def uses_turning_ratio_routing(self) -> bool:
+        return bool(self.entries)
 
 
 class CommunicationConfig(ConfigModel):
@@ -181,8 +257,16 @@ class CommunicationConfig(ConfigModel):
 
 
 class TracingConfig(ConfigModel):
+    """Optional debug tracing.
+
+    Scientific metrics never depend on these traces: canonical telemetry is produced by the
+    simulation runner for every controller. ``intersection_trace`` re-enables the legacy
+    controller-produced per-movement CSV (``intersection_trace.csv``) for debugging only.
+    """
+
     agent_decisions: bool = False
     agents: tuple[IntersectionId, ...] = ()
+    intersection_trace: bool = False
 
 
 class IntersectionConfig(ConfigModel):
@@ -239,6 +323,13 @@ class ScenarioConfig(ConfigModel):
                     "total_simulation_duration_seconds"
                 )
                 raise ValueError(msg)
+        for entry in self.traffic.entries:
+            if entry.end_seconds > self.total_duration_seconds:
+                msg = (
+                    "traffic entry end_seconds must be lower than or equal to "
+                    "total_simulation_duration_seconds"
+                )
+                raise ValueError(msg)
         for window in self.traffic.schedule:
             if window.end_seconds > self.total_duration_seconds:
                 msg = (
@@ -246,7 +337,35 @@ class ScenarioConfig(ConfigModel):
                     "equal to total_simulation_duration_seconds"
                 )
                 raise ValueError(msg)
+        return self.validate_shock_definition()
+
+    def validate_shock_definition(self) -> Self:
+        shock_start = self.traffic.shock_start_seconds
+        if self.traffic.demand_profile == "S3_DEMAND_SHIFT":
+            if shock_start is None:
+                msg = "S3_DEMAND_SHIFT requires traffic.shock_start_seconds"
+                raise ValueError(msg)
+            expected = self.warmup_seconds + 0.5 * self.measurement_duration_seconds
+            if abs(shock_start - expected) > 1e-6:
+                msg = (
+                    "S3_DEMAND_SHIFT shock_start_seconds must be at 50% of the measurement "
+                    f"window (warmup_seconds + measurement_duration_seconds / 2 = {expected})"
+                )
+                raise ValueError(msg)
+        elif shock_start is not None:
+            msg = "traffic.shock_start_seconds is only valid for S3_DEMAND_SHIFT"
+            raise ValueError(msg)
         return self
+
+    @property
+    def shock_start_step(self) -> int | None:
+        shock_start = self.traffic.shock_start_seconds
+        return None if shock_start is None else int(shock_start / self.step_length)
+
+    @property
+    def shock_start_measurement_offset_seconds(self) -> float | None:
+        shock_start = self.traffic.shock_start_seconds
+        return None if shock_start is None else float(shock_start - self.warmup_seconds)
 
     @property
     def duration_seconds(self) -> float:

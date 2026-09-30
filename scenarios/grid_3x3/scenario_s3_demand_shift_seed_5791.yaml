@@ -3,7 +3,7 @@ network_file: network.net.xml
 route_file: routes_s3_seed_5791.rou.xml
 simulation:
   warmup_seconds: 300
-  measurement_duration_seconds: 3900
+  measurement_duration_seconds: 3600
   step_length: 1.0
   seed: 5791
 controller_id: B0_FIXED
@@ -11,235 +11,170 @@ traffic:
   demand_profile: S3_DEMAND_SHIFT
   demand_level: MEDIUM
   turning_ratios:
-    straight: 0.55
-    left: 0.25
-    right: 0.2
+    straight: 0.7
+    left: 0.15
+    right: 0.15
   schedule:
-  - window_id: north_south_peak
+  - window_id: balanced_base
     begin_seconds: 0
-    end_seconds: 1950
-    description: North-south demand dominates the first simulation half.
-  - window_id: east_west_peak
-    begin_seconds: 1950
+    end_seconds: 2100
+    description: S1-like stable balanced traffic (warmup plus first half of the measurement window).
+  - window_id: west_shock
+    begin_seconds: 2100
     end_seconds: 3900
-    description: East-west demand dominates the second simulation half.
-  flows:
-  - flow_id: s3_w1_west_to_east_middle
-    origin_edge_id: left1A1
-    destination_edge_id: C1right1
+    description: Balanced base continues; an abrupt west-border shock routed through A5 is added.
+  shock_start_seconds: 2100
+  entries:
+  - demand_id: base_left0A0
+    entry_edge_id: left0A0
+    group: base
     begin_seconds: 0
-    end_seconds: 1950
-    vehicles_per_hour:
-      LOW: 97
-      MEDIUM: 193
-      HIGH: 290
-  - flow_id: s3_w1_east_to_west_middle
-    origin_edge_id: right1C1
-    destination_edge_id: A1left1
-    begin_seconds: 0
-    end_seconds: 1950
-    vehicles_per_hour:
-      LOW: 97
-      MEDIUM: 193
-      HIGH: 290
-  - flow_id: s3_w1_north_to_south_middle
-    origin_edge_id: top1B2
-    destination_edge_id: B0bottom1
-    begin_seconds: 0
-    end_seconds: 1950
-    vehicles_per_hour:
-      LOW: 303
-      MEDIUM: 605
-      HIGH: 908
-  - flow_id: s3_w1_south_to_north_middle
-    origin_edge_id: bottom1B0
-    destination_edge_id: B2top1
-    begin_seconds: 0
-    end_seconds: 1950
-    vehicles_per_hour:
-      LOW: 303
-      MEDIUM: 605
-      HIGH: 908
-  - flow_id: s3_w1_west_to_north_turn
-    origin_edge_id: left1A1
-    destination_edge_id: B2top1
-    begin_seconds: 0
-    end_seconds: 1950
-    vehicles_per_hour:
-      LOW: 44
-      MEDIUM: 88
-      HIGH: 132
-  - flow_id: s3_w1_west_to_south_turn
-    origin_edge_id: left1A1
-    destination_edge_id: B0bottom1
-    begin_seconds: 0
-    end_seconds: 1950
-    vehicles_per_hour:
-      LOW: 35
-      MEDIUM: 69
-      HIGH: 104
-  - flow_id: s3_w1_east_to_north_turn
-    origin_edge_id: right1C1
-    destination_edge_id: B2top1
-    begin_seconds: 0
-    end_seconds: 1950
-    vehicles_per_hour:
-      LOW: 35
-      MEDIUM: 69
-      HIGH: 104
-  - flow_id: s3_w1_east_to_south_turn
-    origin_edge_id: right1C1
-    destination_edge_id: B0bottom1
-    begin_seconds: 0
-    end_seconds: 1950
-    vehicles_per_hour:
-      LOW: 44
-      MEDIUM: 88
-      HIGH: 132
-  - flow_id: s3_w1_north_to_west_turn
-    origin_edge_id: top1B2
-    destination_edge_id: A1left1
-    begin_seconds: 0
-    end_seconds: 1950
-    vehicles_per_hour:
-      LOW: 138
-      MEDIUM: 275
-      HIGH: 413
-  - flow_id: s3_w1_north_to_east_turn
-    origin_edge_id: top1B2
-    destination_edge_id: C1right1
-    begin_seconds: 0
-    end_seconds: 1950
-    vehicles_per_hour:
-      LOW: 110
-      MEDIUM: 220
-      HIGH: 330
-  - flow_id: s3_w1_south_to_west_turn
-    origin_edge_id: bottom1B0
-    destination_edge_id: A1left1
-    begin_seconds: 0
-    end_seconds: 1950
-    vehicles_per_hour:
-      LOW: 138
-      MEDIUM: 275
-      HIGH: 413
-  - flow_id: s3_w1_south_to_east_turn
-    origin_edge_id: bottom1B0
-    destination_edge_id: C1right1
-    begin_seconds: 0
-    end_seconds: 1950
-    vehicles_per_hour:
-      LOW: 110
-      MEDIUM: 220
-      HIGH: 330
-  - flow_id: s3_w2_west_to_east_middle
-    origin_edge_id: left1A1
-    destination_edge_id: C1right1
-    begin_seconds: 1950
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 303
-      MEDIUM: 605
-      HIGH: 908
-  - flow_id: s3_w2_east_to_west_middle
-    origin_edge_id: right1C1
-    destination_edge_id: A1left1
-    begin_seconds: 1950
+      LOW: 100
+      MEDIUM: 150
+      HIGH: 200
+  - demand_id: base_left1A1
+    entry_edge_id: left1A1
+    group: base
+    begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 303
-      MEDIUM: 605
-      HIGH: 908
-  - flow_id: s3_w2_north_to_south_middle
-    origin_edge_id: top1B2
-    destination_edge_id: B0bottom1
-    begin_seconds: 1950
+      LOW: 100
+      MEDIUM: 150
+      HIGH: 200
+  - demand_id: base_left2A2
+    entry_edge_id: left2A2
+    group: base
+    begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 97
-      MEDIUM: 193
-      HIGH: 290
-  - flow_id: s3_w2_south_to_north_middle
-    origin_edge_id: bottom1B0
-    destination_edge_id: B2top1
-    begin_seconds: 1950
+      LOW: 100
+      MEDIUM: 150
+      HIGH: 200
+  - demand_id: base_right0C0
+    entry_edge_id: right0C0
+    group: base
+    begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 97
-      MEDIUM: 193
-      HIGH: 290
-  - flow_id: s3_w2_west_to_north_turn
-    origin_edge_id: left1A1
-    destination_edge_id: B2top1
-    begin_seconds: 1950
+      LOW: 100
+      MEDIUM: 150
+      HIGH: 200
+  - demand_id: base_right1C1
+    entry_edge_id: right1C1
+    group: base
+    begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 138
-      MEDIUM: 275
-      HIGH: 413
-  - flow_id: s3_w2_west_to_south_turn
-    origin_edge_id: left1A1
-    destination_edge_id: B0bottom1
-    begin_seconds: 1950
+      LOW: 100
+      MEDIUM: 150
+      HIGH: 200
+  - demand_id: base_right2C2
+    entry_edge_id: right2C2
+    group: base
+    begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 110
-      MEDIUM: 220
-      HIGH: 330
-  - flow_id: s3_w2_east_to_north_turn
-    origin_edge_id: right1C1
-    destination_edge_id: B2top1
-    begin_seconds: 1950
+      LOW: 100
+      MEDIUM: 150
+      HIGH: 200
+  - demand_id: base_top0A2
+    entry_edge_id: top0A2
+    group: base
+    begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 110
-      MEDIUM: 220
-      HIGH: 330
-  - flow_id: s3_w2_east_to_south_turn
-    origin_edge_id: right1C1
-    destination_edge_id: B0bottom1
-    begin_seconds: 1950
+      LOW: 100
+      MEDIUM: 150
+      HIGH: 200
+  - demand_id: base_top1B2
+    entry_edge_id: top1B2
+    group: base
+    begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 138
-      MEDIUM: 275
-      HIGH: 413
-  - flow_id: s3_w2_north_to_west_turn
-    origin_edge_id: top1B2
-    destination_edge_id: A1left1
-    begin_seconds: 1950
+      LOW: 100
+      MEDIUM: 150
+      HIGH: 200
+  - demand_id: base_top2C2
+    entry_edge_id: top2C2
+    group: base
+    begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 44
-      MEDIUM: 88
-      HIGH: 132
-  - flow_id: s3_w2_north_to_east_turn
-    origin_edge_id: top1B2
-    destination_edge_id: C1right1
-    begin_seconds: 1950
+      LOW: 100
+      MEDIUM: 150
+      HIGH: 200
+  - demand_id: base_bottom0A0
+    entry_edge_id: bottom0A0
+    group: base
+    begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 35
-      MEDIUM: 69
-      HIGH: 104
-  - flow_id: s3_w2_south_to_west_turn
-    origin_edge_id: bottom1B0
-    destination_edge_id: A1left1
-    begin_seconds: 1950
+      LOW: 100
+      MEDIUM: 150
+      HIGH: 200
+  - demand_id: base_bottom1B0
+    entry_edge_id: bottom1B0
+    group: base
+    begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 44
-      MEDIUM: 88
-      HIGH: 132
-  - flow_id: s3_w2_south_to_east_turn
-    origin_edge_id: bottom1B0
-    destination_edge_id: C1right1
-    begin_seconds: 1950
+      LOW: 100
+      MEDIUM: 150
+      HIGH: 200
+  - demand_id: base_bottom2C0
+    entry_edge_id: bottom2C0
+    group: base
+    begin_seconds: 0
     end_seconds: 3900
     vehicles_per_hour:
-      LOW: 35
-      MEDIUM: 69
-      HIGH: 104
+      LOW: 100
+      MEDIUM: 150
+      HIGH: 200
+  - demand_id: shock_left0A0
+    entry_edge_id: left0A0
+    group: shock
+    begin_seconds: 2100
+    end_seconds: 3900
+    vehicles_per_hour:
+      LOW: 70
+      MEDIUM: 100
+      HIGH: 130
+    turning_ratios:
+      straight: 0.9
+      left: 0.05
+      right: 0.05
+    via_intersection_id: A5
+  - demand_id: shock_left1A1
+    entry_edge_id: left1A1
+    group: shock
+    begin_seconds: 2100
+    end_seconds: 3900
+    vehicles_per_hour:
+      LOW: 70
+      MEDIUM: 100
+      HIGH: 130
+    turning_ratios:
+      straight: 0.9
+      left: 0.05
+      right: 0.05
+    via_intersection_id: A5
+  - demand_id: shock_left2A2
+    entry_edge_id: left2A2
+    group: shock
+    begin_seconds: 2100
+    end_seconds: 3900
+    vehicles_per_hour:
+      LOW: 70
+      MEDIUM: 100
+      HIGH: 130
+    turning_ratios:
+      straight: 0.9
+      left: 0.05
+      right: 0.05
+    via_intersection_id: A5
 communication:
   delay_steps: 0
   drop_probability: 0.0

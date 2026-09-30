@@ -94,12 +94,88 @@ def _require_equal(metadata: Mapping[str, Any], field: str, expected: object) ->
         raise RouteArtifactValidationError(msg)
 
 
+def _validate_entry_routes(
+    *,
+    route_path: Path,
+    metadata: Mapping[str, Any],
+    scenario_config: ScenarioConfig,
+) -> None:
+    demand_level = scenario_config.traffic.demand_level
+    expected_entries = {
+        (
+            entry.demand_id,
+            entry.entry_edge_id,
+            float(entry.begin_seconds),
+            float(entry.end_seconds),
+            float(entry.vehicles_per_hour[demand_level]),
+        )
+        for entry in scenario_config.traffic.entries
+    }
+    entries = metadata.get("entries")
+    if not isinstance(entries, list):
+        msg = "route metadata entries are missing for turning-ratio demand"
+        raise RouteArtifactValidationError(msg)
+    try:
+        metadata_entries = {
+            (
+                str(entry["demand_id"]),
+                str(entry["entry_edge_id"]),
+                float(entry["begin_seconds"]),
+                float(entry["end_seconds"]),
+                float(entry["vehicles_per_hour"]),
+            )
+            for entry in entries
+        }
+    except (KeyError, TypeError, ValueError) as exc:
+        msg = "route metadata entry definitions are malformed"
+        raise RouteArtifactValidationError(msg) from exc
+    if metadata_entries != expected_entries:
+        msg = "route metadata entries do not match scenario traffic config"
+        raise RouteArtifactValidationError(msg)
+
+    offered = metadata.get("offered")
+    offered_by_demand = offered.get("offered_by_demand") if isinstance(offered, dict) else None
+    if not isinstance(offered_by_demand, dict):
+        msg = "route metadata offered_by_demand is missing"
+        raise RouteArtifactValidationError(msg)
+    try:
+        tree = ET.parse(route_path)
+    except ET.ParseError as exc:
+        msg = f"malformed route XML: {route_path}"
+        raise RouteArtifactValidationError(msg) from exc
+    actual_by_demand: dict[str, int] = {}
+    previous_depart = -1.0
+    for vehicle in tree.getroot().findall("vehicle"):
+        vehicle_id = vehicle.attrib.get("id", "")
+        depart = float(vehicle.attrib.get("depart", "nan"))
+        if depart < previous_depart:
+            msg = f"route vehicles must be sorted by departure time: {route_path}"
+            raise RouteArtifactValidationError(msg)
+        previous_depart = depart
+        demand_id = vehicle_id.rsplit(".", 1)[0]
+        actual_by_demand[demand_id] = actual_by_demand.get(demand_id, 0) + 1
+        if not 0.0 <= depart <= scenario_config.total_duration_seconds:
+            msg = f"route vehicle departs outside the simulation horizon: {vehicle_id}"
+            raise RouteArtifactValidationError(msg)
+    expected_counts = {str(key): int(value) for key, value in offered_by_demand.items()}
+    if actual_by_demand != expected_counts:
+        msg = f"route vehicle counts do not match route metadata offered demand: {route_path}"
+        raise RouteArtifactValidationError(msg)
+
+
 def _validate_route_windows(
     *,
     route_path: Path,
     metadata: Mapping[str, Any],
     scenario_config: ScenarioConfig,
 ) -> None:
+    if scenario_config.traffic.entries:
+        _validate_entry_routes(
+            route_path=route_path,
+            metadata=metadata,
+            scenario_config=scenario_config,
+        )
+        return
     expected_windows = {
         (
             flow.flow_id,

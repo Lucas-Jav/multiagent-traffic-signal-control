@@ -135,7 +135,9 @@ max_steps: 10
 
     monkeypatch.setattr("traffic_agents.experiments.runner.TraCISimulationRunner", FakeRunner)
 
-    summary = ExperimentRunner(config=config, artifacts_dir=tmp_path / "artifacts").run()
+    summary = ExperimentRunner(
+        config=config, artifacts_dir=tmp_path / "artifacts", aggregate_metrics=False
+    ).run()
 
     manifest = json.loads(summary.manifest_path.read_text(encoding="utf-8"))
     assert manifest["experiment_id"] == "smoke"
@@ -203,7 +205,9 @@ runs:
 
     monkeypatch.setattr("traffic_agents.experiments.runner.TraCISimulationRunner", FakeRunner)
 
-    summary = ExperimentRunner(config=config, artifacts_dir=tmp_path / "artifacts").run()
+    summary = ExperimentRunner(
+        config=config, artifacts_dir=tmp_path / "artifacts", aggregate_metrics=False
+    ).run()
 
     manifest = json.loads(summary.manifest_path.read_text(encoding="utf-8"))
     communication = cast(CommunicationConfig, scenario_config.updates[0]["communication"])
@@ -272,7 +276,9 @@ runs:
 
     monkeypatch.setattr("traffic_agents.experiments.runner.TraCISimulationRunner", FakeRunner)
 
-    summary = ExperimentRunner(config=config, artifacts_dir=tmp_path / "artifacts").run()
+    summary = ExperimentRunner(
+        config=config, artifacts_dir=tmp_path / "artifacts", aggregate_metrics=False
+    ).run()
 
     manifest = json.loads(summary.manifest_path.read_text(encoding="utf-8"))
     run_keys = [record["run_key"] for record in manifest["runs"]]
@@ -304,8 +310,12 @@ def test_experiment_runner_skips_completed_run_on_resume(
 
     monkeypatch.setattr("traffic_agents.experiments.runner.TraCISimulationRunner", FakeRunner)
 
-    ExperimentRunner(config=config, artifacts_dir=tmp_path / "artifacts").run()
-    ExperimentRunner(config=config, artifacts_dir=tmp_path / "artifacts", resume=True).run()
+    ExperimentRunner(
+        config=config, artifacts_dir=tmp_path / "artifacts", aggregate_metrics=False
+    ).run()
+    ExperimentRunner(
+        config=config, artifacts_dir=tmp_path / "artifacts", aggregate_metrics=False, resume=True
+    ).run()
 
     assert calls == 1
 
@@ -333,8 +343,11 @@ def test_experiment_runner_records_failed_run_without_silent_retry(
 
     monkeypatch.setattr("traffic_agents.experiments.runner.TraCISimulationRunner", FailingRunner)
 
-    first = ExperimentRunner(config=config, artifacts_dir=tmp_path / "artifacts").run()
+    first = ExperimentRunner(
+        config=config, artifacts_dir=tmp_path / "artifacts", aggregate_metrics=False
+    ).run()
     second = ExperimentRunner(
+        aggregate_metrics=False,
         config=config,
         artifacts_dir=tmp_path / "artifacts",
         resume=True,
@@ -373,8 +386,11 @@ def test_experiment_runner_retry_failed_is_explicit(
 
     monkeypatch.setattr("traffic_agents.experiments.runner.TraCISimulationRunner", SometimesRunner)
 
-    ExperimentRunner(config=config, artifacts_dir=tmp_path / "artifacts").run()
+    ExperimentRunner(
+        config=config, artifacts_dir=tmp_path / "artifacts", aggregate_metrics=False
+    ).run()
     summary = ExperimentRunner(
+        aggregate_metrics=False,
         config=config,
         artifacts_dir=tmp_path / "artifacts",
         resume=True,

@@ -9,6 +9,14 @@ from traffic_agents.metrics.agent_trace import (
     find_agent_trace_path,
     inspect_agent_trace,
 )
+from traffic_agents.metrics.network_telemetry import (
+    JUNCTION_TELEMETRY_FILE,
+    LANE_TELEMETRY_FILE,
+    NETWORK_TELEMETRY_VERSION,
+    NetworkTelemetryCollector,
+    NetworkTelemetryError,
+    NetworkTelemetrySink,
+)
 from traffic_agents.metrics.performance import (
     CONTROLLER_DECISION_WINDOW,
     PERFORMANCE_FILE,
@@ -18,6 +26,15 @@ from traffic_agents.metrics.performance import (
     build_performance_payload,
     calculate_timing_stats,
     write_performance_json,
+)
+from traffic_agents.metrics.run_metrics import (
+    RUN_METRICS_FILE,
+    RUN_METRICS_SCHEMA_VERSION,
+    MetricsFinalizationError,
+    finalize_run_metrics,
+    load_offered_vehicles,
+    parse_tripinfo_records,
+    write_run_metrics,
 )
 from traffic_agents.metrics.step_telemetry import (
     JunctionFlowTracker,
@@ -42,7 +59,12 @@ from traffic_agents.metrics.sumo_trip_metrics import (
 __all__ = [
     "AGENT_TRACE_FILE",
     "CONTROLLER_DECISION_WINDOW",
+    "JUNCTION_TELEMETRY_FILE",
+    "LANE_TELEMETRY_FILE",
+    "NETWORK_TELEMETRY_VERSION",
     "PERFORMANCE_FILE",
+    "RUN_METRICS_FILE",
+    "RUN_METRICS_SCHEMA_VERSION",
     "SUMO_TRAFFIC_METRICS_FILE",
     "TRACI_PROFILING_NOTE",
     "AgentDecisionTraceSettings",
@@ -51,8 +73,12 @@ __all__ = [
     "DecisionTimer",
     "JunctionFlowTracker",
     "JunctionStepMetrics",
+    "MetricsFinalizationError",
     "MovementQueueStats",
     "MovementQueueTracker",
+    "NetworkTelemetryCollector",
+    "NetworkTelemetryError",
+    "NetworkTelemetrySink",
     "StepTelemetryRecord",
     "SumoTripMetrics",
     "SumoTripMetricsError",
@@ -62,12 +88,16 @@ __all__ = [
     "build_performance_payload",
     "build_step_telemetry_records",
     "calculate_timing_stats",
+    "finalize_run_metrics",
     "find_agent_trace_path",
     "inspect_agent_trace",
     "internal_lane_vehicle_reader",
+    "load_offered_vehicles",
     "missing_sumo_trip_metrics",
     "parse_sumo_trip_metrics",
+    "parse_tripinfo_records",
     "requested_phase_id",
     "write_performance_json",
+    "write_run_metrics",
     "write_sumo_trip_metrics",
 ]

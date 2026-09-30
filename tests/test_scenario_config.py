@@ -77,9 +77,9 @@ def test_load_valid_scenario_config(tmp_path: Path) -> None:
     assert scenario.is_measurement_step(300) is True
     assert scenario.traffic.demand_profile == "S1_BALANCED"
     assert scenario.traffic.demand_level == "MEDIUM"
-    assert scenario.traffic.turning_ratios.straight == 0.60
-    assert scenario.traffic.turning_ratios.left == 0.20
-    assert scenario.traffic.turning_ratios.right == 0.20
+    assert scenario.traffic.turning_ratios.straight == 0.70
+    assert scenario.traffic.turning_ratios.left == 0.15
+    assert scenario.traffic.turning_ratios.right == 0.15
     assert scenario.communication.delay_steps == 0
     assert scenario.communication.drop_probability == 0.0
     assert scenario.communication.rng_seed is None
@@ -101,14 +101,16 @@ def test_versioned_experimental_scenario_is_valid(scenario_path: Path) -> None:
     assert scenario.scenario_id == "grid_3x3"
     assert scenario.network_file == Path("network.net.xml")
     assert scenario.seed == 42
-    assert scenario.traffic.turning_ratios.straight > 0
-    assert scenario.traffic.turning_ratios.left > 0
-    assert scenario.traffic.turning_ratios.right > 0
-    assert any(
-        "middle" in flow.flow_id or "straight" in flow.flow_id for flow in scenario.traffic.flows
-    )
-    assert any("turn" in flow.flow_id for flow in scenario.traffic.flows)
+    assert scenario.traffic.turning_ratios.straight == pytest.approx(0.70)
+    assert scenario.traffic.turning_ratios.left == pytest.approx(0.15)
+    assert scenario.traffic.turning_ratios.right == pytest.approx(0.15)
+    assert scenario.traffic.uses_turning_ratio_routing
+    assert not scenario.traffic.flows
+    assert scenario.traffic.entries
     assert scenario.traffic.schedule
+    assert scenario.simulation.warmup_seconds == 300
+    assert scenario.simulation.measurement_duration_seconds == 3600
+    assert scenario.total_simulation_steps == 3900
 
 
 def test_scenario_config_rejects_missing_field() -> None:

@@ -1,111 +1,293 @@
 {
-  "config_hash": "b9f2596e37a30d879b31e07f877cb7ec66b0900da78751a2a8c8c536f6fd45c4",
+  "config_hash": "895f3424d5b61db248e65191ac46238ee99b1219a63360c1c77a5c66cd219567",
+  "coverage": {
+    "intersection_labels": {
+      "A0": "A7",
+      "A1": "A4",
+      "A2": "A1",
+      "B0": "A8",
+      "B1": "A5",
+      "B2": "A2",
+      "C0": "A9",
+      "C1": "A6",
+      "C2": "A3"
+    },
+    "junction_pass_share_by_node": {
+      "A0": 0.11030405405405405,
+      "A1": 0.10793918918918918,
+      "A2": 0.11047297297297297,
+      "B0": 0.11047297297297297,
+      "B1": 0.10929054054054053,
+      "B2": 0.11216216216216217,
+      "C0": 0.1125,
+      "C1": 0.1125,
+      "C2": 0.1143581081081081
+    },
+    "junction_passes_by_node": {
+      "A0": 653,
+      "A1": 639,
+      "A2": 654,
+      "B0": 654,
+      "B1": 647,
+      "B2": 664,
+      "C0": 666,
+      "C1": 666,
+      "C2": 677
+    }
+  },
   "demand_level": "MEDIUM",
   "demand_profile": "S1_BALANCED",
-  "flows": [
+  "entries": [
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "C1right1",
+      "demand_id": "base_left0A0",
       "end_seconds": 3900.0,
-      "flow_id": "west_to_east_middle",
-      "origin_edge_id": "left1A1",
-      "vehicles_per_hour": 600.0
+      "entry_edge_id": "left0A0",
+      "group": "base",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 150.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "A1left1",
+      "demand_id": "base_left1A1",
       "end_seconds": 3900.0,
-      "flow_id": "east_to_west_middle",
-      "origin_edge_id": "right1C1",
-      "vehicles_per_hour": 600.0
+      "entry_edge_id": "left1A1",
+      "group": "base",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 150.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "B0bottom1",
+      "demand_id": "base_left2A2",
       "end_seconds": 3900.0,
-      "flow_id": "north_to_south_middle",
-      "origin_edge_id": "top1B2",
-      "vehicles_per_hour": 600.0
+      "entry_edge_id": "left2A2",
+      "group": "base",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 150.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "B2top1",
+      "demand_id": "base_right0C0",
       "end_seconds": 3900.0,
-      "flow_id": "south_to_north_middle",
-      "origin_edge_id": "bottom1B0",
-      "vehicles_per_hour": 600.0
+      "entry_edge_id": "right0C0",
+      "group": "base",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 150.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "B2top1",
+      "demand_id": "base_right1C1",
       "end_seconds": 3900.0,
-      "flow_id": "west_to_north_turn",
-      "origin_edge_id": "left1A1",
-      "vehicles_per_hour": 150.0
+      "entry_edge_id": "right1C1",
+      "group": "base",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 150.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "B0bottom1",
+      "demand_id": "base_right2C2",
       "end_seconds": 3900.0,
-      "flow_id": "west_to_south_turn",
-      "origin_edge_id": "left1A1",
-      "vehicles_per_hour": 150.0
+      "entry_edge_id": "right2C2",
+      "group": "base",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 150.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "B2top1",
+      "demand_id": "base_top0A2",
       "end_seconds": 3900.0,
-      "flow_id": "east_to_north_turn",
-      "origin_edge_id": "right1C1",
-      "vehicles_per_hour": 150.0
+      "entry_edge_id": "top0A2",
+      "group": "base",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 150.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "B0bottom1",
+      "demand_id": "base_top1B2",
       "end_seconds": 3900.0,
-      "flow_id": "east_to_south_turn",
-      "origin_edge_id": "right1C1",
-      "vehicles_per_hour": 150.0
+      "entry_edge_id": "top1B2",
+      "group": "base",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 150.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "A1left1",
+      "demand_id": "base_top2C2",
       "end_seconds": 3900.0,
-      "flow_id": "north_to_west_turn",
-      "origin_edge_id": "top1B2",
-      "vehicles_per_hour": 150.0
+      "entry_edge_id": "top2C2",
+      "group": "base",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 150.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "C1right1",
+      "demand_id": "base_bottom0A0",
       "end_seconds": 3900.0,
-      "flow_id": "north_to_east_turn",
-      "origin_edge_id": "top1B2",
-      "vehicles_per_hour": 150.0
+      "entry_edge_id": "bottom0A0",
+      "group": "base",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 150.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "A1left1",
+      "demand_id": "base_bottom1B0",
       "end_seconds": 3900.0,
-      "flow_id": "south_to_west_turn",
-      "origin_edge_id": "bottom1B0",
-      "vehicles_per_hour": 150.0
+      "entry_edge_id": "bottom1B0",
+      "group": "base",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 150.0,
+      "via_intersection_id": null
     },
     {
       "begin_seconds": 0.0,
-      "destination_edge_id": "C1right1",
+      "demand_id": "base_bottom2C0",
       "end_seconds": 3900.0,
-      "flow_id": "south_to_east_turn",
-      "origin_edge_id": "bottom1B0",
-      "vehicles_per_hour": 150.0
+      "entry_edge_id": "bottom2C0",
+      "group": "base",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 150.0,
+      "via_intersection_id": null
     }
   ],
-  "generated_at": "2026-09-29T16:59:21.709834Z",
-  "generator_version": "1.0.0",
+  "expected_approach_load_veh_per_hour": {
+    "A0A1": 150.0,
+    "A0B0": 150.0,
+    "A1A0": 150.0,
+    "A1A2": 150.0,
+    "A1B1": 150.0,
+    "A2A1": 150.0,
+    "A2B2": 150.0,
+    "B0A0": 150.0,
+    "B0B1": 150.0,
+    "B0C0": 150.0,
+    "B1A1": 150.0,
+    "B1B0": 150.0,
+    "B1B2": 150.0,
+    "B1C1": 150.0,
+    "B2A2": 150.0,
+    "B2B1": 150.0,
+    "B2C2": 150.0,
+    "C0B0": 150.0,
+    "C0C1": 150.0,
+    "C1B1": 150.0,
+    "C1C0": 150.0,
+    "C1C2": 150.0,
+    "C2B2": 150.0,
+    "C2C1": 150.0,
+    "bottom0A0": 150.0,
+    "bottom1B0": 150.0,
+    "bottom2C0": 150.0,
+    "left0A0": 150.0,
+    "left1A1": 150.0,
+    "left2A2": 150.0,
+    "right0C0": 150.0,
+    "right1C1": 150.0,
+    "right2C2": 150.0,
+    "top0A2": 150.0,
+    "top1B2": 150.0,
+    "top2C2": 150.0
+  },
+  "generated_at": "2026-09-29T20:55:40.261929Z",
+  "generator_version": "2.0.0",
+  "max_expected_approach_load_veh_per_hour": 150.0,
   "network_hash": "46953c48351b0fdecf9babca662354bd5e45a5772553b153bc6f354c5332b48e",
+  "offered": {
+    "offered_by_demand": {
+      "base_bottom0A0": 162,
+      "base_bottom1B0": 162,
+      "base_bottom2C0": 162,
+      "base_left0A0": 162,
+      "base_left1A1": 162,
+      "base_left2A2": 162,
+      "base_right0C0": 162,
+      "base_right1C1": 162,
+      "base_right2C2": 162,
+      "base_top0A2": 162,
+      "base_top1B2": 162,
+      "base_top2C2": 162
+    },
+    "offered_by_entry": {
+      "bottom0A0": 162,
+      "bottom1B0": 162,
+      "bottom2C0": 162,
+      "left0A0": 162,
+      "left1A1": 162,
+      "left2A2": 162,
+      "right0C0": 162,
+      "right1C1": 162,
+      "right2C2": 162,
+      "top0A2": 162,
+      "top1B2": 162,
+      "top2C2": 162
+    },
+    "offered_by_group": {
+      "base": 1944
+    },
+    "offered_in_measurement_window": 1794,
+    "offered_vehicle_count": 1944
+  },
   "route_file": "routes_s1_seed_5791.rou.xml",
-  "route_hash": "50b3391aaa56737a531ea60f58152099c1bd7ebc7de206d73350aeea518c3d0c",
-  "scenario_hash": "2d0089245b2f5651c88868832d3c894c581a5734f3fb865b6222b93863c8fb63",
+  "route_hash": "ac962aa2799726b2225209b024864f0f32e87a0ba333a7ac66d94e116e64f5e4",
+  "routing": "turning_ratio_walk",
+  "scenario_hash": "18af3e46a7a8832b2b469f266b50ea29c94d702004a2ee1b4720c556d962d1e3",
   "scenario_id": "grid_3x3",
   "schedule": [
     {
@@ -116,9 +298,39 @@
     }
   ],
   "seed": 5791,
+  "shock_start_seconds": null,
+  "turning": {
+    "configured": {
+      "left": 0.15,
+      "right": 0.15,
+      "straight": 0.7
+    },
+    "expected_movement_proportions": {
+      "left": 0.14999999999999994,
+      "right": 0.14999999999999994,
+      "straight": 0.7000000000000001
+    },
+    "realized_movement_counts": {
+      "left": 870,
+      "right": 910,
+      "straight": 4140
+    },
+    "realized_movement_counts_by_group": {
+      "base": {
+        "left": 870,
+        "right": 910,
+        "straight": 4140
+      }
+    },
+    "realized_movement_proportions": {
+      "left": 0.14695945945945946,
+      "right": 0.15371621621621623,
+      "straight": 0.6993243243243243
+    }
+  },
   "turning_ratios": {
-    "left": 0.2,
-    "right": 0.2,
-    "straight": 0.6
+    "left": 0.15,
+    "right": 0.15,
+    "straight": 0.7
   }
 }

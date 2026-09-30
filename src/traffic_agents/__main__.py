@@ -7,6 +7,7 @@ from pathlib import Path
 
 from traffic_agents.config import get_settings, load_scenario_config
 from traffic_agents.demo import DemoConfig, run_demo
+from traffic_agents.experiments.aggregate import build_combined_metrics
 from traffic_agents.experiments.freeze import (
     freeze_experiment_config,
     load_frozen_experiment_config,
@@ -92,6 +93,10 @@ def _build_parser() -> argparse.ArgumentParser:
     experiment_report_parser = experiment_subparsers.add_parser("report")
     experiment_report_parser.add_argument("experiment_folder", type=Path)
     experiment_report_parser.set_defaults(handler=_generate_experiment_report)
+
+    experiment_aggregate_parser = experiment_subparsers.add_parser("aggregate")
+    experiment_aggregate_parser.add_argument("experiment_folder", type=Path)
+    experiment_aggregate_parser.set_defaults(handler=_aggregate_experiment)
 
     experiment_summary_parser = experiment_subparsers.add_parser("summary")
     experiment_summary_parser.add_argument("experiment_folder", type=Path)
@@ -215,6 +220,12 @@ def _generate_experiment_report(args: argparse.Namespace) -> int:
     if metric_definitions_path is not None:
         print(f"metric_definitions={metric_definitions_path}")
     print(f"summary={summary.summary_path}")
+    return 0
+
+
+def _aggregate_experiment(args: argparse.Namespace) -> int:
+    combined_path = build_combined_metrics(args.experiment_folder)
+    print(f"combined_metrics={combined_path}")
     return 0
 
 

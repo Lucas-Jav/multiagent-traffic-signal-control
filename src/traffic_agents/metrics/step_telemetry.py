@@ -1,3 +1,12 @@
+"""Controller-produced per-movement debug telemetry.
+
+DEPRECATED FOR SCIENTIFIC METRICS: traffic measurements (queues, junction flows, phases) are
+produced for every controller by ``NetworkTelemetryCollector`` (``network_telemetry.py``),
+which stores unique incoming lanes only. The per-movement records built here repeat one lane
+queue once per movement and exist only for optional debugging (``tracing.intersection_trace``)
+and the demo view; sums over them must never be used as network or intersection queues.
+"""
+
 from __future__ import annotations
 
 import csv
@@ -89,7 +98,17 @@ class JunctionFlowTracker:
         internal_lane_ids: tuple[str, ...],
         lane_reader: InternalLaneVehicleReader | None,
     ) -> JunctionStepMetrics:
-        current_vehicle_ids = _read_internal_vehicle_ids(lane_reader, internal_lane_ids)
+        return self.update_from_vehicle_ids(
+            intersection_id=intersection_id,
+            current_vehicle_ids=_read_internal_vehicle_ids(lane_reader, internal_lane_ids),
+        )
+
+    def update_from_vehicle_ids(
+        self,
+        *,
+        intersection_id: IntersectionId,
+        current_vehicle_ids: frozenset[str],
+    ) -> JunctionStepMetrics:
         previous_vehicle_ids = self._vehicle_ids_by_intersection.get(
             intersection_id,
             frozenset(),
