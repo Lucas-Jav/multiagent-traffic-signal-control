@@ -1,0 +1,439 @@
+{
+  "b0_identity": {
+    "all_red_seconds": 2,
+    "controller_id": "B0_FIXED_CALIBRATED",
+    "cycle_seconds": 84,
+    "offset_strategy": "ALTERNATE",
+    "offsets_seconds": [
+      0,
+      42
+    ],
+    "plan_canonical_sha256": "e1d04e9c50fe12655c5b49dda98fc93cef7f5e48e84b2884a556f160ee498b40",
+    "plan_file": "experiments/fixed_time/b0_fixed_calibrated.json",
+    "plan_file_sha256": "a950d82d1d59562766b183c096477f39215f0de8a905960b223a7a6fcef1f0fe",
+    "plan_id": "fx_c84_demand_proportional_alternate",
+    "provenance": {
+      "J_calibration": 0.8524614331726439,
+      "J_validation": 0.8486451047212631,
+      "calibration_plan_sha256": "3aea5ff507020bd8046595f73b7a921abf4ccf585375f901b3660b99d7c5f0de",
+      "calibration_seeds": [
+        101,
+        1009,
+        2029
+      ],
+      "campaign_role": "BASELINE_CALIBRATION",
+      "validation_seeds": [
+        3011,
+        4021,
+        5003
+      ]
+    },
+    "split_strategy": "DEMAND_PROPORTIONAL",
+    "yellow_seconds": 3
+  },
+  "campaign_role": "FINAL_SCIENTIFIC",
+  "canonical_metrics": {
+    "definitions_sha256": "60782a3e0750ddba359df0310c19c941ed303b065abe7863dbd9d0e238db8bc2",
+    "metrics_doc_sha256": "5b996fb49f00d2f237583857f07f11e66c4db316d026414f9690462f7de7be45",
+    "required": [
+      "offered_vehicle_count",
+      "departed_vehicle_count",
+      "arrived_vehicle_count",
+      "never_inserted_vehicle_count",
+      "unfinished_in_network_count",
+      "throughput",
+      "departure_ratio",
+      "completion_ratio_offered",
+      "completion_ratio_departed",
+      "mean_depart_delay_seconds",
+      "mean_waiting_time",
+      "mean_time_loss",
+      "mean_travel_time",
+      "mean_stops",
+      "mean_lane_queue_vehicles",
+      "mean_network_queue_vehicles",
+      "max_lane_queue_vehicles",
+      "max_network_queue_vehicles",
+      "internal_lane_persistence_events",
+      "post_shock_queue_auc_vehicle_seconds",
+      "sumo_teleports_total",
+      "messages_sent",
+      "messages_delivered",
+      "messages_dropped",
+      "messages_stale",
+      "bytes_sent",
+      "bytes_delivered",
+      "mean_message_age_steps",
+      "max_message_age_steps"
+    ]
+  },
+  "change_policy": {
+    "immutable_after_freeze": [
+      "controllers",
+      "controller parameters",
+      "B0 plan",
+      "scenario demand",
+      "routes",
+      "seeds",
+      "phase topology",
+      "packet-loss levels",
+      "warmup",
+      "measurement duration",
+      "shock time",
+      "metric definitions",
+      "reference route",
+      "statistical plan"
+    ],
+    "on_correctness_defect": [
+      "STOP campaign",
+      "document defect",
+      "fix defect",
+      "commit",
+      "create NEW freeze",
+      "rerun affected final evidence"
+    ]
+  },
+  "controllers": {
+    "b0_final": "B0_FIXED_CALIBRATED",
+    "final": [
+      "B0_FIXED_CALIBRATED",
+      "B1_LOCAL_ADAPTIVE",
+      "B2_LOCAL_PRESSURE",
+      "C1_COOPERATIVE_COMPACT",
+      "C2_COOPERATIVE_EXPANDED"
+    ],
+    "historical_not_final": [
+      "B0_FIXED",
+      "B0_FIXED_STATIC",
+      "B0_FIXED_STATIC_V2"
+    ]
+  },
+  "environment": {
+    "git_sha": "b98b440b4a21ae0f53d04774bda479d3211173d9",
+    "git_working_tree_dirty": true,
+    "machine": "AMD64",
+    "packages": {
+      "matplotlib": "3.11.1",
+      "numpy": "2.5.3",
+      "pyarrow": "25.0.1",
+      "pydantic": "2.13.5",
+      "pydantic-settings": "2.15.0",
+      "pyyaml": "6.0.3"
+    },
+    "platform": "Windows-11-10.0.26300-SP0",
+    "python_version": "3.12.14",
+    "replay_only_packages": {
+      "imageio-ffmpeg": "0.6.0",
+      "pillow": "12.3.0"
+    },
+    "sumo_version": "1.27.1",
+    "sumolib_version": "1.27.1",
+    "traci_version": "1.27.1",
+    "uv_lock_sha256": "46f15418f777ca5df069c8923a82e0e7f18444835cc469322540ebd0d39ee02c",
+    "uv_version": "uv 0.12.23 (46b84fd0b 2026-10-03 x86_64-pc-windows-msvc)"
+  },
+  "expected_run_counts": {
+    "excluded": [
+      "Pilot V2",
+      "calibration",
+      "calibration validation",
+      "reference-route pre-final runs",
+      "smokes",
+      "visual replay"
+    ],
+    "main": 200,
+    "s5": 90,
+    "total": 290
+  },
+  "freeze_name": "FINAL_SCIENTIFIC_CAMPAIGN_FREEZE",
+  "generated_at": "2026-10-14T14:15:45Z",
+  "intersection_terminology": {
+    "academic_ids": [
+      "A1",
+      "A2",
+      "A3",
+      "A4",
+      "A5",
+      "A6",
+      "A7",
+      "A8",
+      "A9"
+    ],
+    "glossary": "docs/methodology/intersection-glossary.md",
+    "glossary_sha256": "5217ec3a4548a18fdde5f9d5da8bfaf1f1ad5e7b4179a04285ed43568d0c1e17",
+    "sumo_ids_are_implementation_only": true
+  },
+  "main_matrix": {
+    "config": "experiments/configs/final_main.yaml",
+    "config_sha256": "2627c67e77d8236f4e4b86d49198d13b4fc6375ad7595ce0ff8597b04a995f3f",
+    "controllers": [
+      "B0_FIXED_CALIBRATED",
+      "B1_LOCAL_ADAPTIVE",
+      "B2_LOCAL_PRESSURE",
+      "C1_COOPERATIVE_COMPACT",
+      "C2_COOPERATIVE_EXPANDED"
+    ],
+    "expected_runs": 200,
+    "experiment_id": "final_main",
+    "scenarios": [
+      "S1_BALANCED",
+      "S2_DIRECTIONAL_PEAK",
+      "S3_DEMAND_SHIFT",
+      "S4_LOCAL_SATURATION"
+    ],
+    "seeds": [
+      42,
+      2027,
+      3253,
+      4517,
+      5791,
+      6841,
+      8089,
+      10007,
+      12011,
+      16001
+    ]
+  },
+  "reference_route": {
+    "bootstrap_base_seed": 20260930,
+    "bootstrap_resamples": 10000,
+    "cohort_rule": "offered vehicles whose planned edge sequence EXACTLY equals edge_sequence and whose scheduled departure is in [warmup, warmup + measurement_duration); never selected by SUMO route id",
+    "comparisons": [
+      [
+        "B0_FIXED_CALIBRATED",
+        "B2_LOCAL_PRESSURE"
+      ],
+      [
+        "B2_LOCAL_PRESSURE",
+        "C1_COOPERATIVE_COMPACT"
+      ],
+      [
+        "B0_FIXED_CALIBRATED",
+        "C1_COOPERATIVE_COMPACT"
+      ]
+    ],
+    "completion_metric": "reference_route_completion_ratio_offered",
+    "controllers": [
+      "B0_FIXED_CALIBRATED",
+      "B2_LOCAL_PRESSURE",
+      "C1_COOPERATIVE_COMPACT"
+    ],
+    "definition_sha256": "881d0732ba92ec976fcb8417b9b4bda84f4cb1477c2bf991482ef4cb4fb76af2",
+    "edge_sequence": [
+      "left1A1",
+      "A1B1",
+      "B1C1",
+      "C1right1"
+    ],
+    "logical_path": [
+      "West entry",
+      "A4",
+      "A5",
+      "A6",
+      "East exit"
+    ],
+    "metrics": [
+      "reference_route_mean_travel_time_seconds",
+      "reference_route_median_travel_time_seconds",
+      "reference_route_mean_waiting_time_seconds",
+      "reference_route_mean_time_loss_seconds",
+      "reference_route_mean_stops",
+      "reference_route_completion_ratio_offered",
+      "reference_route_completion_ratio_departed"
+    ],
+    "pairing_fields": [
+      "network_sha256",
+      "route_sha256",
+      "turning_config_sha256",
+      "scenario_neutral_sha256",
+      "demand_profile",
+      "seed",
+      "warmup_seconds",
+      "measurement_duration_seconds"
+    ],
+    "population_keys": [
+      "reference_route_offered",
+      "reference_route_departed",
+      "reference_route_arrived",
+      "reference_route_never_inserted",
+      "reference_route_unfinished"
+    ],
+    "primary_metric": "reference_route_mean_travel_time_seconds",
+    "reference_route_id": "WE_A4_A5_A6"
+  },
+  "replay": {
+    "implemented_at_freeze": true,
+    "note": "The synchronized before/after replay system exists at the frozen implementation. Replay outputs are illustrative and are NOT part of the 290 scientific runs.",
+    "replay_source_sha256": "d26d3254e48dab12ee8b620671a929472ca5d08de72f066cfb84a9f813776a13"
+  },
+  "s5_matrix": {
+    "config": "experiments/configs/final_s5_packet_loss.yaml",
+    "config_sha256": "9131a7fd39b6862e6840aae1f9200071720c706e39c1145671f738dff0a2eeff",
+    "cooperative_controllers": [
+      "C1_COOPERATIVE_COMPACT",
+      "C2_COOPERATIVE_EXPANDED"
+    ],
+    "delay_steps": [
+      0
+    ],
+    "drop_probability": [
+      0.0,
+      0.2,
+      0.5,
+      1.0
+    ],
+    "expected_runs": 90,
+    "experiment_id": "final_s5_packet_loss",
+    "local_reference": "B2_LOCAL_PRESSURE",
+    "local_reference_runs_per_seed": 1,
+    "note": "S5 is a communication experiment, not a new traffic-demand pattern.",
+    "traffic_base": "S2_DIRECTIONAL_PEAK"
+  },
+  "scenario_freeze": {
+    "measurement_duration_seconds": 3600.0,
+    "s3_gate_note": "The revised composite S3 validity gate was formalized after Pilot V2 diagnostic inspection and is therefore a post-hoc methodological refinement. No further S3 gate changes after freeze.",
+    "s3_post_shock_metric": "post_shock_queue_auc_vehicle_seconds",
+    "s3_shock_start_seconds": 2100.0,
+    "s4_teleport_note": "sumo_teleports_total is always preserved; a teleport does not by itself invalidate a run.",
+    "s4_teleport_policy": "ALLOW_AND_MEASURE",
+    "s5_traffic_base": "S2_DIRECTIONAL_PEAK",
+    "step_length": 1.0,
+    "validity_gates_doc_sha256": "045cafc2be95afe5213ac9546561f14c40ad38d0b5b075c7f5d39fe0535f88f2",
+    "warmup_seconds": 300.0
+  },
+  "scenarios": [
+    "S1_BALANCED",
+    "S2_DIRECTIONAL_PEAK",
+    "S3_DEMAND_SHIFT",
+    "S4_LOCAL_SATURATION"
+  ],
+  "schema_version": 1,
+  "scientific_input_hashes": {
+    "b0_plan_sha256": "a950d82d1d59562766b183c096477f39215f0de8a905960b223a7a6fcef1f0fe",
+    "communication_topology_sha256": "6e045c91f054726fd381e122efbe08bb627393b71ce35b60d7ac1430390297a8",
+    "controller_configs": {
+      "B0_FIXED_CALIBRATED": "a8e3c2079d7e798590b44a7ffcda2b5c7ec4da60b7ead87a32af6c00274945af",
+      "B1_LOCAL_ADAPTIVE": "25a9b5d0a9e668a05cd1cb75a70f48511c6d7a5922423a8aa16d168d6b661ae0",
+      "B2_LOCAL_PRESSURE": "ff971be507a78fd7530937cdbc662fa990a9e501b5869ec23d3c57e3ca155632",
+      "C1_COOPERATIVE_COMPACT": "73c1b25746df54a1d8307b8ba3a377b1f3d23114add46810a6365233408298d9",
+      "C2_COOPERATIVE_EXPANDED": "df118ca50f35053a0e274c540eefbf9dc1eda121d955edf5bad93c7ac2f65bb3"
+    },
+    "fairness_rule": "Cross-controller fairness uses the controller-neutral scenario hash (scenario_neutral_sha256), never the controller-dependent scenario_sha256.",
+    "main_campaign_config_sha256": "2627c67e77d8236f4e4b86d49198d13b4fc6375ad7595ce0ff8597b04a995f3f",
+    "metric_definitions_sha256": "60782a3e0750ddba359df0310c19c941ed303b065abe7863dbd9d0e238db8bc2",
+    "movement_definitions_digest": "a8e904d82289cb259a831235e1c222b904f0beeb261fe55bb3339781cdedab03",
+    "network_sha256": "46953c48351b0fdecf9babca662354bd5e45a5772553b153bc6f354c5332b48e",
+    "phase_topology_digest": "cfb6db8d6a3c25b7793d850c562ab62804360067b71f95c5aeff20080d55ca58",
+    "reference_route_definition_sha256": "881d0732ba92ec976fcb8417b9b4bda84f4cb1477c2bf991482ef4cb4fb76af2",
+    "route_files_digest": "a60b663d364c2eaabca382e5a98b4500270aae8968e63e614b569c85170e8c24",
+    "route_generation_configs_digest": "7eef7102743b16000110b6e07c1a150f709d9290b90d82a1bf8afc2f259f1126",
+    "run_matrix_sha256": "9e2e922d4dfe68f2a3b91c5ed59a44eccd3424f092fb951aa4c00d1abe3ab4ba",
+    "s5_campaign_config_sha256": "9131a7fd39b6862e6840aae1f9200071720c706e39c1145671f738dff0a2eeff",
+    "scenario_configs_digest": "98bb230c37ca60799e36348394e691614eb4908965ef61d8ae917ff003658d64",
+    "scenario_neutral_digest": "5ff8ef9136d2de31ae60d722a644b63b80470787723a8e2bf2d6202a8fc384ae",
+    "seed_list_sha256": "bb66935d66d8b374ab91a9034c920f5e8c70634897522a7a1b5e1689b1188151",
+    "statistical_plan_sha256": "ad673154d829096cc9e6fd6b4b78e7bda8b2e7f5a0be960e2feacfe467f7597d",
+    "turning_config_digest": "97a96663b2a6a463a4732aa54c477576f882512c129beec9b54a200407ad990e"
+  },
+  "scientific_source_sha256": "ef13b4a268cb139b580873368f3f7fc5d0dd447c7ef9645e69e154771831f2b3",
+  "seeds": {
+    "count": 10,
+    "extension_pool": [
+      6841,
+      8089,
+      10007,
+      12011,
+      16001
+    ],
+    "final": [
+      42,
+      2027,
+      3253,
+      4517,
+      5791,
+      6841,
+      8089,
+      10007,
+      12011,
+      16001
+    ],
+    "pilot_v2": [
+      42,
+      2027,
+      3253,
+      4517,
+      5791
+    ],
+    "provenance": "First five seeds are the Pilot V2 seeds; the next five are a pre-reserved extension pool. No seed was selected according to controller performance."
+  },
+  "statistical_plan": {
+    "bootstrap": {
+      "analysis_implementation": "analysis/statistics.py (random.Random(seed))",
+      "analysis_rng_seed": 20260910,
+      "confidence_level": 0.95,
+      "method": "percentile bootstrap resampling the paired differences with replacement",
+      "reference_route_implementation": "traffic_agents.experiments.reference_route.paired_bootstrap_ci (numpy default_rng, label-stable seed = (base + crc32(label)) mod 2**32)",
+      "reference_route_rng_base_seed": 20260930,
+      "resamples": 10000
+    },
+    "conditional_metric_rule": {
+      "conditional_on_completed_trips": [
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_travel_time"
+      ],
+      "must_be_interpreted_with": [
+        "departure_ratio",
+        "completion_ratio_offered",
+        "never_inserted_vehicle_count",
+        "unfinished_in_network_count"
+      ],
+      "note": "Especially important in S2 and S4, where part of the demand may not complete."
+    },
+    "descriptive_statistics": [
+      "N",
+      "mean",
+      "median",
+      "standard deviation",
+      "IQR"
+    ],
+    "frozen_before_final_results": true,
+    "no_new_inferential_methods_after_results": true,
+    "paired_comparison_unit": "scenario + seed",
+    "paired_statistics": [
+      "paired mean difference (treatment - baseline)",
+      "paired median difference",
+      "relative difference (mean difference / baseline mean)",
+      "paired bootstrap 95% confidence interval of the mean difference"
+    ],
+    "plan_sha256": "ad673154d829096cc9e6fd6b4b78e7bda8b2e7f5a0be960e2feacfe467f7597d",
+    "primary_comparison": {
+      "baseline": "B2_LOCAL_PRESSURE",
+      "rationale": "B2 and C1 share the local-pressure control family; C1 adds compact information from neighbouring agents, so B2 vs C1 isolates the effect of cooperation.",
+      "treatment": "C1_COOPERATIVE_COMPACT"
+    },
+    "reference_route_comparison_controllers": [
+      "B0_FIXED_CALIBRATED",
+      "B2_LOCAL_PRESSURE",
+      "C1_COOPERATIVE_COMPACT"
+    ],
+    "schema_version": 1,
+    "secondary_comparisons": [
+      {
+        "baseline": "B0_FIXED_CALIBRATED",
+        "meaning": "effect of local pressure adaptation relative to calibrated fixed timing",
+        "treatment": "B2_LOCAL_PRESSURE"
+      },
+      {
+        "baseline": "B0_FIXED_CALIBRATED",
+        "meaning": "simple local adaptation comparison",
+        "treatment": "B1_LOCAL_ADAPTIVE"
+      },
+      {
+        "baseline": "C1_COOPERATIVE_COMPACT",
+        "meaning": "effect/cost of richer communication",
+        "treatment": "C2_COOPERATIVE_EXPANDED"
+      }
+    ]
+  }
+}

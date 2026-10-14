@@ -25,10 +25,13 @@ CONTROLLER_ALIASES: Mapping[str, str] = {
     "C2": "C2_COOPERATIVE_EXPANDED",
 }
 
+# Frozen final comparisons (baseline, treatment): primary first, then the secondary ones.
+# Must equal ``traffic_agents.experiments.final_freeze.FINAL_CONTROLLER_PAIRS`` (tested).
 DEFAULT_CONTROLLER_PAIRS: tuple[tuple[str, str], ...] = (
     ("B2_LOCAL_PRESSURE", "C1_COOPERATIVE_COMPACT"),
-    ("B2_LOCAL_PRESSURE", "C2_COOPERATIVE_EXPANDED"),
-    ("B0_FIXED", "B1_LOCAL_ADAPTIVE"),
+    ("B0_FIXED_CALIBRATED", "B2_LOCAL_PRESSURE"),
+    ("B0_FIXED_CALIBRATED", "B1_LOCAL_ADAPTIVE"),
+    ("C1_COOPERATIVE_COMPACT", "C2_COOPERATIVE_EXPANDED"),
 )
 
 REQUIRED_ALIAS_GROUPS: Mapping[str, tuple[str, ...]] = {

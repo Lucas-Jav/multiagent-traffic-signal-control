@@ -539,6 +539,17 @@ METRIC_DEFINITIONS: Mapping[str, MetricDefinition] = {
         measurement_window=_COMM_WINDOW,
         edge_case_policy="Report 0 when no messages are observed.",
     ),
+    "sumo_teleports_total": MetricDefinition(
+        name="sumo_teleports_total",
+        unit="vehicles",
+        source="SUMO statistics.xml (<teleports total>), persisted in run_metrics counts.",
+        aggregation="Total number of vehicles teleported by SUMO during the run.",
+        measurement_window="Whole run (not a cohort metric).",
+        edge_case_policy=(
+            "Reported as 0 when SUMO reports no teleports. S4 follows ALLOW_AND_MEASURE: a "
+            "teleport never invalidates a run by itself and is always reported beside S4 results."
+        ),
+    ),
     "throughput_change_vs_zero_loss": MetricDefinition(
         name="throughput_change_vs_zero_loss",
         unit="vehicles",

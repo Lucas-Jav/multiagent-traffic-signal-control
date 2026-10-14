@@ -1,5 +1,10 @@
 # Matriz de Campanha V1
 
+> **ATUALIZAÇÃO (Prompt 59):** as seções "Final Main" e "S5 Packet Loss" abaixo descrevem o estado
+> **pré-congelamento** e estão **superadas** por [`final-campaign-freeze.md`](final-campaign-freeze.md):
+> 10 seeds, `campaign_role: FINAL_SCIENTIFIC`, B0 = `B0_FIXED_CALIBRATED`, main = 200 runs,
+> S5 = 90 runs (B2 uma vez por seed), total = 290.
+
 Status: matriz de campanha de pré-execução (pre-flight) para o piloto V1 e as campanhas finais planejadas.
 
 Este documento descreve apenas a estrutura da campanha. Ele não reporta

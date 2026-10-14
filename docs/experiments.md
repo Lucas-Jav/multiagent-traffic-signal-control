@@ -6,8 +6,9 @@ Esta é a **única definição ativa do S5**. Ela é a mesma de
 [`methodology/campaign-matrix.md`](methodology/campaign-matrix.md) e
 [`methodology/experimental-protocol.md`](methodology/experimental-protocol.md).
 
-Config: `experiments/configs/final_s5_packet_loss.yaml` (`campaign_role: PLANNED_FINAL`,
-estado pré-congelamento). **O S5 ainda não foi executado.** Nenhum resultado de robustez a perda
+Config: `experiments/configs/final_s5_packet_loss.yaml` (`campaign_role: FINAL_SCIENTIFIC`,
+congelada no Prompt 59: 10 seeds, 90 runs; ver `methodology/final-campaign-freeze.md`). Texto abaixo
+anterior ao congelamento (estado pré-congelamento). **O S5 ainda não foi executado.** Nenhum resultado de robustez a perda
 de pacotes existe; ele só pode ser apresentado como avaliação planejada/hipótese.
 
 - Tráfego base: `S2_DIRECTIONAL_PEAK` (demanda fixa; o S5 não define um novo cenário de demanda).

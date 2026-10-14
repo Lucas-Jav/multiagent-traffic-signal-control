@@ -1,0 +1,342 @@
+{
+  "config_hash": "a745c1c257f5055e1243d7bf61c932442d8bba0f3c229d04a8cdf3ce1562a3de",
+  "coverage": {
+    "intersection_labels": {
+      "A0": "A7",
+      "A1": "A4",
+      "A2": "A1",
+      "B0": "A8",
+      "B1": "A5",
+      "B2": "A2",
+      "C0": "A9",
+      "C1": "A6",
+      "C2": "A3"
+    },
+    "junction_pass_share_by_node": {
+      "A0": 0.13413361169102297,
+      "A1": 0.13778705636743216,
+      "A2": 0.13596033402922755,
+      "B0": 0.10647181628392484,
+      "B1": 0.11038622129436326,
+      "B2": 0.1088204592901879,
+      "C0": 0.08585594989561586,
+      "C1": 0.08872651356993737,
+      "C2": 0.0918580375782881
+    },
+    "junction_passes_by_node": {
+      "A0": 514,
+      "A1": 528,
+      "A2": 521,
+      "B0": 408,
+      "B1": 423,
+      "B2": 417,
+      "C0": 329,
+      "C1": 340,
+      "C2": 352
+    }
+  },
+  "demand_level": "MEDIUM",
+  "demand_profile": "S2_DIRECTIONAL_PEAK",
+  "entries": [
+    {
+      "begin_seconds": 0.0,
+      "demand_id": "dominant_left0A0",
+      "end_seconds": 3900.0,
+      "entry_edge_id": "left0A0",
+      "group": "dominant",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 320.0,
+      "via_intersection_id": null
+    },
+    {
+      "begin_seconds": 0.0,
+      "demand_id": "dominant_left1A1",
+      "end_seconds": 3900.0,
+      "entry_edge_id": "left1A1",
+      "group": "dominant",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 320.0,
+      "via_intersection_id": null
+    },
+    {
+      "begin_seconds": 0.0,
+      "demand_id": "dominant_left2A2",
+      "end_seconds": 3900.0,
+      "entry_edge_id": "left2A2",
+      "group": "dominant",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 320.0,
+      "via_intersection_id": null
+    },
+    {
+      "begin_seconds": 0.0,
+      "demand_id": "residual_right0C0",
+      "end_seconds": 3900.0,
+      "entry_edge_id": "right0C0",
+      "group": "residual",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 26.666666666666668,
+      "via_intersection_id": null
+    },
+    {
+      "begin_seconds": 0.0,
+      "demand_id": "residual_right1C1",
+      "end_seconds": 3900.0,
+      "entry_edge_id": "right1C1",
+      "group": "residual",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 26.666666666666668,
+      "via_intersection_id": null
+    },
+    {
+      "begin_seconds": 0.0,
+      "demand_id": "residual_right2C2",
+      "end_seconds": 3900.0,
+      "entry_edge_id": "right2C2",
+      "group": "residual",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 26.666666666666668,
+      "via_intersection_id": null
+    },
+    {
+      "begin_seconds": 0.0,
+      "demand_id": "residual_top0A2",
+      "end_seconds": 3900.0,
+      "entry_edge_id": "top0A2",
+      "group": "residual",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 26.666666666666668,
+      "via_intersection_id": null
+    },
+    {
+      "begin_seconds": 0.0,
+      "demand_id": "residual_top1B2",
+      "end_seconds": 3900.0,
+      "entry_edge_id": "top1B2",
+      "group": "residual",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 26.666666666666668,
+      "via_intersection_id": null
+    },
+    {
+      "begin_seconds": 0.0,
+      "demand_id": "residual_top2C2",
+      "end_seconds": 3900.0,
+      "entry_edge_id": "top2C2",
+      "group": "residual",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 26.666666666666668,
+      "via_intersection_id": null
+    },
+    {
+      "begin_seconds": 0.0,
+      "demand_id": "residual_bottom0A0",
+      "end_seconds": 3900.0,
+      "entry_edge_id": "bottom0A0",
+      "group": "residual",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 26.666666666666668,
+      "via_intersection_id": null
+    },
+    {
+      "begin_seconds": 0.0,
+      "demand_id": "residual_bottom1B0",
+      "end_seconds": 3900.0,
+      "entry_edge_id": "bottom1B0",
+      "group": "residual",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 26.666666666666668,
+      "via_intersection_id": null
+    },
+    {
+      "begin_seconds": 0.0,
+      "demand_id": "residual_bottom2C0",
+      "end_seconds": 3900.0,
+      "entry_edge_id": "bottom2C0",
+      "group": "residual",
+      "turning_ratios": {
+        "left": 0.15,
+        "right": 0.15,
+        "straight": 0.7
+      },
+      "vehicles_per_hour": 26.666666666666668,
+      "via_intersection_id": null
+    }
+  ],
+  "expected_approach_load_veh_per_hour": {
+    "A0A1": 72.61,
+    "A0B0": 243.764,
+    "A1A0": 105.093,
+    "A1A2": 105.093,
+    "A1B1": 245.783,
+    "A2A1": 72.61,
+    "A2B2": 243.764,
+    "B0A0": 39.621,
+    "B0B1": 60.162,
+    "B0C0": 187.244,
+    "B1A1": 41.774,
+    "B1B0": 84.065,
+    "B1B2": 84.065,
+    "B1C1": 190.097,
+    "B2A2": 39.621,
+    "B2B1": 60.162,
+    "B2C2": 187.244,
+    "C0B0": 32.873,
+    "C0C1": 50.753,
+    "C1B1": 33.893,
+    "C1C0": 68.042,
+    "C1C2": 68.042,
+    "C2B2": 32.873,
+    "C2C1": 50.753,
+    "bottom0A0": 26.667,
+    "bottom1B0": 26.667,
+    "bottom2C0": 26.667,
+    "left0A0": 320.0,
+    "left1A1": 320.0,
+    "left2A2": 320.0,
+    "right0C0": 26.667,
+    "right1C1": 26.667,
+    "right2C2": 26.667,
+    "top0A2": 26.667,
+    "top1B2": 26.667,
+    "top2C2": 26.667
+  },
+  "generated_at": "2026-10-14T14:12:42.783188Z",
+  "generator_version": "2.0.0",
+  "max_expected_approach_load_veh_per_hour": 320.0,
+  "network_hash": "46953c48351b0fdecf9babca662354bd5e45a5772553b153bc6f354c5332b48e",
+  "offered": {
+    "offered_by_demand": {
+      "dominant_left0A0": 346,
+      "dominant_left1A1": 346,
+      "dominant_left2A2": 346,
+      "residual_bottom0A0": 28,
+      "residual_bottom1B0": 28,
+      "residual_bottom2C0": 28,
+      "residual_right0C0": 28,
+      "residual_right1C1": 28,
+      "residual_right2C2": 28,
+      "residual_top0A2": 28,
+      "residual_top1B2": 28,
+      "residual_top2C2": 28
+    },
+    "offered_by_entry": {
+      "bottom0A0": 28,
+      "bottom1B0": 28,
+      "bottom2C0": 28,
+      "left0A0": 346,
+      "left1A1": 346,
+      "left2A2": 346,
+      "right0C0": 28,
+      "right1C1": 28,
+      "right2C2": 28,
+      "top0A2": 28,
+      "top1B2": 28,
+      "top2C2": 28
+    },
+    "offered_by_group": {
+      "dominant": 1038,
+      "residual": 252
+    },
+    "offered_in_measurement_window": 1193,
+    "offered_vehicle_count": 1290
+  },
+  "route_file": "routes_s2_seed_16001.rou.xml",
+  "route_hash": "e28358e9a40a7fddf3d25ac478e5a7ed6f39c53a00e535466603f1dbd2693eb7",
+  "routing": "turning_ratio_walk",
+  "scenario_hash": "0ca2ffaa4824a83aa0204770de6ff11f70f6ef93b8380336bff16d92ec37cd94",
+  "scenario_id": "grid_3x3",
+  "schedule": [
+    {
+      "begin_seconds": 0.0,
+      "description": "West-border dominant demand with residual demand elsewhere.",
+      "end_seconds": 3900.0,
+      "window_id": "full_run"
+    }
+  ],
+  "seed": 16001,
+  "shock_start_seconds": null,
+  "turning": {
+    "configured": {
+      "left": 0.15,
+      "right": 0.15,
+      "straight": 0.7
+    },
+    "expected_movement_proportions": {
+      "left": 0.15000000000000022,
+      "right": 0.15000000000000022,
+      "straight": 0.6999999999999996
+    },
+    "realized_movement_counts": {
+      "left": 599,
+      "right": 565,
+      "straight": 2668
+    },
+    "realized_movement_counts_by_group": {
+      "dominant": {
+        "left": 487,
+        "right": 456,
+        "straight": 2128
+      },
+      "residual": {
+        "left": 112,
+        "right": 109,
+        "straight": 540
+      }
+    },
+    "realized_movement_proportions": {
+      "left": 0.1563152400835073,
+      "right": 0.14744258872651356,
+      "straight": 0.6962421711899791
+    }
+  },
+  "turning_ratios": {
+    "left": 0.15,
+    "right": 0.15,
+    "straight": 0.7
+  }
+}

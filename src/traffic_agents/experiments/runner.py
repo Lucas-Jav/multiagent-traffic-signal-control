@@ -21,6 +21,7 @@ CommunicationSeedPolicy = Literal["derived_from_simulation_seed_delay_drop", "ex
 CampaignRole = Literal[
     "PILOT",
     "PLANNED_FINAL",
+    "FINAL_SCIENTIFIC",
     "OPTIONAL_PLANNED",
     "REFERENCE_ROUTE_B0_CALIBRATED",
 ]

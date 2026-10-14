@@ -1,0 +1,232 @@
+scenario_id: grid_3x3
+network_file: network.net.xml
+route_file: routes_s2_seed_12011.rou.xml
+simulation:
+  warmup_seconds: 300
+  measurement_duration_seconds: 3600
+  step_length: 1.0
+  seed: 12011
+controller_id: B0_FIXED
+traffic:
+  demand_profile: S2_DIRECTIONAL_PEAK
+  demand_level: MEDIUM
+  turning_ratios:
+    straight: 0.7
+    left: 0.15
+    right: 0.15
+  schedule:
+  - window_id: full_run
+    begin_seconds: 0
+    end_seconds: 3900
+    description: West-border dominant demand with residual demand elsewhere.
+  entries:
+  - demand_id: dominant_left0A0
+    entry_edge_id: left0A0
+    group: dominant
+    begin_seconds: 0
+    end_seconds: 3900
+    vehicles_per_hour: &id001
+      LOW: 213.333
+      MEDIUM: 320.0
+      HIGH: 426.667
+  - demand_id: dominant_left1A1
+    entry_edge_id: left1A1
+    group: dominant
+    begin_seconds: 0
+    end_seconds: 3900
+    vehicles_per_hour: *id001
+  - demand_id: dominant_left2A2
+    entry_edge_id: left2A2
+    group: dominant
+    begin_seconds: 0
+    end_seconds: 3900
+    vehicles_per_hour: *id001
+  - demand_id: residual_right0C0
+    entry_edge_id: right0C0
+    group: residual
+    begin_seconds: 0
+    end_seconds: 3900
+    vehicles_per_hour: &id002
+      LOW: 17.778
+      MEDIUM: 26.666666666666668
+      HIGH: 35.556
+  - demand_id: residual_right1C1
+    entry_edge_id: right1C1
+    group: residual
+    begin_seconds: 0
+    end_seconds: 3900
+    vehicles_per_hour: *id002
+  - demand_id: residual_right2C2
+    entry_edge_id: right2C2
+    group: residual
+    begin_seconds: 0
+    end_seconds: 3900
+    vehicles_per_hour: *id002
+  - demand_id: residual_top0A2
+    entry_edge_id: top0A2
+    group: residual
+    begin_seconds: 0
+    end_seconds: 3900
+    vehicles_per_hour: *id002
+  - demand_id: residual_top1B2
+    entry_edge_id: top1B2
+    group: residual
+    begin_seconds: 0
+    end_seconds: 3900
+    vehicles_per_hour: *id002
+  - demand_id: residual_top2C2
+    entry_edge_id: top2C2
+    group: residual
+    begin_seconds: 0
+    end_seconds: 3900
+    vehicles_per_hour: *id002
+  - demand_id: residual_bottom0A0
+    entry_edge_id: bottom0A0
+    group: residual
+    begin_seconds: 0
+    end_seconds: 3900
+    vehicles_per_hour: *id002
+  - demand_id: residual_bottom1B0
+    entry_edge_id: bottom1B0
+    group: residual
+    begin_seconds: 0
+    end_seconds: 3900
+    vehicles_per_hour: *id002
+  - demand_id: residual_bottom2C0
+    entry_edge_id: bottom2C0
+    group: residual
+    begin_seconds: 0
+    end_seconds: 3900
+    vehicles_per_hour: *id002
+communication:
+  delay_steps: 0
+  drop_probability: 0.0
+  rng_seed: null
+  max_message_age_steps: 1
+intersections:
+- intersection_id: A1
+  incoming_lanes:
+  - top0A2_0
+  - B2A2_0
+  - A1A2_0
+  - left2A2_0
+  outgoing_lanes:
+  - A2top0_0
+  - A2B2_0
+  - A2A1_0
+  - A2left2_0
+  phases:
+  - north_south
+  - east_west
+- intersection_id: A2
+  incoming_lanes:
+  - top1B2_0
+  - C2B2_0
+  - B1B2_0
+  - A2B2_0
+  outgoing_lanes:
+  - B2top1_0
+  - B2C2_0
+  - B2B1_0
+  - B2A2_0
+  phases:
+  - north_south
+  - east_west
+- intersection_id: A3
+  incoming_lanes:
+  - top2C2_0
+  - right2C2_0
+  - C1C2_0
+  - B2C2_0
+  outgoing_lanes:
+  - C2top2_0
+  - C2right2_0
+  - C2C1_0
+  - C2B2_0
+  phases:
+  - north_south
+  - east_west
+- intersection_id: A4
+  incoming_lanes:
+  - A2A1_0
+  - B1A1_0
+  - A0A1_0
+  - left1A1_0
+  outgoing_lanes:
+  - A1A2_0
+  - A1B1_0
+  - A1A0_0
+  - A1left1_0
+  phases:
+  - north_south
+  - east_west
+- intersection_id: A5
+  incoming_lanes:
+  - B2B1_0
+  - C1B1_0
+  - B0B1_0
+  - A1B1_0
+  outgoing_lanes:
+  - B1B2_0
+  - B1C1_0
+  - B1B0_0
+  - B1A1_0
+  phases:
+  - north_south
+  - east_west
+- intersection_id: A6
+  incoming_lanes:
+  - C2C1_0
+  - right1C1_0
+  - C0C1_0
+  - B1C1_0
+  outgoing_lanes:
+  - C1C2_0
+  - C1right1_0
+  - C1C0_0
+  - C1B1_0
+  phases:
+  - north_south
+  - east_west
+- intersection_id: A7
+  incoming_lanes:
+  - A1A0_0
+  - B0A0_0
+  - bottom0A0_0
+  - left0A0_0
+  outgoing_lanes:
+  - A0A1_0
+  - A0B0_0
+  - A0bottom0_0
+  - A0left0_0
+  phases:
+  - north_south
+  - east_west
+- intersection_id: A8
+  incoming_lanes:
+  - B1B0_0
+  - C0B0_0
+  - bottom1B0_0
+  - A0B0_0
+  outgoing_lanes:
+  - B0B1_0
+  - B0C0_0
+  - B0bottom1_0
+  - B0A0_0
+  phases:
+  - north_south
+  - east_west
+- intersection_id: A9
+  incoming_lanes:
+  - C1C0_0
+  - right0C0_0
+  - bottom2C0_0
+  - B0C0_0
+  outgoing_lanes:
+  - C0C1_0
+  - C0right0_0
+  - C0bottom2_0
+  - C0B0_0
+  phases:
+  - north_south
+  - east_west
