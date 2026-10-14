@@ -48,7 +48,7 @@
     "B2_LOCAL_PRESSURE",
     "C1_COOPERATIVE_COMPACT"
   ],
-  "schema_version": 1,
+  "schema_version": 2,
   "secondary_comparisons": [
     {
       "baseline": "B0_FIXED_CALIBRATED",

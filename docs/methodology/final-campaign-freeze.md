@@ -46,8 +46,9 @@ python scripts/build_final_freeze.py --verify
 - O manifesto (schema 2) registra `git_working_tree_dirty_at_input_inspection` (estado da árvore
   enquanto as entradas foram inspecionadas; evidência escrita depois não o altera). Nunca embute o
   próprio hash: `FREEZE_MANIFEST_SHA256` sai no CLI e em `final-freeze-manifest.sha256`.
-- Observação: o manifesto versionado em `docs/evidencias/final-freeze/` gerado antes (schema 1,
-  árvore suja, hashes brutos) é **legado** e será substituído pela geração definitiva.
+- O manifesto de `docs/evidencias/final-freeze/` é o **único** manifesto corrente (schema 2). O
+  manifesto anterior (schema 1, árvore suja, hashes brutos, fonte `b98b440`) foi **substituído** pela
+  geração definitiva abaixo; o histórico git o preserva.
 - Ambiente: Python 3.12.14, SUMO 1.27.1, traci/sumolib 1.27.1, `uv.lock` sha256
   `46f15418…ee02c`. O CI fixa uv 0.12.5 (validado: `uv lock --check` e `uv sync --frozen`).
 
@@ -195,9 +196,11 @@ Se um defeito de correção for descoberto: (1) parar a campanha; (2) documentar
 
 ## Antes da campanha (Prompt 60)
 
-Rodar `python scripts/build_final_freeze.py --verify` (e `--check`) na árvore commitada e, por config,
-`traffic-agents experiment freeze --config <cfg> --final` (exige árvore limpa e id de experimento
-novo) antes de `experiment run`.
+Na árvore commitada rodar `python scripts/build_final_freeze.py --verify --scientific-source-sha
+176178e36eeafb329a5a1350161be61cf97902b0`. Os freezes de experimento (schema 3) já foram gerados em
+`artifacts/experiments/final_main/frozen` e `.../final_s5_packet_loss/frozen` (locais, ignorados
+pelo Git): se ausentes, regerar com `traffic-agents experiment freeze --config <cfg> --final`
+(árvore limpa e id novo) antes de `experiment run`.
 
 ## Validação de rotas independente de fim de linha (Prompt 59.1C)
 
@@ -261,3 +264,33 @@ nenhuma entrada das campanhas finais está fora do repositório). O manifesto do
 Registros históricos (schema 1 e 2) com caminhos absolutos continuam sendo verificados como antes
 quando o caminho exato existe; não são reescritos nem mapeados por adivinhação e são considerados
 **não portáteis**. A campanha final usa o schema 3.
+
+## Freeze definitivo (Prompt 59.2)
+
+Gerado com a árvore limpa (`git_working_tree_dirty_at_input_inspection = false`), sem executar
+simulações, por `python scripts/build_final_freeze.py --scientific-source-sha <SHA>`.
+
+| Item | Valor |
+|---|---|
+| `SCIENTIFIC_SOURCE_GIT_SHA` | `176178e36eeafb329a5a1350161be61cf97902b0` |
+| `SCIENTIFIC_TREE_SHA256` (`SCIENTIFIC_TREE_V1`, 183 arquivos) | `b713917890e2dc65b7c25dfca80c627a7607146539bd2dadf5613f70451cdeff` |
+| `FREEZE_MANIFEST_SHA256` (canônico; fora do manifesto) | `de4af93262e4ab6734ed72a35a5d0d9aeeb0507c6db32c29fc7adc47978164ec` |
+| Esquemas de hash | `CANONICAL_TEXT_LF_V1`, `SCIENTIFIC_METADATA_V1`, `SCIENTIFIC_TREE_V1` |
+| Seeds (N = 10) | 42, 2027, 3253, 4517, 5791, 6841, 8089, 10007, 12011, 16001 |
+| Runs | main 200 + S5 90 = **290** (200 e 90 identidades únicas, 0 duplicadas) |
+| S5 | C1 40 + C2 40 + B2 10 (uma referência por seed) |
+| B0 | `B0_FIXED_CALIBRATED`, plano `fx_c84_demand_proportional_alternate`, ciclo 84 s, amarelo 3 s, vermelho total 2 s, `DEMAND_PROPORTIONAL`, `ALTERNATE`, offsets 0/42 s |
+| B0 bruto / canônico | `a950d82d1d59562766b183c096477f39215f0de8a905960b223a7a6fcef1f0fe` / `4ebbed94ef4feae63f7af62bc70944634bc5cbf399d0cd7856693d6758e6da19` |
+| Rede bruto / canônico | `46953c48351b0fdecf9babca662354bd5e45a5772553b153bc6f354c5332b48e` / `4fc7401a613eed05d08a0ff577469f3f5eb575709ddc04785b06694abc5a8f5b` |
+| Rota de referência | `left1A1 A1B1 B1C1 C1right1` (sequência exata de arestas) |
+| Bootstrap | percentil 95 %, 10 000 reamostragens; semente da análise `20260910`; base da rota de referência `20260930` |
+| `uv.lock` | `46f15418f777ca5df069c8923a82e0e7f18444835cc469322540ebd0d39ee02c` |
+
+Política de S3 (gate composto *post-hoc* do Pilot V2), política de S4 (`ALLOW_AND_MEASURE`,
+`sumo_teleports_total` canônico), desenho do S5, hashes e caminhos portáteis (schema 3, caminhos
+relativos POSIX) estão descritos nas seções acima. Evidência versionada em
+`docs/evidencias/final-freeze/` (`final-freeze-manifest.json`, `final-freeze-manifest.sha256`,
+`run-matrix.csv`, `scenario-inputs.csv`, `scientific-tree.csv`, `statistical-plan.json`).
+Verificação: `python scripts/build_final_freeze.py --verify --scientific-source-sha
+176178e36eeafb329a5a1350161be61cf97902b0` (OK). Após o commit do registro do freeze, o SHA fonte
+continua sendo `176178e…`; `HEAD` passa a ser descendente (a árvore científica não muda).

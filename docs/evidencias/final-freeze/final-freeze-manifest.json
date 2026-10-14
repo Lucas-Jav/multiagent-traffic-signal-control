@@ -8,10 +8,11 @@
       0,
       42
     ],
-    "plan_canonical_sha256": "e1d04e9c50fe12655c5b49dda98fc93cef7f5e48e84b2884a556f160ee498b40",
     "plan_file": "experiments/fixed_time/b0_fixed_calibrated.json",
-    "plan_file_sha256": "a950d82d1d59562766b183c096477f39215f0de8a905960b223a7a6fcef1f0fe",
+    "plan_file_canonical_sha256": "4ebbed94ef4feae63f7af62bc70944634bc5cbf399d0cd7856693d6758e6da19",
+    "plan_file_raw_sha256": "a950d82d1d59562766b183c096477f39215f0de8a905960b223a7a6fcef1f0fe",
     "plan_id": "fx_c84_demand_proportional_alternate",
+    "plan_semantic_sha256": "e1d04e9c50fe12655c5b49dda98fc93cef7f5e48e84b2884a556f160ee498b40",
     "provenance": {
       "J_calibration": 0.8524614331726439,
       "J_validation": 0.8486451047212631,
@@ -34,7 +35,7 @@
   "campaign_role": "FINAL_SCIENTIFIC",
   "canonical_metrics": {
     "definitions_sha256": "60782a3e0750ddba359df0310c19c941ed303b065abe7863dbd9d0e238db8bc2",
-    "metrics_doc_sha256": "5b996fb49f00d2f237583857f07f11e66c4db316d026414f9690462f7de7be45",
+    "metrics_doc_sha256": "6cb597b61208617b4c6b3a4ca7287ab1c1b42e415a811e6c40ac3fd8b4384a5b",
     "required": [
       "offered_vehicle_count",
       "departed_vehicle_count",
@@ -109,8 +110,6 @@
     ]
   },
   "environment": {
-    "git_sha": "b98b440b4a21ae0f53d04774bda479d3211173d9",
-    "git_working_tree_dirty": true,
     "machine": "AMD64",
     "packages": {
       "matplotlib": "3.11.1",
@@ -129,6 +128,7 @@
     "sumo_version": "1.27.1",
     "sumolib_version": "1.27.1",
     "traci_version": "1.27.1",
+    "uv_lock_raw_sha256": "46f15418f777ca5df069c8923a82e0e7f18444835cc469322540ebd0d39ee02c",
     "uv_lock_sha256": "46f15418f777ca5df069c8923a82e0e7f18444835cc469322540ebd0d39ee02c",
     "uv_version": "uv 0.12.23 (46b84fd0b 2026-10-03 x86_64-pc-windows-msvc)"
   },
@@ -146,7 +146,18 @@
     "total": 290
   },
   "freeze_name": "FINAL_SCIENTIFIC_CAMPAIGN_FREEZE",
-  "generated_at": "2026-10-14T14:15:45Z",
+  "generated_at": "2026-10-14T16:25:39Z",
+  "identity": {
+    "freeze_tooling_git_sha": "176178e36eeafb329a5a1350161be61cf97902b0",
+    "git_working_tree_dirty_at_input_inspection": false,
+    "note": "git_working_tree_dirty_at_input_inspection describes the tree while the scientific inputs were inspected; evidence written afterwards does not retroactively make that inspection dirty.",
+    "scientific_source_git_sha": "176178e36eeafb329a5a1350161be61cf97902b0",
+    "scientific_source_is_ancestor_of_head": true,
+    "scientific_tree_file_count": 183,
+    "scientific_tree_sha256": "b713917890e2dc65b7c25dfca80c627a7607146539bd2dadf5613f70451cdeff",
+    "scientific_tree_unchanged_from_source": true,
+    "source_scientific_tree_sha256": "b713917890e2dc65b7c25dfca80c627a7607146539bd2dadf5613f70451cdeff"
+  },
   "intersection_terminology": {
     "academic_ids": [
       "A1",
@@ -165,7 +176,8 @@
   },
   "main_matrix": {
     "config": "experiments/configs/final_main.yaml",
-    "config_sha256": "2627c67e77d8236f4e4b86d49198d13b4fc6375ad7595ce0ff8597b04a995f3f",
+    "config_canonical_sha256": "2627c67e77d8236f4e4b86d49198d13b4fc6375ad7595ce0ff8597b04a995f3f",
+    "config_raw_sha256": "2627c67e77d8236f4e4b86d49198d13b4fc6375ad7595ce0ff8597b04a995f3f",
     "controllers": [
       "B0_FIXED_CALIBRATED",
       "B1_LOCAL_ADAPTIVE",
@@ -264,11 +276,12 @@
   "replay": {
     "implemented_at_freeze": true,
     "note": "The synchronized before/after replay system exists at the frozen implementation. Replay outputs are illustrative and are NOT part of the 290 scientific runs.",
-    "replay_source_sha256": "d26d3254e48dab12ee8b620671a929472ca5d08de72f066cfb84a9f813776a13"
+    "replay_tree_sha256": "a36d337869ded1af5c887b18b04b145cd603d6fb6a281392babb8ff45ef98c0f"
   },
   "s5_matrix": {
     "config": "experiments/configs/final_s5_packet_loss.yaml",
-    "config_sha256": "9131a7fd39b6862e6840aae1f9200071720c706e39c1145671f738dff0a2eeff",
+    "config_canonical_sha256": "9131a7fd39b6862e6840aae1f9200071720c706e39c1145671f738dff0a2eeff",
+    "config_raw_sha256": "9131a7fd39b6862e6840aae1f9200071720c706e39c1145671f738dff0a2eeff",
     "cooperative_controllers": [
       "C1_COOPERATIVE_COMPACT",
       "C2_COOPERATIVE_EXPANDED"
@@ -307,9 +320,22 @@
     "S3_DEMAND_SHIFT",
     "S4_LOCAL_SATURATION"
   ],
-  "schema_version": 1,
+  "schema_version": 2,
+  "scientific_hash_schema": {
+    "authoritative_for_cross_platform_verification": "canonical_sha256 for text, semantic_sha256 for route metadata, raw_byte_sha256 for binary files; raw hashes of text files are forensic/local evidence only",
+    "metadata": "SCIENTIFIC_METADATA_V1",
+    "text": "CANONICAL_TEXT_LF_V1",
+    "tree": "SCIENTIFIC_TREE_V1",
+    "tree_evidence_file": "docs/evidencias/final-freeze/scientific-tree.csv",
+    "tree_file_set": {
+      "excluded": "replay package, freeze tooling (final_freeze.py, freeze_hashing.py), tests, docs, evidence, artifacts/, caches, viewsettings.xml, unused scenario files",
+      "included": "src/traffic_agents/**/*.py, analysis/**/*.py, final configs, B0 plan, network + metadata + scenario template, 40 final scenario YAML + route files, 40 route metadata (semantic), scenario generators, pyproject.toml, uv.lock"
+    },
+    "tree_record_format": "<relative_path>\t<hash_mode>\t<authoritative_hash>\n"
+  },
   "scientific_input_hashes": {
-    "b0_plan_sha256": "a950d82d1d59562766b183c096477f39215f0de8a905960b223a7a6fcef1f0fe",
+    "b0_plan_raw_sha256": "a950d82d1d59562766b183c096477f39215f0de8a905960b223a7a6fcef1f0fe",
+    "b0_plan_sha256": "4ebbed94ef4feae63f7af62bc70944634bc5cbf399d0cd7856693d6758e6da19",
     "communication_topology_sha256": "6e045c91f054726fd381e122efbe08bb627393b71ce35b60d7ac1430390297a8",
     "controller_configs": {
       "B0_FIXED_CALIBRATED": "a8e3c2079d7e798590b44a7ffcda2b5c7ec4da60b7ead87a32af6c00274945af",
@@ -319,23 +345,26 @@
       "C2_COOPERATIVE_EXPANDED": "df118ca50f35053a0e274c540eefbf9dc1eda121d955edf5bad93c7ac2f65bb3"
     },
     "fairness_rule": "Cross-controller fairness uses the controller-neutral scenario hash (scenario_neutral_sha256), never the controller-dependent scenario_sha256.",
+    "main_campaign_config_raw_sha256": "2627c67e77d8236f4e4b86d49198d13b4fc6375ad7595ce0ff8597b04a995f3f",
     "main_campaign_config_sha256": "2627c67e77d8236f4e4b86d49198d13b4fc6375ad7595ce0ff8597b04a995f3f",
     "metric_definitions_sha256": "60782a3e0750ddba359df0310c19c941ed303b065abe7863dbd9d0e238db8bc2",
     "movement_definitions_digest": "a8e904d82289cb259a831235e1c222b904f0beeb261fe55bb3339781cdedab03",
-    "network_sha256": "46953c48351b0fdecf9babca662354bd5e45a5772553b153bc6f354c5332b48e",
+    "network_raw_sha256": "46953c48351b0fdecf9babca662354bd5e45a5772553b153bc6f354c5332b48e",
+    "network_sha256": "4fc7401a613eed05d08a0ff577469f3f5eb575709ddc04785b06694abc5a8f5b",
     "phase_topology_digest": "cfb6db8d6a3c25b7793d850c562ab62804360067b71f95c5aeff20080d55ca58",
     "reference_route_definition_sha256": "881d0732ba92ec976fcb8417b9b4bda84f4cb1477c2bf991482ef4cb4fb76af2",
-    "route_files_digest": "a60b663d364c2eaabca382e5a98b4500270aae8968e63e614b569c85170e8c24",
+    "route_files_digest": "2f56356d62c49cabc81d43878c5efaa75ea4b28a5676b559a35a63bc4d966bfc",
     "route_generation_configs_digest": "7eef7102743b16000110b6e07c1a150f709d9290b90d82a1bf8afc2f259f1126",
-    "run_matrix_sha256": "9e2e922d4dfe68f2a3b91c5ed59a44eccd3424f092fb951aa4c00d1abe3ab4ba",
+    "route_metadata_semantic_digest": "cd31846225439e1c9650061dd1927f3be76693962c7e729ad825e8bf71250416",
+    "run_matrix_sha256": "32240965b86b058b840101e8bc7c46cc05057990879b6dc3b2e2f2c7b10b984c",
+    "s5_campaign_config_raw_sha256": "9131a7fd39b6862e6840aae1f9200071720c706e39c1145671f738dff0a2eeff",
     "s5_campaign_config_sha256": "9131a7fd39b6862e6840aae1f9200071720c706e39c1145671f738dff0a2eeff",
     "scenario_configs_digest": "98bb230c37ca60799e36348394e691614eb4908965ef61d8ae917ff003658d64",
     "scenario_neutral_digest": "5ff8ef9136d2de31ae60d722a644b63b80470787723a8e2bf2d6202a8fc384ae",
     "seed_list_sha256": "bb66935d66d8b374ab91a9034c920f5e8c70634897522a7a1b5e1689b1188151",
-    "statistical_plan_sha256": "ad673154d829096cc9e6fd6b4b78e7bda8b2e7f5a0be960e2feacfe467f7597d",
+    "statistical_plan_sha256": "d844f711df2d061b18756c6001e9a8fcc19e1b54c18f6a86f20e04d15d7c64f1",
     "turning_config_digest": "97a96663b2a6a463a4732aa54c477576f882512c129beec9b54a200407ad990e"
   },
-  "scientific_source_sha256": "ef13b4a268cb139b580873368f3f7fc5d0dd447c7ef9645e69e154771831f2b3",
   "seeds": {
     "count": 10,
     "extension_pool": [
@@ -406,7 +435,7 @@
       "relative difference (mean difference / baseline mean)",
       "paired bootstrap 95% confidence interval of the mean difference"
     ],
-    "plan_sha256": "ad673154d829096cc9e6fd6b4b78e7bda8b2e7f5a0be960e2feacfe467f7597d",
+    "plan_sha256": "d844f711df2d061b18756c6001e9a8fcc19e1b54c18f6a86f20e04d15d7c64f1",
     "primary_comparison": {
       "baseline": "B2_LOCAL_PRESSURE",
       "rationale": "B2 and C1 share the local-pressure control family; C1 adds compact information from neighbouring agents, so B2 vs C1 isolates the effect of cooperation.",
@@ -417,7 +446,7 @@
       "B2_LOCAL_PRESSURE",
       "C1_COOPERATIVE_COMPACT"
     ],
-    "schema_version": 1,
+    "schema_version": 2,
     "secondary_comparisons": [
       {
         "baseline": "B0_FIXED_CALIBRATED",
