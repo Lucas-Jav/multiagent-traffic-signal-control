@@ -1,0 +1,73 @@
+{
+  "campaign_role": "REFERENCE_ROUTE_B0_CALIBRATED",
+  "reference_route_id": "WE_A4_A5_A6",
+  "edge_sequence": [
+    "left1A1",
+    "A1B1",
+    "B1C1",
+    "C1right1"
+  ],
+  "logical_path": [
+    "West entry",
+    "A4",
+    "A5",
+    "A6",
+    "East exit"
+  ],
+  "logical_mapping_source": "scenarios/grid_3x3/metadata.json traffic_light_ids",
+  "sumo_to_logical": {
+    "A1": "A4",
+    "B1": "A5",
+    "C1": "A6"
+  },
+  "cohort_rule": "offered vehicles whose planned edge sequence EXACTLY equals edge_sequence and whose scheduled departure is in [warmup, warmup + measurement_duration); selection never uses SUMO route ids or vehicle ids",
+  "trip_metric_rule": "means/medians over COMPLETED trips only; unfinished trips have no duration; completion ratios reported beside every travel-time metric",
+  "controllers": [
+    "B0_FIXED_CALIBRATED",
+    "B2_LOCAL_PRESSURE",
+    "C1_COOPERATIVE_COMPACT"
+  ],
+  "comparisons": [
+    "B0_FIXED_CALIBRATED -> B2_LOCAL_PRESSURE",
+    "B2_LOCAL_PRESSURE -> C1_COOPERATIVE_COMPACT",
+    "B0_FIXED_CALIBRATED -> C1_COOPERATIVE_COMPACT"
+  ],
+  "seeds": [
+    42,
+    2027,
+    3253,
+    4517,
+    5791
+  ],
+  "scenarios": [
+    "S1_BALANCED",
+    "S2_DIRECTIONAL_PEAK",
+    "S3_DEMAND_SHIFT",
+    "S4_LOCAL_SATURATION"
+  ],
+  "bootstrap": {
+    "resamples": 10000,
+    "confidence": 0.95,
+    "base_seed": 20260930,
+    "seed_rule": "base_seed + crc32(scenario|baseline|treatment|metric) mod 2^32",
+    "unit": "seed-level paired differences (treatment - baseline)"
+  },
+  "sanity_ranges_prompt54": {
+    "S1_BALANCED": [
+      45,
+      59
+    ],
+    "S2_DIRECTIONAL_PEAK": [
+      97,
+      127
+    ],
+    "S3_DEMAND_SHIFT": [
+      106,
+      116
+    ],
+    "S4_LOCAL_SATURATION": [
+      188,
+      205
+    ]
+  }
+}

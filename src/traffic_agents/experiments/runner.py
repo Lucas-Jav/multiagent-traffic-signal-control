@@ -18,7 +18,12 @@ from traffic_agents.simulation import SimulationRunSummary, TraCISimulationRunne
 
 DropProbability = Annotated[float, Field(ge=0.0, le=1.0)]
 CommunicationSeedPolicy = Literal["derived_from_simulation_seed_delay_drop", "explicit_rng_seed"]
-CampaignRole = Literal["PILOT", "PLANNED_FINAL", "OPTIONAL_PLANNED"]
+CampaignRole = Literal[
+    "PILOT",
+    "PLANNED_FINAL",
+    "OPTIONAL_PLANNED",
+    "REFERENCE_ROUTE_B0_CALIBRATED",
+]
 
 
 class ExperimentCommunicationMatrixConfig(BaseModel):

@@ -1,0 +1,19 @@
+{
+  "campaign_role": "REFERENCE_ROUTE_B0_CALIBRATED",
+  "created_utc": "2026-10-14T03:09:26+00:00",
+  "source_dir": "artifacts/reference-route (git-ignored)",
+  "script": "scripts/reference_route_analysis.py",
+  "git_head": "dcd6cf9e17d55b311d8e705d424b16d894b13842",
+  "git_working_tree_dirty": true,
+  "kind": "derived (tripinfo.xml of Pilot V2 B2/C1 runs and new B0_FIXED_CALIBRATED runs)",
+  "files": {
+    "reference-route-definition.json": "5b03f0ac6902f29ab8786f412e4fbb0d03ab30b8945e3008ede4dafef3cac452",
+    "reference-route-runs.parquet": "0bb82793c73069afa0433ae440a21d391abbe82fc1f8256161b5b369202348e8",
+    "reference-route-seed-summary.csv": "82774c3ebc05cd5973e735fb2727d62f96be480dd84ef6e2601756ef62888deb",
+    "reference-route-pairwise.csv": "3458c7db5aff7f772af537ee9724d8262d7b644b5f185287344d2fac9076ee78",
+    "reference-route-advisor-table.csv": "68aa5c0ed2f7fb9f65a8de0259f1cfbc61e17940dea0ab274ad357816984851f",
+    "reference-route-provenance.csv": "af9da2908d5b77246a6800fbb4c65d4b9a9629b4d5f1dcfff3fffab4861ca8b8",
+    "reference-route-summary.json": "302bdf1b9e8161c86d8e97ceef9449e8691a65723289b35a8bd053f32a044782",
+    "reference-route-analysis.md": "743f25d106e6b153bfc4f6ff30070f2913bc34f89fd96ce811782558e8eaec63"
+  }
+}

@@ -13,12 +13,13 @@ outra tarefa).
 | 5 | Nomes de interseção padronizados | Dois esquemas (A1-A9 lógicos; A0..C2 SUMO) sem glossário único. | Criado `methodology/intersection-glossary.md` (mapeamento completo; A5 = `B1`; arestas de borda; regras de uso). | Aplicar A1-A9 em figuras e prosa do TCC. | DONE |
 | 6 | Valores de perda de pacotes padronizados | `experiments.md` e configs legadas usavam delay {0,1,3,5} x drop {0, 0.05, 0.10, 0.25}; configs finais usam drop {0, 0.20, 0.50, 1.00}, delay 0. | `experiments.md` reescrito: S5 canônico (perda 0/20/50/100%, atraso 0, base S2, ref. B2, C1/C2). Matriz antiga marcada DEPRECATED/HISTORICAL (docs, configs legadas, gerador). S5B atraso opcional separado. | Executar o S5 somente após a decisão final de seeds e o congelamento. **S5 NÃO foi executado.** | DONE (definição); execução pendente |
 | 7 | Número de seeds | Pool predeclarado de 10 seeds; seeds do piloto 42/2027/3253/4517/5791; contagem final pendente (configs finais usam as seeds do piloto como placeholder). | Documentado em `campaign-matrix.md` e `evidencias/pilot-v2/`. | Decidir a contagem final com base na largura dos IC; congelar. | PENDING |
-| 8 | Comparação de tempo de viagem em rota de referência (tradicional x adaptativo local x cooperativo) | Dados existem (`tripinfo.xml` por run, rotas determinísticas). Rota selecionada: W->E (`left1A1 A1B1 B1C1 C1right1`; A4->A5->A6). Métrica não implementada; nenhum resultado calculado. | Criado `methodology/reference-route.md` (rota, justificativa estrutural independente de desempenho, regra de coorte, métricas futuras, comparações B0/B2/C1). | Implementar e calcular `reference_route_*` sobre as runs; reportar com razão de conclusão. | PARTIAL |
+| 8 | Comparação de tempo de viagem em rota de referência (tradicional x adaptativo local x cooperativo) | Executado (Prompt 56, pré-final): rota W->E `left1A1 A1B1 B1C1 C1right1` (A4->A5->A6), B0 calibrado (20 runs novas) vs B2 e C1 reaproveitados do Pilot V2 (40 runs, invariantes verificadas), 5 seeds, 4 cenários. | `methodology/reference-route.md` oficializado; métricas e análise em `experiments/reference_route.py` e `scripts/reference_route_analysis.py`; evidências em `evidencias/reference-route/` (tabela para o orientador em `reference-route-analysis.md`). | Repetir na campanha final com a contagem final de seeds; interpretar com a razão de conclusão (S2-S4). | **DONE** (pré-final) |
 
 ## Extras da auditoria
 
 | Item | Estado |
 |---|---|
+| Rota de referência | `evidencias/reference-route/` (definição, runs por veículo, resumo por seed, comparações pareadas, proveniência). |
 | Baseline calibrado | `experiments/fixed_time/b0_fixed_calibrated.json`; evidências em `evidencias/fixed-time-calibration/`. |
 | Gate S3 versionado | `methodology/scenario-validity-gates.md` (gate composto, limitação post-hoc explícita). |
 | Gate bruto superado (`pilot_v2_gates.json`) | Preservado; supersessão documentada em `evidencias/pilot-v2/README.md`. |

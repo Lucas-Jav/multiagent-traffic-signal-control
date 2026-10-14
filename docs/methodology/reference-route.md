@@ -1,8 +1,14 @@
 # Rota de Referência
 
-Status: decisão de rota de referência para a comparação de tempo de viagem entre B0, B2 e C1.
-**Nenhum resultado foi calculado** neste documento. A métrica ainda não está implementada; o que
-segue define a rota, a justificativa de seleção, a regra de coorte e as métricas futuras.
+Status: **rota oficial** da comparação de tempo de viagem entre `B0_FIXED_CALIBRATED`, `B2_LOCAL_PRESSURE`
+e `C1_COOPERATIVE_COMPACT` (Prompt 56). Este documento define a rota, a seleção, a coorte e as métricas.
+Os resultados **não** ficam aqui: estão em `artifacts/reference-route/` (git-ignorado) e na cópia
+versionada leve [`../evidencias/reference-route/`](../evidencias/reference-route/), principalmente
+`reference-route-analysis.md`.
+
+Papel: evidência **pré-final** e validação de metodologia (5 seeds do Pilot V2). Não substitui a
+campanha final S1-S4. As diferenças medem: `B0 -> B2` = contribuição da adaptação local;
+`B2 -> C1` = contribuição incremental da cooperação.
 
 ## Rota selecionada
 
@@ -70,30 +76,35 @@ rota com `A1B1` imediatamente seguida de `B1C1` (incluindo, por exemplo, rotas q
 - Métricas de viagem usam as viagens **concluídas** dessa coorte (condicional à conclusão), sempre
   acompanhadas das contagens de população abaixo.
 
-## Métricas futuras (ainda não implementadas)
+## Métricas (implementadas em `experiments/reference_route.py`)
 
 Para cada run, sobre a coorte da rota de referência:
 
-| Campo (proposto) | Definição |
+| Campo | Definição |
 |---|---|
-| `reference_route_offered_vehicle_count` | Veículos da coorte de referência ofertados. |
-| `reference_route_departed_vehicle_count` | Inseridos. |
-| `reference_route_arrived_vehicle_count` | Concluídos. |
-| `reference_route_completion_ratio` | `arrived / offered`. |
-| `reference_route_mean_travel_time` | Média de `duration` (`tripinfo.xml`) das viagens concluídas. |
-| `reference_route_mean_waiting_time` | Média de `waitingTime` das viagens concluídas. |
-| `reference_route_mean_time_loss` | Média de `timeLoss` das viagens concluídas. |
+| `reference_route_offered` | Veículos da coorte de referência ofertados. |
+| `reference_route_departed` | Inseridos (presentes no `tripinfo.xml`). |
+| `reference_route_arrived` | Concluídos (chegaram antes do fim da run). |
+| `reference_route_never_inserted` | `offered - departed`. |
+| `reference_route_unfinished` | `departed - arrived`. |
+| `reference_route_mean_travel_time_seconds` | Média de `duration` das viagens concluídas. |
+| `reference_route_median_travel_time_seconds` | Mediana de `duration` das viagens concluídas. |
+| `reference_route_mean_waiting_time_seconds` | Média de `waitingTime` das viagens concluídas. |
+| `reference_route_mean_time_loss_seconds` | Média de `timeLoss` das viagens concluídas. |
 | `reference_route_mean_stops` | Média de `waitingCount` das viagens concluídas. |
+| `reference_route_completion_ratio_offered` | `arrived / offered`. |
+| `reference_route_completion_ratio_departed` | `arrived / departed`. |
 
-Regras de reporte: sempre ler o tempo de viagem junto com a razão de conclusão (o tempo de viagem
-exclui veículos não concluídos). Dados necessários já existem: `sumo/tripinfo.xml` por run e os
-arquivos de rotas; o cálculo posterior pode ser feito sobre runs existentes sem nova simulação.
+Médias e medianas usam **somente viagens concluídas**; uma viagem não concluída nunca recebe duração zero; o tempo de viagem é sempre lido com
+a razão de conclusão. Os dados vêm de `sumo/tripinfo.xml` por run e dos arquivos de rotas; B2 e C1
+reaproveitam o `tripinfo.xml` do Pilot V2 (invariantes verificadas) e só o B0 calibrado é executado.
 
 ## Comparações de controladores
 
 - **B0_FIXED vs B2_LOCAL_PRESSURE vs C1_COOPERATIVE_COMPACT**, pareadas por cenário e seed.
 - A comparação científica primária permanece **B2 vs C1** (ver `baselines.md`); o B0 serve como
-  referência de tempo fixo (use o `B0_FIXED_CALIBRATED` nas comparações finais; o `B0_FIXED_STATIC` é o histórico do Pilot V2).
+  referência de tempo fixo (use o `B0_FIXED_CALIBRATED` nas
+  comparações finais; o `B0_FIXED_STATIC` é o histórico do Pilot V2).
 - Reportar por cenário (S1, S2, S3, S4); não agregar regimes diferentes numa única média.
 - Intervalos de confiança descritivos (5 seeds no piloto; contagem final de seeds pendente).
 
@@ -101,4 +112,22 @@ arquivos de rotas; o cálculo posterior pode ser feito sobre runs existentes sem
 
 - A rota de referência é uma única origem-destino; não representa o desempenho de toda a rede.
 - Os resultados dependem do regime (S4 é sobrecarga intencional).
-- Sem resultados calculados até aqui.
+- Cinco seeds: ICs largos e descritivos; o tempo de viagem é condicional à conclusão (no S4 a conclusão é baixa).
+- Evidência pré-final: não decide a contagem final de seeds.
+
+## Ordem de decisão (a rota não foi escolhida pelo desempenho)
+
+1. A rota foi proposta na auditoria do Prompt 54 por critérios **estruturais** (cruza A4, A5 e A6;
+   é o corredor oeste-leste do S2; existe nos quatro cenários; amostra adequada), com contagem apenas
+   dos arquivos de rotas.
+2. Nenhum resultado de tempo de viagem de B0, B2 ou C1 nessa rota havia sido calculado quando a rota
+   foi escolhida; os resultados do Pilot V2 (B2 vs C1) eram agregados por cenário, não por rota.
+3. As faixas de amostra do Prompt 54 (S1 45-59, S2 97-127, S3 106-116, S4 188-205 por run) servem
+   apenas como verificação de sanidade; os tamanhos reais são medidos e relatados, nunca forçados.
+4. A coorte vem do arquivo de rotas, portanto é idêntica entre controladores na mesma seed.
+
+## Verificações de pareamento
+
+Para cada cenário+seed, B0 calibrado, B2 e C1 devem ter `network_sha256`, `route_sha256`,
+`turning_config_sha256`, `scenario_sha256`, perfil de demanda, seed, warmup e duração de medição
+**idênticos**. Qualquer divergência é CRITICAL e interrompe a análise (`pairing_mismatches`).
