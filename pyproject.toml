@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "matplotlib>=3.9",
+    "pillow>=10.0",
     "pydantic>=2.8",
     "pydantic-settings>=2.4",
     "pyarrow>=17.0",
@@ -16,6 +17,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "imageio-ffmpeg>=0.5",
     "mypy>=1.11",
     "pip-audit>=2.9",
     "pre-commit>=3.8",

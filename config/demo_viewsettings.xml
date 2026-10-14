@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SUMO GUI appearance used only by scripts/record_before_after.py. Purely cosmetic: it makes
+     vehicles readable in 1280x720 captures and has no influence on the simulation. -->
+<viewsettings>
+    <scheme name="real world">
+        <background backgroundColor="242,242,242" showGrid="0"/>
+        <vehicles vehicleQuality="2" vehicle_minSize="1.00" vehicle_exaggeration="2.50" showBlinker="0"/>
+    </scheme>
+    <delay value="0"/>
+</viewsettings>

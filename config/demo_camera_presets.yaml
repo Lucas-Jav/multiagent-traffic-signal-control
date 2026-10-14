@@ -1,0 +1,42 @@
+# Versioned camera presets for the before/after visual replay (scripts/record_before_after.py).
+#
+# Presets only describe WHAT to frame. They never touch the simulation: the replay tool reads
+# junction coordinates from the frozen network and positions the SUMO GUI view accordingly.
+#
+# focus: exactly one of
+#   network: true             - the whole network
+#   intersections: [A5, ...]  - project intersection labels (A1..A9)
+#   edges: [left1A1, ...]     - SUMO edge ids (both end junctions are framed)
+# margin_m: padding added around the focus bounding box, in metres.
+# labels: intersection labels drawn as unobtrusive overlay text (no change to the SUMO network).
+version: 1
+resolution:
+  width: 1280
+  height: 720
+presets:
+  whole_grid:
+    description: All nine intersections; use for S1 and the general architecture demonstration.
+    focus:
+      network: true
+    margin_m: 40
+    labels: [A1, A2, A3, A4, A5, A6, A7, A8, A9]
+  a5_center:
+    description: Central congestion region (A5) with its neighbours A2, A4, A6 and A8; use for S4.
+    focus:
+      intersections: [A5, A2, A4, A6, A8]
+    margin_m: 60
+    labels: [A5, A2, A4, A6, A8]
+  west_to_center:
+    description: West-East directional corridor up to A5; use for S2 and S3.
+    focus:
+      edges: [left1A1, A1B1, B1C1]
+    margin_m: 140
+    labels: [A4, A5, A6]
+  reference_route:
+    description: Official reference route left1A1 > A1B1 > B1C1 > C1right1 (West entry, A4, A5, A6, East exit).
+    focus:
+      edges: [left1A1, A1B1, B1C1, C1right1]
+    margin_m: 120
+    labels: [A4, A5, A6]
+    highlight_reference_route: true
+    highlight_reference_vehicle: true
