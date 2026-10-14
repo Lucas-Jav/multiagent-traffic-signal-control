@@ -13,6 +13,16 @@ from typing import TYPE_CHECKING, Any
 from traffic_agents.communication import grid_3x3_communication_topology
 from traffic_agents.config import get_settings, load_scenario_config
 from traffic_agents.controllers import build_controller
+from traffic_agents.experiments.legacy_artifact_hashes import (
+    LEGACY_NETWORK_CANONICAL_BY_RAW,
+    LEGACY_ROUTE_CANONICAL_BY_RAW,
+)
+from traffic_agents.experiments.repo_paths import (
+    RepositoryPathError,
+    resolve_repo_relative,
+    resolve_repository_root,
+    to_repo_relative_posix,
+)
 from traffic_agents.experiments.route_artifacts import (
     route_metadata_path,
     validate_route_artifacts,
@@ -24,6 +34,13 @@ from traffic_agents.experiments.run_invariants import (
     phase_plan_sha256,
     route_generator_config_sha256,
     scenario_turning_config_sha256,
+)
+from traffic_agents.experiments.text_hashing import (
+    CANONICAL_TEXT_SCHEMA,
+    HashingError,
+    canonical_sha256,
+    is_text_path,
+    raw_byte_sha256,
 )
 from traffic_agents.simulation.sumo_environment import (
     SumoEnvironmentInfo,
@@ -38,6 +55,24 @@ from traffic_agents.traffic_model import (
 
 if TYPE_CHECKING:
     from traffic_agents.experiments.runner import ExperimentConfig
+
+
+# Schema 1: raw ``sha256`` only. Schema 2 adds ``raw_byte_sha256`` / ``canonical_sha256`` /
+# ``hash_schema`` per text file; the canonical hash (``CANONICAL_TEXT_LF_V1``) is then the
+# authoritative, line-ending independent identity. Binary files keep the raw hash only.
+# Schema 3 (current) also makes paths repository-portable: ``relative_path`` (POSIX, relative to
+# the git top-level) replaces the machine-specific absolute ``path`` / ``scenario_path``.
+# Schemas 1 and 2 keep their absolute paths (verified as before, non-portable by construction).
+CHECKSUMS_SCHEMA_VERSION = 3
+PORTABLE_SCHEMA_MIN_VERSION = 3
+
+# Trusted canonical identities of legacy (schema 1) records, keyed by the RAW hash they recorded.
+# Only artifacts whose canonical identity is known from committed content appear here, so a raw
+# mismatch is never accepted unconditionally.
+_TRUSTED_LEGACY_CANONICAL: Mapping[str, str] = {
+    **LEGACY_ROUTE_CANONICAL_BY_RAW,
+    **LEGACY_NETWORK_CANONICAL_BY_RAW,
+}
 
 
 class ExperimentFreezeError(ValueError):
@@ -59,6 +94,16 @@ class FrozenExperimentConfig:
     freeze_dir: Path
     checksums: Mapping[str, Any]
     manifest: Mapping[str, Any]
+    repository_root: Path | None = None
+
+    @property
+    def schema_version(self) -> int:
+        value = self.checksums.get("schema_version", 1)
+        return int(value) if isinstance(value, int) else 1
+
+    @property
+    def is_portable(self) -> bool:
+        return self.schema_version >= PORTABLE_SCHEMA_MIN_VERSION
 
     @property
     def experiment_config_sha256(self) -> str:
@@ -68,31 +113,49 @@ class FrozenExperimentConfig:
             raise ExperimentFreezeError(msg)
         return value
 
-    def validate(self) -> None:
+    def validate(self, repository_root: Path | None = None) -> None:
+        root = self._root(repository_root)
         for entry in _mapping_entries(self.checksums.get("files")):
-            path = Path(_required_string(entry, "path"))
-            expected = _required_string(entry, "sha256")
+            path = _entry_path(entry, root, portable=self.is_portable)
             if not path.exists():
-                msg = f"frozen file is missing: {path}"
+                msg = f"frozen file is missing: {_display_path(entry)}"
                 raise ExperimentFreezeError(msg)
-            actual = file_sha256(path)
-            if actual != expected:
+            if not _file_matches_entry(path, entry):
                 label = _required_string(entry, "label")
-                msg = f"frozen checksum mismatch for {label}: {path}"
+                msg = f"frozen checksum mismatch for {label}: {_display_path(entry)}"
                 raise ExperimentFreezeError(msg)
 
         for entry in _mapping_entries(self.checksums.get("derived")):
-            actual = _derived_checksum(entry)
+            actual = _derived_checksum(entry, root, portable=self.is_portable)
             expected = _required_string(entry, "sha256")
             if actual != expected:
                 label = _required_string(entry, "label")
                 msg = f"frozen checksum mismatch for {label}"
                 raise ExperimentFreezeError(msg)
 
+    def _root(self, explicit: Path | None) -> Path | None:
+        """Repository root for portable records: explicit, configured, or resolved by git."""
+
+        if not self.is_portable:
+            return None
+        if explicit is not None:
+            return explicit
+        if self.repository_root is not None:
+            return self.repository_root
+        for anchor in (self.freeze_dir, Path.cwd()):
+            try:
+                return resolve_repository_root(anchor)
+            except RepositoryPathError:
+                continue
+        msg = "cannot resolve the repository root to verify a portable freeze"
+        raise ExperimentFreezeError(msg)
+
     def run_manifest_fields(self) -> dict[str, str]:
-        return {
-            "experiment_config_sha256": self.experiment_config_sha256,
-        }
+        fields = {"experiment_config_sha256": self.experiment_config_sha256}
+        canonical = self.checksums.get("experiment_config_canonical_sha256")
+        if isinstance(canonical, str):
+            fields["experiment_config_canonical_sha256"] = canonical
+        return fields
 
 
 def freeze_experiment_config(
@@ -105,6 +168,7 @@ def freeze_experiment_config(
     from traffic_agents.experiments.runner import load_experiment_config
 
     config_path = config_path.resolve()
+    repository_root = _repository_root_for(config_path)
     config = load_experiment_config(config_path)
     experiment_dir = _experiment_dir(config, artifacts_dir)
     if final and experiment_dir.exists():
@@ -113,7 +177,7 @@ def freeze_experiment_config(
         )
         raise ExperimentFreezeError(msg)
 
-    dirty = is_working_tree_dirty(Path.cwd())
+    dirty = is_working_tree_dirty(repository_root)
     if final and dirty:
         msg = "--final freeze requires a clean Git working tree"
         raise ExperimentFreezeError(msg)
@@ -125,7 +189,9 @@ def freeze_experiment_config(
     frozen_experiment_path = freeze_dir / "experiment.yaml"
     copyfile(config_path, frozen_experiment_path)
 
-    checksums = build_freeze_checksums(config=config, config_path=config_path)
+    checksums = build_freeze_checksums(
+        config=config, config_path=config_path, repository_root=repository_root
+    )
     missing_files = _missing_configured_files(checksums)
     if final and missing_files:
         missing = ", ".join(missing_files)
@@ -135,12 +201,12 @@ def freeze_experiment_config(
     manifest = {
         "experiment_id": config.experiment_id,
         "frozen_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-        "git_sha": _detect_git_sha(Path.cwd()),
+        "git_sha": _detect_git_sha(repository_root),
         "working_tree_dirty": dirty,
         "sumo_version": active_sumo_info.version,
         "python_version": platform.python_version(),
         "final": final,
-        "experiment_config_source": str(config_path),
+        "experiment_config_source": to_repo_relative_posix(config_path, repository_root),
         "checksums": checksums,
     }
 
@@ -162,10 +228,12 @@ def build_freeze_checksums(
     *,
     config: ExperimentConfig,
     config_path: Path,
+    repository_root: Path | None = None,
 ) -> dict[str, object]:
+    root = repository_root or _repository_root_for(config_path)
     scenario_paths = _scenario_paths(config)
     file_entries: list[dict[str, str]] = [
-        _file_entry("experiment_config", config_path),
+        _file_entry("experiment_config", config_path, root),
     ]
     derived_entries: list[dict[str, str]] = []
     missing_files: list[str] = []
@@ -177,23 +245,23 @@ def build_freeze_checksums(
             scenario_config=scenario_config,
             scenario_dir=scenario_dir,
         )
-        file_entries.append(_file_entry("scenario_config", scenario_path))
+        file_entries.append(_file_entry("scenario_config", scenario_path, root))
 
         network_path = scenario_dir / scenario_config.network_file
-        network_entry = _optional_file_entry("network_file", network_path)
+        network_entry = _optional_file_entry("network_file", network_path, root)
         if network_entry is None:
-            missing_files.append(str(network_path.resolve()))
+            missing_files.append(_relative_or_error(network_path, root))
         else:
             file_entries.append(network_entry)
 
         route_path = scenario_dir / scenario_config.route_file
-        route_entry = _optional_file_entry("route_file", route_path)
+        route_entry = _optional_file_entry("route_file", route_path, root)
         if route_entry is not None:
             file_entries.append(route_entry)
         else:
-            missing_files.append(str(route_path.resolve()))
+            missing_files.append(_relative_or_error(route_path, root))
         metadata_path = route_metadata_path(route_path)
-        route_metadata_entry = _optional_file_entry("route_generator_metadata", metadata_path)
+        route_metadata_entry = _optional_file_entry("route_generator_metadata", metadata_path, root)
         if route_metadata_entry is not None:
             file_entries.append(route_metadata_entry)
 
@@ -201,29 +269,29 @@ def build_freeze_checksums(
             scenario_config=scenario_config,
             scenario_dir=scenario_dir,
         )
-        scenario_id = scenario_path.as_posix()
+        scenario_id = _relative_or_error(scenario_path, root)
         derived_entries.extend(
             [
                 {
                     "label": "route_generator_config",
-                    "scenario_path": scenario_id,
+                    "scenario_relative_path": scenario_id,
                     "sha256": route_generator_config_sha256(scenario_config),
                 },
                 {
                     "label": "phase_plan",
-                    "scenario_path": scenario_id,
+                    "scenario_relative_path": scenario_id,
                     "version": PHASE_PLAN_VERSION,
                     "sha256": phase_plan_sha256(traffic_models),
                 },
                 {
                     "label": "movement_model_config",
-                    "scenario_path": scenario_id,
+                    "scenario_relative_path": scenario_id,
                     "version": MOVEMENT_MODEL_VERSION,
                     "sha256": movement_model_sha256(traffic_models),
                 },
                 {
                     "label": "turning_ratio_config",
-                    "scenario_path": scenario_id,
+                    "scenario_relative_path": scenario_id,
                     "sha256": scenario_turning_config_sha256(scenario_config),
                 },
             ]
@@ -247,8 +315,11 @@ def build_freeze_checksums(
 
     experiment_config_sha256 = file_sha256(config_path)
     return {
+        "schema_version": CHECKSUMS_SCHEMA_VERSION,
+        "hash_schema": CANONICAL_TEXT_SCHEMA,
         "experiment_id": config.experiment_id,
         "experiment_config_sha256": experiment_config_sha256,
+        "experiment_config_canonical_sha256": canonical_sha256(config_path.read_bytes()),
         "missing_files": missing_files,
         "files": file_entries,
         "derived": derived_entries,
@@ -259,14 +330,19 @@ def load_frozen_experiment_config(
     *,
     config: ExperimentConfig,
     artifacts_dir: Path | None = None,
+    repository_root: Path | None = None,
 ) -> FrozenExperimentConfig | None:
     freeze_dir = _experiment_dir(config, artifacts_dir) / "frozen"
     if not freeze_dir.exists():
         return None
-    return load_frozen_experiment_config_from_dir(freeze_dir)
+    return load_frozen_experiment_config_from_dir(freeze_dir, repository_root=repository_root)
 
 
-def load_frozen_experiment_config_from_dir(freeze_dir: Path) -> FrozenExperimentConfig:
+def load_frozen_experiment_config_from_dir(
+    freeze_dir: Path,
+    *,
+    repository_root: Path | None = None,
+) -> FrozenExperimentConfig:
     checksums_path = freeze_dir / "checksums.json"
     manifest_path = freeze_dir / "freeze_manifest.json"
     if not checksums_path.exists() or not manifest_path.exists():
@@ -281,6 +357,7 @@ def load_frozen_experiment_config_from_dir(freeze_dir: Path) -> FrozenExperiment
         freeze_dir=freeze_dir,
         checksums=checksums,
         manifest=manifest,
+        repository_root=repository_root,
     )
 
 
@@ -315,21 +392,84 @@ def _controller_ids(config: ExperimentConfig) -> tuple[str, ...]:
     return tuple(dict.fromkeys(controller_ids))
 
 
-def _file_entry(label: str, path: Path) -> dict[str, str]:
+def _repository_root_for(path: Path) -> Path:
+    try:
+        return resolve_repository_root(path)
+    except RepositoryPathError as exc:
+        raise ExperimentFreezeError(str(exc)) from exc
+
+
+def _relative_or_error(path: Path, repository_root: Path) -> str:
+    try:
+        return to_repo_relative_posix(path, repository_root)
+    except RepositoryPathError as exc:
+        raise ExperimentFreezeError(str(exc)) from exc
+
+
+def _file_entry(label: str, path: Path, repository_root: Path) -> dict[str, str]:
     if not path.exists():
         msg = f"{label} file not found: {path}"
         raise FileNotFoundError(msg)
-    return {
+    data = path.read_bytes()
+    raw = raw_byte_sha256(data)
+    entry = {
         "label": label,
-        "path": str(path.resolve()),
-        "sha256": file_sha256(path),
+        "relative_path": _relative_or_error(path, repository_root),
+        "sha256": raw,  # legacy key (raw), kept for older readers
+        "raw_byte_sha256": raw,
     }
+    if is_text_path(path.name):
+        entry["canonical_sha256"] = canonical_sha256(data)
+        entry["hash_schema"] = CANONICAL_TEXT_SCHEMA
+    return entry
 
 
-def _optional_file_entry(label: str, path: Path) -> dict[str, str] | None:
+def _entry_path(entry: Mapping[str, Any], repository_root: Path | None, *, portable: bool) -> Path:
+    """Local file of a record. Portable records resolve inside the repository only."""
+
+    if not portable:
+        return Path(_required_string(entry, "path"))
+    if "path" in entry or repository_root is None:
+        msg = f"portable freeze record must use relative_path only: {sorted(entry)}"
+        raise ExperimentFreezeError(msg)
+    try:
+        return resolve_repo_relative(repository_root, entry.get("relative_path"))
+    except RepositoryPathError as exc:
+        raise ExperimentFreezeError(str(exc)) from exc
+
+
+def _display_path(entry: Mapping[str, Any]) -> str:
+    return str(entry.get("relative_path") or entry.get("path"))
+
+
+def _file_matches_entry(path: Path, entry: Mapping[str, Any]) -> bool:
+    """Verify a frozen file independent of line endings, never by blind canonical acceptance.
+
+    * schema 2 text entry: the canonical hash recorded in the freeze must match;
+    * otherwise (legacy record or binary file): the raw hash must match, or - text only - the file's
+      canonical hash must equal the trusted canonical identity known for the recorded raw hash.
+    """
+
+    data = path.read_bytes()
+    recorded_canonical = entry.get("canonical_sha256")
+    try:
+        if isinstance(recorded_canonical, str) and recorded_canonical:
+            return canonical_sha256(data) == recorded_canonical
+        expected_raw = _required_string(entry, "sha256")
+        if raw_byte_sha256(data) == expected_raw:
+            return True
+        if not is_text_path(path.name):
+            return False
+        trusted = _TRUSTED_LEGACY_CANONICAL.get(expected_raw)
+        return trusted is not None and canonical_sha256(data) == trusted
+    except HashingError:
+        return False
+
+
+def _optional_file_entry(label: str, path: Path, repository_root: Path) -> dict[str, str] | None:
     if not path.exists():
         return None
-    return _file_entry(label, path)
+    return _file_entry(label, path, repository_root)
 
 
 def _controller_config_sha256(controller_id: str) -> str:
@@ -345,14 +485,27 @@ def _missing_configured_files(checksums: Mapping[str, object]) -> tuple[str, ...
     return tuple(str(item) for item in value)
 
 
-def _derived_checksum(entry: Mapping[str, Any]) -> str:
+def _derived_checksum(
+    entry: Mapping[str, Any], repository_root: Path | None, *, portable: bool
+) -> str:
     label = _required_string(entry, "label")
     if label == "communication_topology":
         return grid_3x3_communication_topology().topology_hash
     if label == "controller_config":
         return _controller_config_sha256(_required_string(entry, "controller_id"))
 
-    scenario_path = Path(_required_string(entry, "scenario_path"))
+    if portable:
+        if "scenario_path" in entry or repository_root is None:
+            msg = "portable freeze record must use scenario_relative_path only"
+            raise ExperimentFreezeError(msg)
+        try:
+            scenario_path = resolve_repo_relative(
+                repository_root, entry.get("scenario_relative_path")
+            )
+        except RepositoryPathError as exc:
+            raise ExperimentFreezeError(str(exc)) from exc
+    else:
+        scenario_path = Path(_required_string(entry, "scenario_path"))
     scenario_config = load_scenario_config(scenario_path)
     if label == "route_generator_config":
         return route_generator_config_sha256(scenario_config)

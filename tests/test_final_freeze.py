@@ -8,6 +8,15 @@ import pytest
 
 from analysis.statistics import DEFAULT_CONTROLLER_PAIRS
 from traffic_agents.experiments import final_freeze as ff
+from traffic_agents.experiments.freeze_hashing import (
+    FreezePreconditions,
+    WorkingTreeSource,
+    canonical_sha256,
+    compute_scientific_tree,
+    manifest_file_sha256,
+    raw_byte_sha256,
+    write_manifest_checksum,
+)
 from traffic_agents.experiments.run_invariants import file_sha256
 from traffic_agents.experiments.runner import load_experiment_config
 
@@ -72,9 +81,12 @@ def test_b0_plan_identity_and_hash() -> None:
     plan = json.loads(plan_path.read_text(encoding="utf-8"))
     assert plan["plan_id"] == "fx_c84_demand_proportional_alternate"
     assert (plan["cycle_seconds"], plan["yellow_seconds"], plan["all_red_seconds"]) == (84, 3, 2)
-    assert file_sha256(plan_path) == (
-        "a950d82d1d59562766b183c096477f39215f0de8a905960b223a7a6fcef1f0fe"
-    )
+    # Raw bytes depend on the checkout line endings; the canonical hash is the authority.
+    assert canonical_sha256(plan_path.read_bytes()) == ff.B0_CANONICAL_SHA256
+    assert file_sha256(plan_path) in {
+        "a950d82d1d59562766b183c096477f39215f0de8a905960b223a7a6fcef1f0fe",
+        raw_byte_sha256(plan_path.read_bytes()),
+    }
 
 
 def test_comparisons_match_analysis_defaults() -> None:
@@ -94,15 +106,60 @@ def test_statistical_plan_records_bootstrap_seed() -> None:
     assert plan["paired_comparison_unit"] == "scenario + seed"
 
 
-def test_committed_manifest_is_complete_and_verifies() -> None:
-    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+SYNTHETIC_SOURCE_SHA = "5" * 40  # the real SHA is supplied at freeze time; tests never need one
+
+
+def _synthetic_preconditions() -> FreezePreconditions:
+    """Preconditions as they would be on a clean tree whose source tree equals the current one."""
+
+    tree = compute_scientific_tree(ff.scientific_spec(), WorkingTreeSource(REPO))
+    return FreezePreconditions(
+        head_sha="6" * 40,
+        scientific_source_git_sha=SYNTHETIC_SOURCE_SHA,
+        working_tree_dirty_at_input_inspection=False,
+        source_is_ancestor_of_head=True,
+        source_exists=True,
+        scientific_tree_sha256=tree.sha256,
+        source_scientific_tree_sha256=tree.sha256,
+        scientific_changes_since_source=(),
+        tree=tree,
+    )
+
+
+@pytest.fixture(scope="module")
+def fresh_manifest(tmp_path_factory: pytest.TempPathFactory) -> tuple[dict[str, object], Path]:
+    """Schema-2 manifest built in memory (nothing is written into the repository)."""
+
+    manifest = ff.build_freeze_manifest(
+        REPO, generated_at="2026-01-01T00:00:00Z", preconditions=_synthetic_preconditions()
+    )
+    path = tmp_path_factory.mktemp("manifest") / "final-freeze-manifest.json"
+    path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return manifest, path
+
+
+def test_no_scientific_source_sha_is_hardcoded() -> None:
+    assert not hasattr(ff, "SCIENTIFIC_SOURCE_GIT_SHA")
+    superseded = "0abd7be"
+    for relative in ("src", "scripts"):
+        for path in (REPO / relative).rglob("*.py"):
+            assert superseded not in path.read_text(encoding="utf-8"), path
+
+
+def test_manifest_source_sha_comes_from_the_validated_input(
+    fresh_manifest: tuple[dict[str, object], Path],
+) -> None:
+    manifest, _ = fresh_manifest
+    identity = manifest["identity"]
+    assert identity["scientific_source_git_sha"] == SYNTHETIC_SOURCE_SHA
+    assert identity["freeze_tooling_git_sha"] == "6" * 40
+
+
+def test_manifest_content_and_schema(fresh_manifest: tuple[dict[str, object], Path]) -> None:
+    manifest, _ = fresh_manifest
+    assert manifest["schema_version"] == 2
     assert manifest["seeds"]["count"] == 10
-    assert manifest["expected_run_counts"] == {
-        "main": 200,
-        "s5": 90,
-        "total": 290,
-        "excluded": manifest["expected_run_counts"]["excluded"],
-    }
+    assert manifest["expected_run_counts"]["total"] == 290
     assert manifest["scenario_freeze"]["s4_teleport_policy"] == "ALLOW_AND_MEASURE"
     assert manifest["scenario_freeze"]["s3_shock_start_seconds"] == 2100
     assert manifest["reference_route"]["edge_sequence"] == [
@@ -111,21 +168,75 @@ def test_committed_manifest_is_complete_and_verifies() -> None:
         "B1C1",
         "C1right1",
     ]
-    env = manifest["environment"]
-    for key in ("git_sha", "python_version", "sumo_version", "traci_version", "uv_lock_sha256"):
-        assert env[key]
-    for value in manifest["scientific_input_hashes"].values():
+    identity = manifest["identity"]
+    assert identity["scientific_tree_unchanged_from_source"] is True
+    assert identity["scientific_tree_sha256"] == identity["source_scientific_tree_sha256"]
+    assert identity["git_working_tree_dirty_at_input_inspection"] is False
+    schema = manifest["scientific_hash_schema"]
+    assert schema["text"] == "CANONICAL_TEXT_LF_V1"
+    assert schema["metadata"] == "SCIENTIFIC_METADATA_V1"
+    assert schema["tree"] == "SCIENTIFIC_TREE_V1"
+    b0 = manifest["b0_identity"]
+    assert b0["plan_file_raw_sha256"] and b0["plan_file_canonical_sha256"]
+    hashes = manifest["scientific_input_hashes"]
+    assert hashes["network_sha256"] and hashes["network_raw_sha256"]
+    for value in hashes.values():
         assert value
-    assert ff.verify_freeze_manifest(REPO) == []
+    env = manifest["environment"]
+    for key in ("python_version", "sumo_version", "traci_version", "uv_lock_sha256"):
+        assert env[key]
 
 
-def test_verify_detects_a_changed_frozen_config(tmp_path: Path) -> None:
-    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    manifest["scientific_input_hashes"]["main_campaign_config_sha256"] = "0" * 64
-    tampered = tmp_path / "manifest.json"
-    tampered.write_text(json.dumps(manifest), encoding="utf-8")
-    problems = ff.verify_freeze_manifest(REPO, tampered)
+def test_fresh_manifest_hashes_verify(fresh_manifest: tuple[dict[str, object], Path]) -> None:
+    manifest, _ = fresh_manifest
+    assert ff.verify_manifest_hashes(REPO, manifest) == []
+
+
+def test_verify_requires_an_existing_source_commit(
+    fresh_manifest: tuple[dict[str, object], Path],
+) -> None:
+    _, path = fresh_manifest
+    problems = ff.verify_freeze_manifest(REPO, path)
+    assert any("does not exist" in problem for problem in problems)
+
+
+def test_manifest_does_not_embed_its_own_hash(
+    fresh_manifest: tuple[dict[str, object], Path],
+) -> None:
+    _, path = fresh_manifest
+    checksum_path = write_manifest_checksum(path)
+    digest = manifest_file_sha256(path)
+    assert checksum_path.read_text(encoding="utf-8") == f"{digest}  {path.name}\n"
+    assert digest not in path.read_text(encoding="utf-8")
+
+
+def test_legacy_manifest_is_rejected_for_verification() -> None:
+    problems = ff.verify_freeze_manifest(REPO, MANIFEST)
+    committed = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    if committed["schema_version"] == 2:
+        assert not any("legacy manifest" in problem for problem in problems)
+    else:
+        assert len(problems) == 1 and "legacy manifest" in problems[0]
+
+
+def test_verify_detects_a_changed_frozen_config(
+    fresh_manifest: tuple[dict[str, object], Path],
+) -> None:
+    manifest, _ = fresh_manifest
+    tampered = json.loads(json.dumps(manifest))
+    tampered["scientific_input_hashes"]["main_campaign_config_sha256"] = "0" * 64
+    problems = ff.verify_manifest_hashes(REPO, tampered)
     assert len(problems) == 1 and problems[0].startswith("main_campaign_config_sha256")
+
+
+def test_verify_detects_a_changed_scientific_tree(
+    fresh_manifest: tuple[dict[str, object], Path],
+) -> None:
+    manifest, _ = fresh_manifest
+    tampered = json.loads(json.dumps(manifest))
+    tampered["identity"]["scientific_tree_sha256"] = "0" * 64
+    problems = ff.verify_manifest_hashes(REPO, tampered)
+    assert len(problems) == 1 and problems[0].startswith("scientific_tree_sha256")
 
 
 def test_fairness_hash_ignores_controller_id() -> None:

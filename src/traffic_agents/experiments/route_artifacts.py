@@ -7,10 +7,18 @@ from pathlib import Path
 from typing import Any
 
 from traffic_agents.config import ScenarioConfig
+from traffic_agents.experiments.legacy_artifact_hashes import (
+    LEGACY_NETWORK_CANONICAL_BY_RAW,
+    LEGACY_ROUTE_CANONICAL_BY_RAW,
+)
 from traffic_agents.experiments.run_invariants import (
-    file_sha256,
     route_artifact_scenario_sha256,
     route_generator_config_sha256,
+)
+from traffic_agents.experiments.text_hashing import (
+    HashingError,
+    canonical_sha256,
+    raw_byte_sha256,
 )
 
 FLOW_RATE_TOLERANCE = 0.1
@@ -48,22 +56,95 @@ def validate_route_artifacts(
         route_generator_config_sha256(scenario_config),
     )
     _require_equal(metadata, "scenario_hash", route_artifact_scenario_sha256(scenario_config))
-    _require_equal(metadata, "route_hash", file_sha256(route_path))
-
-    network_hash = metadata.get("network_hash")
-    if network_hash is not None:
-        if not isinstance(network_hash, str) or not network_hash:
-            msg = f"route metadata network_hash must be a non-empty string: {metadata_path}"
-            raise RouteArtifactValidationError(msg)
-        if network_hash != file_sha256(network_path):
-            msg = f"route metadata network_hash does not match network file: {metadata_path}"
-            raise RouteArtifactValidationError(msg)
+    _validate_text_artifact_hash(
+        label="route",
+        path=route_path,
+        metadata=metadata,
+        metadata_path=metadata_path,
+        raw_field="route_hash",
+        canonical_field="route_canonical_sha256",
+        legacy_table=LEGACY_ROUTE_CANONICAL_BY_RAW,
+        required=True,
+    )
+    _validate_text_artifact_hash(
+        label="network",
+        path=network_path,
+        metadata=metadata,
+        metadata_path=metadata_path,
+        raw_field="network_hash",
+        canonical_field="network_canonical_sha256",
+        legacy_table=LEGACY_NETWORK_CANONICAL_BY_RAW,
+        required=False,
+    )
 
     _validate_route_windows(
         route_path=route_path,
         metadata=metadata,
         scenario_config=scenario_config,
     )
+
+
+def _validate_text_artifact_hash(
+    *,
+    label: str,
+    path: Path,
+    metadata: Mapping[str, Any],
+    metadata_path: Path,
+    raw_field: str,
+    canonical_field: str,
+    legacy_table: Mapping[str, str],
+    required: bool,
+) -> None:
+    """Check a text artifact against its metadata identity, independent of line endings.
+
+    Acceptance order (this only decides whether an artifact is accepted; it never alters the
+    artifact or anything the simulation reads):
+
+    1. metadata carries ``<label>_canonical_sha256`` (``CANONICAL_TEXT_LF_V1``): the file's
+       canonical hash must equal it;
+    2. otherwise the historical raw hash (``route_hash`` / ``network_hash``): a raw match is
+       accepted exactly as before;
+    3. on a raw mismatch the file is accepted only if the recorded raw hash is a KNOWN legacy
+       identity and the file's canonical hash equals the trusted canonical value stored for it
+       (proof that only line endings differ). Unknown recorded hashes are rejected.
+    """
+
+    data = path.read_bytes()
+    try:
+        actual_canonical = canonical_sha256(data)
+    except HashingError as exc:
+        msg = f"route metadata {raw_field}: {label} file is not valid UTF-8 text: {path}"
+        raise RouteArtifactValidationError(msg) from exc
+
+    canonical_expected = metadata.get(canonical_field)
+    if canonical_expected is not None:
+        if not isinstance(canonical_expected, str) or not canonical_expected:
+            msg = f"route metadata {canonical_field} must be a non-empty string: {metadata_path}"
+            raise RouteArtifactValidationError(msg)
+        if canonical_expected != actual_canonical:
+            msg = (
+                f"route metadata {canonical_field} does not match the {label} file: "
+                f"expected {canonical_expected!r}, got {actual_canonical!r}"
+            )
+            raise RouteArtifactValidationError(msg)
+        return
+
+    recorded_raw = metadata.get(raw_field)
+    if recorded_raw is None and not required:
+        return
+    if not isinstance(recorded_raw, str) or not recorded_raw:
+        msg = f"route metadata {raw_field} must be a non-empty string: {metadata_path}"
+        raise RouteArtifactValidationError(msg)
+    if recorded_raw == raw_byte_sha256(data):
+        return
+    trusted_canonical = legacy_table.get(recorded_raw)
+    if trusted_canonical is not None and trusted_canonical == actual_canonical:
+        return
+    msg = (
+        f"route metadata {raw_field} mismatch: {label} file {path.name} matches neither the "
+        f"recorded raw hash {recorded_raw!r} nor a trusted canonical identity"
+    )
+    raise RouteArtifactValidationError(msg)
 
 
 def _require_file(path: Path, label: str) -> None:

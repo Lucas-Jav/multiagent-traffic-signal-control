@@ -12,7 +12,6 @@ correctness defect requires a NEW freeze (see ``docs/methodology/final-campaign-
 from __future__ import annotations
 
 import csv
-import hashlib
 import json
 import platform
 import subprocess
@@ -29,6 +28,25 @@ from traffic_agents.communication import grid_3x3_communication_topology
 from traffic_agents.config import ScenarioConfig, load_scenario_config
 from traffic_agents.controllers import build_controller
 from traffic_agents.experiments import reference_route as rr
+from traffic_agents.experiments.freeze_hashing import (
+    CANONICAL_TEXT_SCHEMA,
+    SCIENTIFIC_TREE_SCHEMA,
+    SEMANTIC_METADATA_SCHEMA,
+    FileHashes,
+    FreezePreconditions,
+    ScientificSpec,
+    ScientificTree,
+    TreeRoot,
+    WorkingTreeSource,
+    canonical_sha256,
+    check_freeze_preconditions,
+    compute_scientific_tree,
+    fingerprint_entries,
+    git_resolve_commit,
+    hash_file_bytes,
+    historical_controller_labels,
+    write_manifest_checksum,
+)
 from traffic_agents.experiments.metric_definitions import (
     COMPANION_METRICS,
     CORRIDOR_DEFINITION,
@@ -39,7 +57,6 @@ from traffic_agents.experiments.metric_definitions import (
 )
 from traffic_agents.experiments.route_artifacts import validate_route_artifacts
 from traffic_agents.experiments.run_invariants import (
-    file_sha256,
     json_sha256,
     movement_model_sha256,
     phase_plan_sha256,
@@ -51,7 +68,12 @@ from traffic_agents.experiments.runner import ExperimentConfig, load_experiment_
 from traffic_agents.simulation.sumo_environment import detect_sumo_environment
 from traffic_agents.traffic_model import load_grid_traffic_models
 
-FREEZE_SCHEMA_VERSION = 1
+FREEZE_SCHEMA_VERSION = 2
+LEGACY_SCHEMA_VERSION = 1
+# NOTE: the scientific source commit SHA is NOT a constant. It cannot be known before that commit
+# exists, so it is supplied explicitly (``--scientific-source-sha``) and validated: it must exist,
+# be an ancestor of HEAD (HEAD itself is allowed) and have the same scientific tree as now.
+MANIFEST_FILE_NAME = "final-freeze-manifest.json"
 CAMPAIGN_ROLE = "FINAL_SCIENTIFIC"
 
 # --- Seeds --------------------------------------------------------------------------------------
@@ -85,6 +107,9 @@ B0_IDENTITY: dict[str, object] = {
     "offsets_seconds": [0, 42],
 }
 B0_PLAN_RELATIVE_PATH = Path("experiments/fixed_time/b0_fixed_calibrated.json")
+# Cross-platform authority (CANONICAL_TEXT_LF_V1). The raw hash depends on checkout line endings
+# (a950d82d... on this Windows CRLF checkout; equal to the canonical one on an LF checkout).
+B0_CANONICAL_SHA256 = "4ebbed94ef4feae63f7af62bc70944634bc5cbf399d0cd7856693d6758e6da19"
 B0_EVIDENCE_RELATIVE_PATH = Path("docs/evidencias/fixed-time-calibration/b0_fixed_calibrated.json")
 
 # --- Scenarios and matrices ---------------------------------------------------------------------
@@ -194,8 +219,6 @@ METHODOLOGY_DOCS: tuple[Path, ...] = (
 
 # Source files that define scientific behaviour. The replay package (presentation only) and this
 # tooling module are tracked separately.
-_SOURCE_EXCLUDED_PARTS = frozenset({"replay", "__pycache__"})
-_SOURCE_EXCLUDED_FILES = frozenset({"final_freeze.py"})
 
 
 class FinalFreezeError(ValueError):
@@ -548,8 +571,10 @@ def _validate_b0(repo_root: Path) -> list[str]:
     offsets = sorted({int(t["offset_seconds"]) for t in plan["traffic_lights"].values()})
     if offsets != B0_IDENTITY["offsets_seconds"]:
         problems.append(f"B0 plan offsets {offsets} differ from the frozen alternate 0/42")
+    if _canonical(plan_path) != B0_CANONICAL_SHA256:
+        problems.append("B0 plan canonical sha256 differs from the frozen calibration plan")
     evidence = repo_root / B0_EVIDENCE_RELATIVE_PATH
-    if not evidence.exists() or file_sha256(evidence) != file_sha256(plan_path):
+    if not evidence.exists() or _canonical(evidence) != _canonical(plan_path):
         problems.append("B0 plan differs from its calibration evidence copy")
     return problems
 
@@ -602,39 +627,119 @@ def reference_route_definition() -> dict[str, Any]:
     }
 
 
-def _hash_files(root: Path, files: Iterable[Path]) -> str:
-    digest = hashlib.sha256()
-    for path in sorted(files):
-        digest.update(path.relative_to(root).as_posix().encode())
-        digest.update(file_sha256(path).encode())
-    return digest.hexdigest()
+def _canonical(path: Path) -> str:
+    return canonical_sha256(path.read_bytes())
 
 
-def scientific_source_sha256(repo_root: Path) -> str:
-    """Hash of all scientific source (replay package and this tooling module excluded)."""
-
-    files = [
-        path
-        for base in (repo_root / "src" / "traffic_agents", repo_root / "analysis")
-        for path in base.rglob("*.py")
-        if not _SOURCE_EXCLUDED_PARTS.intersection(path.relative_to(base).parts)
-        and path.name not in _SOURCE_EXCLUDED_FILES
-    ]
-    return _hash_files(repo_root, files)
+def _file_hashes(repo_root: Path, relative: Path | str, *, semantic: bool = False) -> FileHashes:
+    posix = Path(relative).as_posix()
+    return hash_file_bytes(posix, (repo_root / posix).read_bytes(), semantic=semantic)
 
 
-def replay_source_sha256(repo_root: Path) -> str:
-    files = list((repo_root / "src" / "traffic_agents" / "replay").rglob("*.py"))
-    files += [repo_root / "scripts" / "record_before_after.py"]
-    files += sorted((repo_root / "config").glob("demo_*"))
-    return _hash_files(repo_root, [path for path in files if "__pycache__" not in path.parts])
+def replay_tree_sha256(repo_root: Path) -> str:
+    """Canonical fingerprint of the replay tooling (presentation only, outside the science)."""
+
+    files = sorted(
+        {
+            *WorkingTreeSource(repo_root).list_dir("src/traffic_agents/replay"),
+            "scripts/record_before_after.py",
+            *(
+                f"config/{path.name}"
+                for path in sorted((repo_root / "config").glob("demo_*"))
+                if path.is_file()
+            ),
+        }
+    )
+    return fingerprint_entries(_file_hashes(repo_root, path) for path in files)
+
+
+# --- Scientific file set (SCIENTIFIC_TREE_SHA256) ------------------------------------------------
+# Freeze/replay tooling is excluded so the scientific fingerprint never depends on its verifier.
+FREEZE_TOOLING_FILES: tuple[str, ...] = (
+    "src/traffic_agents/experiments/final_freeze.py",
+    "src/traffic_agents/experiments/freeze_hashing.py",
+)
+REPLAY_PREFIX = "src/traffic_agents/replay/"
+SCENARIO_GENERATION_SCRIPTS: tuple[str, ...] = (
+    "scripts/generate_grid.py",
+    "scripts/generate_routes.py",
+    "scripts/generate_scenarios.py",
+)
+
+
+def route_file_name(scenario_base: str, seed: int) -> str:
+    return f"routes_{scenario_base.split('_', maxsplit=1)[0].lower()}_seed_{seed}.rou.xml"
+
+
+def route_metadata_file_name(scenario_base: str, seed: int) -> str:
+    return route_file_name(scenario_base, seed).removesuffix(".rou.xml") + ".metadata.json"
+
+
+def scientific_spec() -> ScientificSpec:
+    """Exactly which files make up the scientific tree (authoritative inclusion rules).
+
+    Included: all scientific source (``src/traffic_agents`` and ``analysis``), the two final
+    configs, the B0 plan, the network and its metadata, the scenario template, every final
+    scenario x seed scenario YAML / route file (canonical text hash) and route metadata (semantic
+    hash, ``generated_at`` excluded), the scenario/route generators, ``pyproject.toml`` and
+    ``uv.lock``.
+
+    Excluded: replay package, freeze tooling modules, tests, docs, evidence, ``artifacts/``,
+    caches, GUI-only files (``viewsettings.xml``) and every file not used by a final run.
+    """
+
+    scenario_dir = SCENARIO_DIR_RELATIVE.as_posix()
+    scenario_files: list[str] = []
+    semantic: list[str] = []
+    for scenario in MAIN_SCENARIOS:
+        for seed in FINAL_SEEDS:
+            scenario_files.append(f"{scenario_dir}/{scenario_file_name(scenario, seed)}")
+            scenario_files.append(f"{scenario_dir}/{route_file_name(scenario, seed)}")
+            semantic.append(f"{scenario_dir}/{route_metadata_file_name(scenario, seed)}")
+    fixed = (
+        MAIN_CONFIG_RELATIVE_PATH.as_posix(),
+        S5_CONFIG_RELATIVE_PATH.as_posix(),
+        B0_PLAN_RELATIVE_PATH.as_posix(),
+        f"{scenario_dir}/network.net.xml",
+        f"{scenario_dir}/metadata.json",
+        f"{scenario_dir}/scenario.yaml",
+        "pyproject.toml",
+        "uv.lock",
+        *SCENARIO_GENERATION_SCRIPTS,
+        *scenario_files,
+    )
+    return ScientificSpec(
+        tree_roots=(
+            TreeRoot(
+                "src/traffic_agents",
+                (".py",),
+                excluded_prefixes=(REPLAY_PREFIX,),
+                excluded_files=FREEZE_TOOLING_FILES,
+            ),
+            TreeRoot("analysis", (".py",)),
+        ),
+        fixed_files=fixed,
+        semantic_files=tuple(semantic),
+        description={
+            "included": "src/traffic_agents/**/*.py, analysis/**/*.py, final configs, B0 plan, "
+            "network + metadata + scenario template, 40 final scenario YAML + route files, 40 "
+            "route metadata (semantic), scenario generators, pyproject.toml, uv.lock",
+            "excluded": "replay package, freeze tooling (final_freeze.py, freeze_hashing.py), "
+            "tests, docs, evidence, artifacts/, caches, viewsettings.xml, unused scenario files",
+        },
+    )
 
 
 SCENARIO_INPUT_COLUMNS: tuple[str, ...] = (
     "scenario_base",
     "seed",
-    "scenario_file_sha256",
-    "route_file_sha256",
+    "scenario_file_raw_sha256",
+    "scenario_file_canonical_sha256",
+    "route_file_raw_sha256",
+    "route_file_canonical_sha256",
+    "route_metadata_raw_sha256",
+    "route_metadata_canonical_sha256",
+    "route_metadata_semantic_sha256",
     "route_generator_config_sha256",
     "turning_config_sha256",
     "movement_model_sha256",
@@ -644,6 +749,8 @@ SCENARIO_INPUT_COLUMNS: tuple[str, ...] = (
 
 
 def scenario_input_rows(repo_root: Path) -> list[dict[str, object]]:
+    """Per scenario x seed hashes. Canonical/semantic ones are the cross-platform authorities."""
+
     scenario_dir = repo_root / SCENARIO_DIR_RELATIVE
     rows: list[dict[str, object]] = []
     for scenario in MAIN_SCENARIOS:
@@ -652,12 +759,24 @@ def scenario_input_rows(repo_root: Path) -> list[dict[str, object]]:
             config = load_scenario_config(path)
             models = load_grid_traffic_models(scenario_config=config, scenario_dir=scenario_dir)
             neutral = config.model_copy(update={"controller_id": "NEUTRAL"})
+            scenario_hashes = _file_hashes(repo_root, path.relative_to(repo_root))
+            route_hashes = _file_hashes(repo_root, scenario_dir / config.route_file)
+            meta_hashes = _file_hashes(
+                repo_root,
+                SCENARIO_DIR_RELATIVE / route_metadata_file_name(scenario, seed),
+                semantic=True,
+            )
             rows.append(
                 {
                     "scenario_base": scenario,
                     "seed": seed,
-                    "scenario_file_sha256": file_sha256(path),
-                    "route_file_sha256": file_sha256(scenario_dir / config.route_file),
+                    "scenario_file_raw_sha256": scenario_hashes.raw_byte_sha256,
+                    "scenario_file_canonical_sha256": scenario_hashes.canonical_sha256,
+                    "route_file_raw_sha256": route_hashes.raw_byte_sha256,
+                    "route_file_canonical_sha256": route_hashes.canonical_sha256,
+                    "route_metadata_raw_sha256": meta_hashes.raw_byte_sha256,
+                    "route_metadata_canonical_sha256": meta_hashes.canonical_sha256,
+                    "route_metadata_semantic_sha256": meta_hashes.semantic_sha256,
                     "route_generator_config_sha256": route_generator_config_sha256(config),
                     "turning_config_sha256": scenario_turning_config_sha256(config),
                     "movement_model_sha256": movement_model_sha256(models),
@@ -677,7 +796,16 @@ RUN_MATRIX_COLUMNS: tuple[str, ...] = (
     "delay_steps",
     "drop_probability",
     "scenario_neutral_sha256",
-    "route_file_sha256",
+    "route_file_canonical_sha256",
+)
+
+SCIENTIFIC_TREE_COLUMNS: tuple[str, ...] = (
+    "path",
+    "hash_mode",
+    "authoritative_sha256",
+    "raw_byte_sha256",
+    "canonical_sha256",
+    "semantic_sha256",
 )
 
 
@@ -685,10 +813,16 @@ def run_matrix_rows(repo_root: Path) -> list[dict[str, object]]:
     """One row per final run; ``scenario_neutral_sha256`` ignores the controller id."""
 
     scenario_dir = repo_root / SCENARIO_DIR_RELATIVE
+    route_hash_cache: dict[str, str | None] = {}
     rows: list[dict[str, object]] = []
     for run in (*main_runs(), *s5_runs()):
         config = _scenario_config_for(run, scenario_dir)
         neutral = config.model_copy(update={"controller_id": "NEUTRAL"})
+        route_key = config.route_file.as_posix()
+        if route_key not in route_hash_cache:
+            route_hash_cache[route_key] = _file_hashes(
+                repo_root, scenario_dir / config.route_file
+            ).canonical_sha256
         rows.append(
             {
                 "campaign": run.campaign,
@@ -699,10 +833,24 @@ def run_matrix_rows(repo_root: Path) -> list[dict[str, object]]:
                 "delay_steps": run.delay_steps,
                 "drop_probability": run.drop_probability,
                 "scenario_neutral_sha256": scenario_config_sha256(neutral),
-                "route_file_sha256": file_sha256(scenario_dir / config.route_file),
+                "route_file_canonical_sha256": route_hash_cache[route_key],
             }
         )
     return rows
+
+
+def scientific_tree_rows(tree: ScientificTree) -> list[dict[str, object]]:
+    return [
+        {
+            "path": entry.path,
+            "hash_mode": entry.mode,
+            "authoritative_sha256": entry.authoritative,
+            "raw_byte_sha256": entry.raw_byte_sha256,
+            "canonical_sha256": entry.canonical_sha256,
+            "semantic_sha256": entry.semantic_sha256,
+        }
+        for entry in tree.entries
+    ]
 
 
 def write_csv(path: Path, columns: Sequence[str], rows: Iterable[Mapping[str, object]]) -> None:
@@ -738,16 +886,14 @@ def _uv_version() -> str | None:
 
 def environment_record(repo_root: Path) -> dict[str, Any]:
     sumo = detect_sumo_environment()
-    status = _git(repo_root, "status", "--porcelain")
     return {
-        "git_sha": _git(repo_root, "rev-parse", "HEAD"),
-        "git_working_tree_dirty": bool(status),
         "python_version": platform.python_version(),
         "sumo_version": sumo.version,
         "traci_version": _package_version("traci"),
         "sumolib_version": _package_version("sumolib"),
         "uv_version": _uv_version(),
-        "uv_lock_sha256": file_sha256(repo_root / "uv.lock"),
+        "uv_lock_sha256": _file_hashes(repo_root, "uv.lock").canonical_sha256,
+        "uv_lock_raw_sha256": _file_hashes(repo_root, "uv.lock").raw_byte_sha256,
         "platform": platform.platform(),
         "machine": platform.machine(),
         "packages": {
@@ -768,8 +914,18 @@ def environment_record(repo_root: Path) -> dict[str, Any]:
 
 
 # --- Manifest -----------------------------------------------------------------------------------
-def build_freeze_manifest(repo_root: Path, *, generated_at: str) -> dict[str, Any]:
-    """Assemble the freeze manifest. Requires a valid campaign (see ``validate_final_campaign``)."""
+def build_freeze_manifest(
+    repo_root: Path,
+    *,
+    generated_at: str,
+    preconditions: FreezePreconditions,
+) -> dict[str, Any]:
+    """Assemble the freeze manifest from inputs inspected under ``preconditions``.
+
+    The caller (``generate_definitive_freeze``) must have verified ``preconditions.ok``; the
+    manifest records the observed state either way so it can never claim a clean inspection that
+    did not happen.
+    """
 
     scenario_dir = repo_root / SCENARIO_DIR_RELATIVE
     plan_path = repo_root / B0_PLAN_RELATIVE_PATH
@@ -781,9 +937,12 @@ def build_freeze_manifest(repo_root: Path, *, generated_at: str) -> dict[str, An
     reference = reference_route_definition()
     plan = statistical_plan()
     first_config = load_scenario_config(scenario_dir / scenario_file_name(MAIN_SCENARIOS[0], 42))
-    network_sha = file_sha256(scenario_dir / first_config.network_file)
+    network_hashes_obj = _file_hashes(repo_root, scenario_dir / first_config.network_file)
+    network_sha = network_hashes_obj.canonical_sha256
     network_hashes = {
-        file_sha256(scenario_dir / load_scenario_config(scenario_dir / row_path).network_file)
+        _file_hashes(
+            repo_root, scenario_dir / load_scenario_config(scenario_dir / row_path).network_file
+        ).canonical_sha256
         for row_path in (
             scenario_file_name(s, seed) for s in MAIN_SCENARIOS for seed in FINAL_SEEDS
         )
@@ -791,6 +950,10 @@ def build_freeze_manifest(repo_root: Path, *, generated_at: str) -> dict[str, An
     if network_hashes != {network_sha}:
         msg = "all scenarios must share one network file"
         raise FinalFreezeError(msg)
+
+    b0_hashes = _file_hashes(repo_root, B0_PLAN_RELATIVE_PATH)
+    main_cfg = _file_hashes(repo_root, MAIN_CONFIG_RELATIVE_PATH)
+    s5_cfg = _file_hashes(repo_root, S5_CONFIG_RELATIVE_PATH)
 
     def digest(column: str) -> str:
         return json_sha256([row[column] for row in scenario_rows])
@@ -801,10 +964,40 @@ def build_freeze_manifest(repo_root: Path, *, generated_at: str) -> dict[str, An
         "generated_at": generated_at,
         "campaign_role": CAMPAIGN_ROLE,
         "environment": environment_record(repo_root),
-        "scientific_source_sha256": scientific_source_sha256(repo_root),
+        "identity": {
+            "scientific_source_git_sha": preconditions.scientific_source_git_sha,
+            "freeze_tooling_git_sha": preconditions.head_sha,
+            "scientific_source_is_ancestor_of_head": preconditions.source_is_ancestor_of_head,
+            "git_working_tree_dirty_at_input_inspection": (
+                preconditions.working_tree_dirty_at_input_inspection
+            ),
+            "scientific_tree_sha256": preconditions.scientific_tree_sha256,
+            "source_scientific_tree_sha256": preconditions.source_scientific_tree_sha256,
+            "scientific_tree_unchanged_from_source": (
+                not preconditions.scientific_changes_since_source
+            ),
+            "scientific_tree_file_count": len(preconditions.tree.entries),
+            "note": (
+                "git_working_tree_dirty_at_input_inspection describes the tree while the "
+                "scientific inputs were inspected; evidence written afterwards does not "
+                "retroactively make that inspection dirty."
+            ),
+        },
+        "scientific_hash_schema": {
+            "text": CANONICAL_TEXT_SCHEMA,
+            "metadata": SEMANTIC_METADATA_SCHEMA,
+            "tree": SCIENTIFIC_TREE_SCHEMA,
+            "authoritative_for_cross_platform_verification": (
+                "canonical_sha256 for text, semantic_sha256 for route metadata, raw_byte_sha256 "
+                "for binary files; raw hashes of text files are forensic/local evidence only"
+            ),
+            "tree_record_format": "<relative_path>\t<hash_mode>\t<authoritative_hash>\n",
+            "tree_file_set": dict(scientific_spec().description),
+            "tree_evidence_file": (FREEZE_DOCS_DIR / "scientific-tree.csv").as_posix(),
+        },
         "replay": {
             "implemented_at_freeze": True,
-            "replay_source_sha256": replay_source_sha256(repo_root),
+            "replay_tree_sha256": replay_tree_sha256(repo_root),
             "note": (
                 "The synchronized before/after replay system exists at the frozen implementation. "
                 "Replay outputs are illustrative and are NOT part of the 290 scientific runs."
@@ -826,14 +1019,16 @@ def build_freeze_manifest(repo_root: Path, *, generated_at: str) -> dict[str, An
         "b0_identity": B0_IDENTITY
         | {
             "plan_file": B0_PLAN_RELATIVE_PATH.as_posix(),
-            "plan_file_sha256": file_sha256(plan_path),
-            "plan_canonical_sha256": load_plan(plan_path).sha256(),
+            "plan_file_raw_sha256": b0_hashes.raw_byte_sha256,
+            "plan_file_canonical_sha256": b0_hashes.canonical_sha256,
+            "plan_semantic_sha256": load_plan(plan_path).sha256(),
             "provenance": plan_payload["provenance"],
         },
         "main_matrix": {
             "experiment_id": MAIN_EXPERIMENT_ID,
             "config": MAIN_CONFIG_RELATIVE_PATH.as_posix(),
-            "config_sha256": file_sha256(repo_root / MAIN_CONFIG_RELATIVE_PATH),
+            "config_raw_sha256": main_cfg.raw_byte_sha256,
+            "config_canonical_sha256": main_cfg.canonical_sha256,
             "scenarios": list(MAIN_SCENARIOS),
             "controllers": list(FINAL_CONTROLLERS),
             "seeds": list(FINAL_SEEDS),
@@ -842,7 +1037,8 @@ def build_freeze_manifest(repo_root: Path, *, generated_at: str) -> dict[str, An
         "s5_matrix": {
             "experiment_id": S5_EXPERIMENT_ID,
             "config": S5_CONFIG_RELATIVE_PATH.as_posix(),
-            "config_sha256": file_sha256(repo_root / S5_CONFIG_RELATIVE_PATH),
+            "config_raw_sha256": s5_cfg.raw_byte_sha256,
+            "config_canonical_sha256": s5_cfg.canonical_sha256,
             "traffic_base": S5_BASE_SCENARIO,
             "note": "S5 is a communication experiment, not a new traffic-demand pattern.",
             "delay_steps": [S5_DELAY_STEPS],
@@ -870,7 +1066,7 @@ def build_freeze_manifest(repo_root: Path, *, generated_at: str) -> dict[str, An
             "academic_ids": [f"A{i}" for i in range(1, 10)],
             "sumo_ids_are_implementation_only": True,
             "glossary": GLOSSARY_RELATIVE_PATH.as_posix(),
-            "glossary_sha256": file_sha256(repo_root / GLOSSARY_RELATIVE_PATH),
+            "glossary_sha256": _canonical(repo_root / GLOSSARY_RELATIVE_PATH),
         },
         "scenario_freeze": {
             "warmup_seconds": float(first_config.warmup_seconds),
@@ -891,20 +1087,20 @@ def build_freeze_manifest(repo_root: Path, *, generated_at: str) -> dict[str, An
                 "invalidate a run."
             ),
             "s5_traffic_base": S5_BASE_SCENARIO,
-            "validity_gates_doc_sha256": file_sha256(
+            "validity_gates_doc_sha256": _canonical(
                 repo_root / "docs/methodology/scenario-validity-gates.md"
             ),
         },
         "canonical_metrics": {
             "definitions_sha256": metric_definitions_sha256(),
             "required": list(REQUIRED_CANONICAL_METRICS),
-            "metrics_doc_sha256": file_sha256(repo_root / "docs/methodology/metrics.md"),
+            "metrics_doc_sha256": _canonical(repo_root / "docs/methodology/metrics.md"),
         },
         "statistical_plan": plan | {"plan_sha256": json_sha256(plan)},
         "scientific_input_hashes": {
             "network_sha256": network_sha,
-            "scenario_configs_digest": digest("scenario_file_sha256"),
-            "route_files_digest": digest("route_file_sha256"),
+            "scenario_configs_digest": digest("scenario_file_canonical_sha256"),
+            "route_files_digest": digest("route_file_canonical_sha256"),
             "route_generation_configs_digest": digest("route_generator_config_sha256"),
             "turning_config_digest": digest("turning_config_sha256"),
             "movement_definitions_digest": digest("movement_model_sha256"),
@@ -914,13 +1110,18 @@ def build_freeze_manifest(repo_root: Path, *, generated_at: str) -> dict[str, An
                 controller: json_sha256(build_controller(controller).manifest_metadata())
                 for controller in FINAL_CONTROLLERS
             },
-            "b0_plan_sha256": file_sha256(plan_path),
+            "b0_plan_sha256": b0_hashes.canonical_sha256,
+            "b0_plan_raw_sha256": b0_hashes.raw_byte_sha256,
+            "route_metadata_semantic_digest": digest("route_metadata_semantic_sha256"),
+            "network_raw_sha256": network_hashes_obj.raw_byte_sha256,
             "communication_topology_sha256": grid_3x3_communication_topology().topology_hash,
             "metric_definitions_sha256": metric_definitions_sha256(),
             "seed_list_sha256": json_sha256(list(FINAL_SEEDS)),
             "reference_route_definition_sha256": json_sha256(reference),
-            "main_campaign_config_sha256": file_sha256(repo_root / MAIN_CONFIG_RELATIVE_PATH),
-            "s5_campaign_config_sha256": file_sha256(repo_root / S5_CONFIG_RELATIVE_PATH),
+            "main_campaign_config_sha256": main_cfg.canonical_sha256,
+            "main_campaign_config_raw_sha256": main_cfg.raw_byte_sha256,
+            "s5_campaign_config_sha256": s5_cfg.canonical_sha256,
+            "s5_campaign_config_raw_sha256": s5_cfg.raw_byte_sha256,
             "statistical_plan_sha256": json_sha256(plan),
             "run_matrix_sha256": json_sha256(matrix_rows),
             "fairness_rule": (
@@ -957,57 +1158,152 @@ def build_freeze_manifest(repo_root: Path, *, generated_at: str) -> dict[str, An
     }
 
 
-def write_freeze_evidence(repo_root: Path, manifest: Mapping[str, Any]) -> list[Path]:
-    """Write the manifest (artifacts + versioned copy) and the lightweight evidence tables."""
+def write_freeze_evidence(
+    repo_root: Path,
+    manifest: Mapping[str, Any],
+    preconditions: FreezePreconditions,
+) -> list[Path]:
+    """Write the manifest (artifacts + versioned copy), evidence tables and manifest checksums."""
 
     written: list[Path] = []
     text = json.dumps(manifest, indent=2, sort_keys=True) + "\n"
-    for relative in (FREEZE_ARTIFACT_RELATIVE_PATH, FREEZE_DOCS_DIR / "final-freeze-manifest.json"):
+    for relative in (FREEZE_ARTIFACT_RELATIVE_PATH, FREEZE_DOCS_DIR / MANIFEST_FILE_NAME):
         path = repo_root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8", newline="\n")
         written.append(path)
+        # The manifest never contains its own hash; it lives in a sibling checksum file.
+        written.append(write_manifest_checksum(path))
     docs = repo_root / FREEZE_DOCS_DIR
     write_csv(docs / "run-matrix.csv", RUN_MATRIX_COLUMNS, run_matrix_rows(repo_root))
     write_csv(docs / "scenario-inputs.csv", SCENARIO_INPUT_COLUMNS, scenario_input_rows(repo_root))
+    write_csv(
+        docs / "scientific-tree.csv",
+        SCIENTIFIC_TREE_COLUMNS,
+        scientific_tree_rows(preconditions.tree),
+    )
     plan_path = docs / "statistical-plan.json"
     plan_path.write_text(
         json.dumps(statistical_plan(), indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
         newline="\n",
     )
-    written.extend([docs / "run-matrix.csv", docs / "scenario-inputs.csv", plan_path])
+    written.extend(
+        [
+            docs / "run-matrix.csv",
+            docs / "scenario-inputs.csv",
+            docs / "scientific-tree.csv",
+            plan_path,
+        ]
+    )
     return written
 
 
-def verify_freeze_manifest(repo_root: Path, manifest_path: Path | None = None) -> list[str]:
-    """Recompute hashes and compare them with the manifest. Returns the list of mismatches."""
+class FreezePreconditionError(FinalFreezeError):
+    """Raised when the definitive freeze cannot be generated from the current repository state."""
 
-    path = manifest_path or repo_root / FREEZE_DOCS_DIR / "final-freeze-manifest.json"
+
+def reject_historical_b0(labels: Sequence[str]) -> None:
+    """The final analysis must name ``B0_FIXED_CALIBRATED`` explicitly.
+
+    ``analysis/statistics.py`` still maps the bare alias ``B0`` to the historical ``B0_FIXED``
+    (that file is part of the frozen scientific source, so it is not edited); final inputs and
+    comparisons are therefore checked here instead.
+    """
+
+    forbidden = [*HISTORICAL_CONTROLLERS, "B0"]
+    found = historical_controller_labels(labels, forbidden)
+    if found:
+        msg = f"historical B0 label(s) {found} are not allowed in the final analysis"
+        raise FinalFreezeError(msg)
+
+
+def generate_definitive_freeze(
+    repo_root: Path,
+    *,
+    generated_at: str,
+    scientific_source_sha: str,
+) -> tuple[list[Path], FreezePreconditions]:
+    """Definitive generation flow. Nothing is written unless every precondition holds.
+
+    1. clean working tree; 2. scientific source SHA is an ancestor of HEAD; 3. scientific tree
+    computed and compared with the source commit's tree; 4. inputs inspected while clean;
+    5. evidence written afterwards.
+    """
+
+    preconditions = check_freeze_preconditions(repo_root, scientific_spec(), scientific_source_sha)
+    if not preconditions.ok:
+        msg = "cannot generate the final freeze: " + "; ".join(preconditions.failures())
+        raise FreezePreconditionError(msg)
+    validate_final_campaign(repo_root)
+    reject_historical_b0([controller for pair in FINAL_CONTROLLER_PAIRS for controller in pair])
+    manifest = build_freeze_manifest(
+        repo_root, generated_at=generated_at, preconditions=preconditions
+    )
+    return write_freeze_evidence(repo_root, manifest, preconditions), preconditions
+
+
+def verify_freeze_manifest(
+    repo_root: Path,
+    manifest_path: Path | None = None,
+    *,
+    scientific_source_sha: str | None = None,
+) -> list[str]:
+    """Verify a schema-2 manifest: git identity (source SHA from the manifest or the caller)
+    plus every cross-platform hash. Returns the list of mismatches."""
+
+    path = manifest_path or repo_root / FREEZE_DOCS_DIR / MANIFEST_FILE_NAME
     recorded = json.loads(path.read_text(encoding="utf-8"))
+    if recorded.get("schema_version") != FREEZE_SCHEMA_VERSION:
+        return [
+            f"manifest schema_version {recorded.get('schema_version')!r} is not "
+            f"{FREEZE_SCHEMA_VERSION}; a legacy manifest must be regenerated"
+        ]
+    recorded_sha = recorded["identity"]["scientific_source_git_sha"]
+    problems: list[str] = []
+    if scientific_source_sha is not None:
+        resolved = git_resolve_commit(repo_root, scientific_source_sha)
+        if resolved != recorded_sha:
+            problems.append(
+                f"scientific_source_git_sha: manifest={recorded_sha!r} provided={resolved!r}"
+            )
+    source = check_freeze_preconditions(repo_root, scientific_spec(), recorded_sha)
+    if not source.source_exists:
+        problems.append(f"scientific source {recorded_sha} does not exist")
+    elif not source.source_is_ancestor_of_head:
+        problems.append("scientific source commit is not an ancestor of HEAD")
+    problems.extend(
+        f"scientific input changed since source commit: {change}"
+        for change in source.scientific_changes_since_source
+    )
+    return problems + verify_manifest_hashes(repo_root, recorded)
+
+
+def verify_manifest_hashes(repo_root: Path, recorded: Mapping[str, Any]) -> list[str]:
+    """Recompute the cross-platform hashes recorded in a schema-2 manifest (no git access)."""
+
     problems: list[str] = []
 
     def check(label: str, recorded_value: object, actual: object) -> None:
         if recorded_value != actual:
             problems.append(f"{label}: manifest={recorded_value!r} actual={actual!r}")
 
-    check(
-        "scientific_source_sha256",
-        recorded["scientific_source_sha256"],
-        scientific_source_sha256(repo_root),
-    )
+    identity = recorded["identity"]
+    current_tree = compute_scientific_tree(scientific_spec(), WorkingTreeSource(repo_root))
+    check("scientific_tree_sha256", identity["scientific_tree_sha256"], current_tree.sha256)
+
     hashes = recorded["scientific_input_hashes"]
-    plan_path = repo_root / B0_PLAN_RELATIVE_PATH
-    check("b0_plan_sha256", hashes["b0_plan_sha256"], file_sha256(plan_path))
+    plan_hashes = _file_hashes(repo_root, B0_PLAN_RELATIVE_PATH)
+    check("b0_plan_sha256", hashes["b0_plan_sha256"], plan_hashes.canonical_sha256)
     check(
         "main_campaign_config_sha256",
         hashes["main_campaign_config_sha256"],
-        file_sha256(repo_root / MAIN_CONFIG_RELATIVE_PATH),
+        _file_hashes(repo_root, MAIN_CONFIG_RELATIVE_PATH).canonical_sha256,
     )
     check(
         "s5_campaign_config_sha256",
         hashes["s5_campaign_config_sha256"],
-        file_sha256(repo_root / S5_CONFIG_RELATIVE_PATH),
+        _file_hashes(repo_root, S5_CONFIG_RELATIVE_PATH).canonical_sha256,
     )
     check(
         "metric_definitions_sha256",
@@ -1028,8 +1324,9 @@ def verify_freeze_manifest(repo_root: Path, manifest_path: Path | None = None) -
     )
     rows = scenario_input_rows(repo_root)
     for key, column in (
-        ("scenario_configs_digest", "scenario_file_sha256"),
-        ("route_files_digest", "route_file_sha256"),
+        ("scenario_configs_digest", "scenario_file_canonical_sha256"),
+        ("route_files_digest", "route_file_canonical_sha256"),
+        ("route_metadata_semantic_digest", "route_metadata_semantic_sha256"),
         ("route_generation_configs_digest", "route_generator_config_sha256"),
         ("turning_config_digest", "turning_config_sha256"),
         ("movement_definitions_digest", "movement_model_sha256"),
@@ -1051,6 +1348,6 @@ def verify_freeze_manifest(repo_root: Path, manifest_path: Path | None = None) -
     check(
         "uv_lock_sha256",
         recorded["environment"]["uv_lock_sha256"],
-        file_sha256(repo_root / "uv.lock"),
+        _file_hashes(repo_root, "uv.lock").canonical_sha256,
     )
     return problems

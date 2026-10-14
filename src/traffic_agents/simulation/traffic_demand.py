@@ -18,6 +18,7 @@ from traffic_agents.experiments.run_invariants import (
     route_artifact_scenario_sha256,
     route_generator_config_sha256,
 )
+from traffic_agents.experiments.text_hashing import canonical_sha256
 from traffic_agents.simulation.route_walk import (
     GeneratedVehicle,
     RoutingGraph,
@@ -143,6 +144,7 @@ class TrafficDemandGenerator:
             scenario_hash,
             route_hash,
             network_hash,
+            _artifact_hash_fields(route_path, network_path),
         )
 
         return GeneratedTrafficDemandInfo(
@@ -222,6 +224,7 @@ class TrafficDemandGenerator:
             "scenario_hash": scenario_hash,
             "route_hash": route_hash,
             "network_hash": network_hash,
+            **_artifact_hash_fields(route_path, network_path),
             "entries": [
                 {
                     "demand_id": entry.demand_id,
@@ -379,6 +382,7 @@ class TrafficDemandGenerator:
         scenario_hash: str,
         route_hash: str,
         network_hash: str,
+        artifact_hashes: Mapping[str, str],
     ) -> None:
         payload = {
             "scenario_id": self._scenario_config.scenario_id,
@@ -396,6 +400,7 @@ class TrafficDemandGenerator:
             "scenario_hash": scenario_hash,
             "route_hash": route_hash,
             "network_hash": network_hash,
+            **artifact_hashes,
             "flows": [flow.__dict__ for flow in selected_flows],
         }
         metadata_path.write_text(
@@ -533,6 +538,23 @@ def _metadata_path_for(route_path: Path) -> Path:
 
 def _file_sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _artifact_hash_fields(route_path: Path, network_path: Path) -> dict[str, str]:
+    """Raw (line-ending dependent) and canonical (CANONICAL_TEXT_LF_V1) artifact hashes.
+
+    The legacy ``route_hash`` / ``network_hash`` fields are kept; the canonical ones let the
+    validation accept a scientifically identical checkout with different line endings.
+    """
+
+    route_bytes = route_path.read_bytes()
+    network_bytes = network_path.read_bytes()
+    return {
+        "route_raw_sha256": hashlib.sha256(route_bytes).hexdigest(),
+        "route_canonical_sha256": canonical_sha256(route_bytes),
+        "network_raw_sha256": hashlib.sha256(network_bytes).hexdigest(),
+        "network_canonical_sha256": canonical_sha256(network_bytes),
+    }
 
 
 def _remove_duarouter_alternatives(route_path: Path) -> None:

@@ -12,13 +12,42 @@ python scripts/build_final_freeze.py --verify
 
 ## Identidade do congelamento
 
-- `FINAL_FREEZE_GIT_SHA` base: `b98b440b4a21ae0f53d04774bda479d3211173d9` (árvore limpa no início
-  do Prompt 59). O congelamento em si adiciona arquivos (configs finais, cenários das 5 seeds
-  novas, manifesto, este documento); o commit que os contém é a identidade definitiva da
-  implementação científica. O manifesto registra `scientific_source_sha256` (hash de todo o código
-  científico em `src/traffic_agents` e `analysis`, exceto o pacote `replay` e o módulo de
-  ferramentas `final_freeze.py`), que **não depende do SHA do commit** e permite verificar que o
-  código executado na campanha é o congelado.
+- **Duas identidades distintas.**
+  - `SCIENTIFIC_SOURCE_GIT_SHA`: commit que contém o código científico e todas as entradas finais.
+    **Não é constante no código**: só existe depois do commit, então é informado a
+    `scripts/build_final_freeze.py --scientific-source-sha <SHA>` e validado (existe, é ancestral
+    de `HEAD` — `HEAD` incluso —, árvore científica igual à atual, árvore limpa). O manifesto grava
+    o SHA validado (resolvido para 40 hex). O commit `0abd7be…` das rodadas anteriores está
+    **superado** e não tem papel algum na ferramenta.
+  - `FREEZE_TOOLING_GIT_SHA`: commit posterior, que contém só ferramentas de hash/freeze, testes e
+    evidência do freeze. O gerador **não exige `HEAD == SCIENTIFIC_SOURCE_GIT_SHA`**; exige árvore
+    limpa, o commit científico ser ancestral de `HEAD`, nenhuma entrada científica alterada desde
+    ele e o `SCIENTIFIC_TREE_SHA256` igual ao do commit científico.
+- **Hash canônico (`CANONICAL_TEXT_LF_V1`)** para arquivos de texto: decodifica UTF-8 (descarta
+  BOM), converte CRLF e CR isolado em LF, recodifica e aplica SHA-256. Nada além de fim de linha
+  e BOM é normalizado (espaços, indentação, linha final e conteúdo contam). O hash canônico é a
+  autoridade entre sistemas; o `raw_byte_sha256` é mantido como evidência forense/local (depende do
+  `core.autocrlf`). Arquivos fora da lista de texto (`.py .yaml .yml .json .xml .toml .lock .csv
+  .md .txt`, incluindo `.net.xml`, `.rou.xml`, `.metadata.json`) usam só o hash bruto. Não há
+  `.gitattributes`.
+- **Hash semântico (`SCIENTIFIC_METADATA_V1`)** só para `routes_*.metadata.json`: JSON sem a chave
+  de topo `generated_at` (única exclusão), `sort_keys`, separadores compactos, SHA-256. Seed,
+  demanda, rotas, conversões, contagens, choque etc. continuam na identidade. Os arquivos completos
+  seguem com hashes bruto e canônico.
+- **`SCIENTIFIC_TREE_SHA256` (`SCIENTIFIC_TREE_V1`)**: SHA-256 da concatenação UTF-8 de
+  `<caminho>\t<modo>\t<hash autoritativo>\n`, ordenada por caminho POSIX. Inclui
+  `src/traffic_agents/**/*.py` e `analysis/**/*.py`, as duas configs finais, o plano B0, a rede
+  (+ `metadata.json`, `scenario.yaml`), os 40 cenários e arquivos de rota finais (canônico), os 40
+  metadados de rota (semântico), os geradores de cenário/rota, `pyproject.toml` e `uv.lock`.
+  Exclui o pacote `replay`, as ferramentas de freeze (`final_freeze.py`, `freeze_hashing.py`),
+  testes, docs, evidência, `artifacts/` e arquivos de GUI. Um teste confirma que nenhum módulo
+  científico importa replay nem as ferramentas de freeze. A lista completa com os hashes fica em
+  `docs/evidencias/final-freeze/scientific-tree.csv`.
+- O manifesto (schema 2) registra `git_working_tree_dirty_at_input_inspection` (estado da árvore
+  enquanto as entradas foram inspecionadas; evidência escrita depois não o altera). Nunca embute o
+  próprio hash: `FREEZE_MANIFEST_SHA256` sai no CLI e em `final-freeze-manifest.sha256`.
+- Observação: o manifesto versionado em `docs/evidencias/final-freeze/` gerado antes (schema 1,
+  árvore suja, hashes brutos) é **legado** e será substituído pela geração definitiva.
 - Ambiente: Python 3.12.14, SUMO 1.27.1, traci/sumolib 1.27.1, `uv.lock` sha256
   `46f15418…ee02c`. O CI fixa uv 0.12.5 (validado: `uv lock --check` e `uv sync --frozen`).
 
@@ -166,6 +195,69 @@ Se um defeito de correção for descoberto: (1) parar a campanha; (2) documentar
 
 ## Antes da campanha (Prompt 60)
 
-Rodar `python scripts/build_final_freeze.py --verify` na árvore commitada e, por config,
+Rodar `python scripts/build_final_freeze.py --verify` (e `--check`) na árvore commitada e, por config,
 `traffic-agents experiment freeze --config <cfg> --final` (exige árvore limpa e id de experimento
 novo) antes de `experiment run`.
+
+## Validação de rotas independente de fim de linha (Prompt 59.1C)
+
+`validate_route_artifacts` comparava o hash **bruto** de `network.net.xml` e `routes_*.rou.xml` com
+os metadados; um checkout LF vs CRLF reprovava artefatos cientificamente idênticos. Agora (só
+aceitação/rejeição; nenhum dado, rota, comando SUMO, controlador ou métrica muda):
+
+1. metadado com `route_canonical_sha256` / `network_canonical_sha256` (`CANONICAL_TEXT_LF_V1`):
+   vale o hash canônico;
+2. senão, hash bruto histórico (`route_hash`/`network_hash`): igualdade aceita como antes;
+3. se o bruto diverge, aceita **só** se o hash bruto registrado for uma identidade legada conhecida
+   (`legacy_artifact_hashes.py`, derivada dos blobs commitados por
+   `scripts/build_legacy_route_hash_table.py`) e o hash canônico do arquivo for o valor confiável
+   dessa entrada. Hash desconhecido ou conteúdo alterado é rejeitado.
+
+Os metadados históricos (Pilot V2 etc.) não foram reescritos. O gerador passou a gravar, além dos
+campos antigos, `route_raw_sha256`, `route_canonical_sha256`, `network_raw_sha256` e
+`network_canonical_sha256`. A implementação do hash canônico fica em `text_hashing.py` (uma só),
+reexportada por `freeze_hashing.py`.
+
+Como `route_artifacts.py` é código de execução, o `SCIENTIFIC_TREE_SHA256` mudou e o commit
+`0abd7be…` deixou de ser a fonte científica (superado). O novo commit científico é informado por
+`--scientific-source-sha`; nenhum SHA é fixado no código.
+
+## Freeze de experimento independente de fim de linha (Prompt 59.1D)
+
+`traffic-agents experiment freeze` (`freeze.py`) também comparava hashes brutos. Agora o
+`checksums.json` é schema 2: cada arquivo de texto registra `sha256`/`raw_byte_sha256` (forense,
+chave legada mantida), `canonical_sha256` e `hash_schema = CANONICAL_TEXT_LF_V1`; binários só o
+hash bruto. Verificação: com `canonical_sha256` registrado, vale o canônico; registro legado
+(schema 1, só `sha256`): hash bruto igual é aceito como antes, e uma divergência só é aceita se o
+hash bruto registrado for uma identidade legada **conhecida** (`legacy_artifact_hashes.py`) cujo
+canônico confere. Mudança real de conteúdo, binário diferente ou hash desconhecido são rejeitados.
+`experiment_config_canonical_sha256` é registrado ao lado do bruto e entra nos manifestos de run
+(aditivo). Há uma única implementação do hash canônico (`text_hashing.py`), usada por freeze, validação
+de rotas e ferramentas de freeze.
+
+`freeze.py` roda dentro do `ExperimentRunner` (valida o freeze e gera campos dos manifestos de
+run); por isso, pela regra de inclusão (todo `src/traffic_agents` exceto `replay` e as ferramentas
+`final_freeze.py`/`freeze_hashing.py`), pertence ao `SCIENTIFIC_TREE_V1`.
+
+## Caminhos portáteis no freeze de experimento (Prompt 59.1E)
+
+O `checksums.json` agora é schema 3. Os arquivos congelados são identificados por
+`relative_path`: caminho **relativo à raiz do repositório**, em POSIX (`/`), sem letra de unidade,
+barra inicial, UNC, segmentos `.`/`..`/vazios nem barra invertida (ex.:
+`experiments/configs/final_main.yaml`). As entradas derivadas usam `scenario_relative_path`. A
+localização do repositório no disco **não faz parte da identidade científica**: o mesmo freeze
+verifica depois de mover ou clonar o repositório, em Linux, CI ou Docker. A raiz vem de
+`git rev-parse --show-toplevel` a partir da âncora (config ou diretório do freeze), nunca só do
+diretório atual, então geração e verificação funcionam a partir de subdiretórios. Hashes de
+conteúdo (`CANONICAL_TEXT_LF_V1`), SHA da fonte científica e `SCIENTIFIC_TREE_SHA256` seguem sendo
+a identidade autoritativa.
+
+Segurança: registros do schema 3 com caminho absoluto, de unidade, UNC, `..` ou que resolvam
+(inclusive por symlink) para fora do repositório são rejeitados, assim como um campo `path`
+absoluto em schema 3. Uma entrada científica fora do repositório não pode ser congelada (auditado:
+nenhuma entrada das campanhas finais está fora do repositório). O manifesto do freeze
+(`freeze_manifest.json`) também guarda o config de origem como caminho relativo.
+
+Registros históricos (schema 1 e 2) com caminhos absolutos continuam sendo verificados como antes
+quando o caminho exato existe; não são reescritos nem mapeados por adivinhação e são considerados
+**não portáteis**. A campanha final usa o schema 3.

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -18,6 +19,7 @@ from traffic_agents.experiments.run_invariants import (
     route_generator_config_sha256,
 )
 from traffic_agents.experiments.runner import ExperimentRunner, load_experiment_config
+from traffic_agents.experiments.text_hashing import canonical_sha256
 from traffic_agents.simulation import SumoEnvironmentInfo
 
 
@@ -140,6 +142,8 @@ def _sumo_info(tmp_path: Path) -> SumoEnvironmentInfo:
 
 
 def _write_experiment_fixture(tmp_path: Path) -> Path:
+    # Freeze identities are repository-relative, so the fixture lives in a (throw-away) git repo.
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
     scenario_dir = tmp_path / "scenario"
     scenario_dir.mkdir()
     (scenario_dir / "network.net.xml").write_text(
@@ -243,3 +247,106 @@ max_steps: 1
         encoding="utf-8",
     )
     return config_path
+
+
+# --- cross-platform (LF/CRLF) verification, CANONICAL_TEXT_LF_V1 ---------------------------
+def _to_crlf(path: Path) -> None:
+    path.write_bytes(path.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+
+
+def _to_lf(path: Path) -> None:
+    path.write_bytes(path.read_bytes().replace(b"\r\n", b"\n"))
+
+
+def _freeze_fixture(tmp_path: Path) -> tuple[Path, Path]:
+    config_path = _write_experiment_fixture(tmp_path)
+    result = freeze_experiment_config(
+        config_path, artifacts_dir=tmp_path / "artifacts", sumo_info=_sumo_info(tmp_path)
+    )
+    return config_path, result.freeze_dir
+
+
+def _frozen_paths(freeze_dir: Path, root: Path) -> list[Path]:
+    checksums = json.loads((freeze_dir / "checksums.json").read_text(encoding="utf-8"))
+    return [root / entry["relative_path"] for entry in checksums["files"]]
+
+
+def test_new_freeze_records_raw_and_canonical_hashes(tmp_path: Path) -> None:
+    _, freeze_dir = _freeze_fixture(tmp_path)
+    checksums = json.loads((freeze_dir / "checksums.json").read_text(encoding="utf-8"))
+    assert checksums["schema_version"] == 3
+    assert checksums["hash_schema"] == "CANONICAL_TEXT_LF_V1"
+    assert len(checksums["experiment_config_canonical_sha256"]) == 64
+    for entry in checksums["files"]:
+        assert entry["raw_byte_sha256"] == entry["sha256"]  # legacy key kept
+        assert entry["canonical_sha256"] and entry["hash_schema"] == "CANONICAL_TEXT_LF_V1"
+    fields = load_frozen_experiment_config_from_dir(freeze_dir).run_manifest_fields()
+    assert set(fields) == {"experiment_config_sha256", "experiment_config_canonical_sha256"}
+
+
+def test_freeze_created_with_lf_verifies_after_crlf_checkout(tmp_path: Path) -> None:
+    _, freeze_dir = _freeze_fixture(tmp_path)
+    paths = _frozen_paths(freeze_dir, tmp_path)
+    for path in paths:
+        _to_lf(path)
+    load_frozen_experiment_config_from_dir(freeze_dir).validate()
+    for path in paths:
+        _to_crlf(path)
+    load_frozen_experiment_config_from_dir(freeze_dir).validate()
+
+
+def _record_canonical_artifact_hashes(tmp_path: Path) -> None:
+    """New-style route metadata: canonical hashes authorise either line-ending representation."""
+
+    scenario_dir = tmp_path / "scenario"
+    metadata_path = scenario_dir / "routes_s1_seed_42.metadata.json"
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    metadata["route_canonical_sha256"] = canonical_sha256(
+        (scenario_dir / "routes_s1_seed_42.rou.xml").read_bytes()
+    )
+    metadata["network_canonical_sha256"] = canonical_sha256(
+        (scenario_dir / "network.net.xml").read_bytes()
+    )
+    metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
+
+
+def test_freeze_created_with_crlf_verifies_after_lf_checkout(tmp_path: Path) -> None:
+    config_path = _write_experiment_fixture(tmp_path)
+    _record_canonical_artifact_hashes(tmp_path)
+    config = load_experiment_config(config_path)
+    lf_paths = [
+        tmp_path / entry["relative_path"]
+        for entry in freeze.build_freeze_checksums(config=config, config_path=config_path)["files"]  # type: ignore[union-attr]
+    ]
+    for path in lf_paths:
+        _to_lf(path)
+    lf = freeze.build_freeze_checksums(config=config, config_path=config_path)
+    for path in lf_paths:
+        _to_crlf(path)
+    crlf = freeze.build_freeze_checksums(config=config, config_path=config_path)
+    lf_files, crlf_files = lf["files"], crlf["files"]
+    assert [e["raw_byte_sha256"] for e in lf_files] != [e["raw_byte_sha256"] for e in crlf_files]  # type: ignore[union-attr]
+    assert [e["canonical_sha256"] for e in lf_files] == [e["canonical_sha256"] for e in crlf_files]  # type: ignore[union-attr]
+    freeze_dir = tmp_path / "frozen"
+    freeze_dir.mkdir()
+    (freeze_dir / "checksums.json").write_text(json.dumps(crlf), encoding="utf-8")
+    (freeze_dir / "freeze_manifest.json").write_text("{}", encoding="utf-8")
+    for path in lf_paths:
+        _to_lf(path)
+    load_frozen_experiment_config_from_dir(freeze_dir).validate()
+
+
+def test_real_content_change_is_still_rejected(tmp_path: Path) -> None:
+    config_path, freeze_dir = _freeze_fixture(tmp_path)
+    for path in _frozen_paths(freeze_dir, tmp_path):
+        _to_crlf(path)
+    config_path.write_text(config_path.read_text(encoding="utf-8") + "# changed\n")
+    with pytest.raises(ExperimentFreezeError, match="experiment_config"):
+        load_frozen_experiment_config_from_dir(freeze_dir).validate()
+
+
+def test_whitespace_change_is_a_content_change(tmp_path: Path) -> None:
+    config_path, freeze_dir = _freeze_fixture(tmp_path)
+    config_path.write_bytes(config_path.read_bytes().rstrip(b"\r\n") + b" ")
+    with pytest.raises(ExperimentFreezeError, match="experiment_config"):
+        load_frozen_experiment_config_from_dir(freeze_dir).validate()
