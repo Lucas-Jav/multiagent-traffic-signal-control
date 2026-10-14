@@ -39,7 +39,10 @@ A campanha final V1 utiliza cinco controladores:
 | `C1_COOPERATIVE_COMPACT` | Método cooperativo principal |
 | `C2_COOPERATIVE_EXPANDED` | Ablação/comparação com comunicação rica |
 
-O controle base de tempo fixo final é o `B0_FIXED`.
+Há dois baselines de tempo fixo. `B0_FIXED` (`B0_FIXED_STATIC`) é o plano estático histórico do
+Pilot V2 (`B0_FIXED_METHOD = STATIC_DEFAULT`, ciclo de 98 s). O baseline final da campanha é o
+`B0_FIXED_CALIBRATED` (calibração `EMPIRICAL_FIXED_TIME` concluída; ver
+[`fixed-time-calibration.md`](fixed-time-calibration.md) e [`baselines.md`](baselines.md)).
 
 O `B0_FIXED` deve ser descrito apenas como um controle base (baseline)
 tradicional/estático de tempo fixo. Ele não é otimizado por Webster. Nenhum

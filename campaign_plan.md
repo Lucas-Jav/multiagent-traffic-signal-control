@@ -1,5 +1,12 @@
 # Campaign Plan V1
 
+> **HISTORICAL / SUPERSEDED (pre-Pilot V2 plan).** This document captures the pre-flight plan and the
+> mini-pilot checks. It is not authoritative for the current methodology. Current sources:
+> `docs/methodology/campaign-matrix.md` (campaign structure, seeds, S5), `docs/methodology/baselines.md`,
+> `docs/methodology/metrics.md`, `docs/methodology/scenario-validity-gates.md`,
+> `docs/experiments.md` (canonical S5) and `docs/evidencias/pilot-v2/`. Pilot V2 result: MIXED
+> (confidence MEDIUM). Final seed count and final freeze remain pending; B0 calibration is DONE (B0_FIXED_CALIBRATED, see docs/methodology/fixed-time-calibration.md); the final config must still switch B0 to it.
+
 Status: prepared for review, not approved for full campaign execution.
 
 This document freezes the evaluation intent and the operational checks for the

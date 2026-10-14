@@ -17,6 +17,7 @@ from traffic_agents.config import ScenarioConfig, get_settings
 from traffic_agents.controllers import (
     CooperativeCompactController,
     FixedTimeController,
+    FixedTimePlanController,
     LocalAdaptiveController,
     LocalPressureController,
     build_controller,
@@ -145,6 +146,7 @@ class TraCISimulationRunner:
         collect_network_telemetry: bool | None = None,
         finalize_metrics: bool | None = None,
         network_telemetry_factory: Callable[[_TraCIConnection], NetworkTelemetrySink] | None = None,
+        controller_override: FixedTimePlanController | None = None,
     ) -> None:
         if step_delay_seconds < 0:
             msg = "step_delay_seconds must be non-negative"
@@ -156,7 +158,9 @@ class TraCISimulationRunner:
         self._scenario_config = scenario_config
         self._scenario_dir = scenario_dir
         self._sumo_info = sumo_info or detect_sumo_environment()
-        self._controller = build_controller(controller_id or scenario_config.controller_id)
+        self._controller = controller_override or build_controller(
+            controller_id or scenario_config.controller_id
+        )
         if isinstance(
             self._controller,
             LocalAdaptiveController | LocalPressureController | CooperativeCompactController,
@@ -630,6 +634,7 @@ def _manifest_payload(
     summary: SimulationRunSummary,
     controller: (
         FixedTimeController
+        | FixedTimePlanController
         | LocalAdaptiveController
         | LocalPressureController
         | CooperativeCompactController

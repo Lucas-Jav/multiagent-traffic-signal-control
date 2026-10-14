@@ -1,0 +1,107 @@
+{
+  "plan_id": "fx_c84_demand_proportional_alternate",
+  "controller_id": "B0_FIXED_CALIBRATED",
+  "method": "EMPIRICAL_FIXED_TIME",
+  "cycle_seconds": 84,
+  "yellow_seconds": 3,
+  "all_red_seconds": 2,
+  "traffic_lights": {
+    "A0": {
+      "green_seconds": [
+        15,
+        14,
+        15,
+        20
+      ],
+      "offset_seconds": 0
+    },
+    "A1": {
+      "green_seconds": [
+        15,
+        16,
+        15,
+        18
+      ],
+      "offset_seconds": 42
+    },
+    "A2": {
+      "green_seconds": [
+        15,
+        14,
+        15,
+        20
+      ],
+      "offset_seconds": 0
+    },
+    "B0": {
+      "green_seconds": [
+        17,
+        15,
+        14,
+        18
+      ],
+      "offset_seconds": 42
+    },
+    "B1": {
+      "green_seconds": [
+        15,
+        15,
+        15,
+        19
+      ],
+      "offset_seconds": 0
+    },
+    "B2": {
+      "green_seconds": [
+        15,
+        14,
+        17,
+        18
+      ],
+      "offset_seconds": 42
+    },
+    "C0": {
+      "green_seconds": [
+        15,
+        16,
+        16,
+        17
+      ],
+      "offset_seconds": 0
+    },
+    "C1": {
+      "green_seconds": [
+        15,
+        14,
+        15,
+        20
+      ],
+      "offset_seconds": 42
+    },
+    "C2": {
+      "green_seconds": [
+        16,
+        16,
+        15,
+        17
+      ],
+      "offset_seconds": 0
+    }
+  },
+  "provenance": {
+    "campaign_role": "BASELINE_CALIBRATION",
+    "calibration_plan_sha256": "3aea5ff507020bd8046595f73b7a921abf4ccf585375f901b3660b99d7c5f0de",
+    "calibration_seeds": [
+      101,
+      1009,
+      2029
+    ],
+    "validation_seeds": [
+      3011,
+      4021,
+      5003
+    ],
+    "J_calibration": 0.8524614331726439,
+    "J_validation": 0.8486451047212631
+  }
+}

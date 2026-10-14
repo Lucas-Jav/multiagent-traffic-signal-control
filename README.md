@@ -4,6 +4,18 @@
 
 > **Nota de status (histórico preservado).** Este README descreve principalmente o MVP1. O resultado final do experimento piloto Pilot V2 é: `RESULT_INTERPRETATION=MIXED`, `RESULT_CONFIDENCE=MEDIUM`, `C1_GENERAL_SUPERIORITY_CLAIMED=NO`, `C1_SCENARIO_SPECIFIC_BENEFIT=S4`, `READY_FOR_TCC_USE=YES`. O Pilot V2 não provou superioridade geral do C1 sobre o B2: o C1 se beneficiou claramente no cenário saturado S4, piorou em S1 e S3 e, em S2, apresentou um trade-off (redução de atraso/fila, porém redução de vazão (throughput) e da razão de conclusão). Política do S4: `ALLOW_AND_MEASURE` (teleports devem ser reportados, mas não bloqueiam a validade do S4). Qualquer menção histórica de que o S3 bloquearia o piloto foi superada pelo gate composto.
 
+> **Documentos canônicos (a documentação metodológica vigente).** Este README é em grande parte
+> **HISTÓRICO (MVP1)**. Em caso de divergência, valem os documentos abaixo:
+> `docs/methodology/baselines.md` (controladores; B0 histórico = `STATIC_DEFAULT`; B0 final = `B0_FIXED_CALIBRATED`, ver `docs/methodology/fixed-time-calibration.md`),
+> `docs/methodology/metrics.md` (métricas canônicas e aliases),
+> `docs/methodology/intersection-glossary.md` (A1-A9 lógicos x IDs SUMO; A5 = `B1`),
+> `docs/methodology/scenario-validity-gates.md` (gates S1-S4, gate composto do S3, post-hoc),
+> `docs/methodology/reference-route.md` (rota de referência W->E por A5),
+> `docs/methodology/tcc-scope-alignment.md` (escopo: controle **reativo**, sem ML/previsão),
+> `docs/experiments.md` (S5 canônico: perda 0/20/50/100%, atraso 0; **não executado**),
+> `docs/evidencias/pilot-v2/` (evidências versionadas do Pilot V2),
+> `docs/advisor-feedback-checklist.md`.
+
 ## 1. Visão Geral do Projeto
 
 O MVP1 implementa um ambiente reproduzível para controle semafórico multiagente em uma rede sintética 3x3 no Eclipse SUMO. O projeto executa simulações headless via TraCI, controladores locais e cooperativos, experimentos pequenos declarados em YAML e coleta de artifacts por run.
@@ -197,7 +209,7 @@ Traffic topology é a topologia física da rede SUMO: lanes, edges, junctions, m
 
 ## 10. Controladores
 
-`B0_FIXED`: baseline fixed-time (tempo fixo). Não aplica decisão adaptativa e preserva o plano semafórico definido no SUMO.
+`B0_FIXED`: baseline fixed-time (tempo fixo). Não aplica decisão adaptativa e preserva o plano semafórico definido no SUMO (ciclo de 98 s, verdes 18/20/20/20 s, amarelo 3 s, all-red 2 s). Este é o baseline **histórico** (`B0_FIXED_STATIC`, Pilot V2): não é Webster nem foi calibrado a partir da demanda (`B0_FIXED_METHOD = STATIC_DEFAULT`). O baseline final é o `B0_FIXED_CALIBRATED` (ciclo de 84 s, `EMPIRICAL_FIXED_TIME`).
 
 `B1_LOCAL_ADAPTIVE`: controlador local adaptativo. Usa estado local da interseção e não usa comunicação.
 
@@ -239,7 +251,7 @@ O tempo de entrega usa apenas simulation step. O `MessageBus` não usa relógio 
 
 Cada mensagem registra `created_step`, `scheduled_delivery_step` e `delivered_step`. O bus mantém mensagens internamente por delivery step e preserva ordenação determinística por `delivery_step`, `created_step`, `sequence`, `source` e `destination`. As métricas de transporte incluem `messages_sent`, `messages_delivered`, `messages_dropped`, `observed_drop_rate`, `message_delay_steps`, `average_message_delay` e `max_message_delay`.
 
-A idade científica da informação é `current_simulation_step - created_step`, medida pelo `C1_COOPERATIVE_COMPACT` quando a mensagem chega ao agente. Mensagens com `age <= max_message_age_steps` são fresh; mensagens com `age > max_message_age_steps` são stale. A fronteira é inclusiva: `age == max_message_age_steps` ainda é fresh. Mensagens stale são ignoradas pelo ajuste cooperativo, sem exception, e o controlador segue com a informação local/B2 quando não houver mensagem cooperativa útil. As métricas de utilidade da informação incluem `messages_fresh`, `messages_stale`, `average_message_age` e `max_observed_message_age`. O registro preparado para agent tracing guarda `message_age_steps`, `used` e `reason=STALE` quando uma mensagem entregue é descartada por idade.
+A idade científica da informação é `current_simulation_step - created_step`, medida pelo `C1_COOPERATIVE_COMPACT` quando a mensagem chega ao agente. Mensagens com `age <= max_message_age_steps` são fresh; mensagens com `age > max_message_age_steps` são stale. A fronteira é inclusiva: `age == max_message_age_steps` ainda é fresh. Mensagens stale são ignoradas pelo ajuste cooperativo, sem exception, e o controlador segue com a informação local/B2 quando não houver mensagem cooperativa útil. As métricas de utilidade da informação incluem `messages_fresh`, `messages_stale`, `mean_message_age_steps` e `max_message_age_steps` (nomes canônicos; `average_message_age` e `max_observed_message_age` são nomes internos/históricos, ver `docs/methodology/metrics.md`). O registro preparado para agent tracing guarda `message_age_steps`, `used` e `reason=STALE` quando uma mensagem entregue é descartada por idade.
 
 ## 12. Executando uma Simulação
 

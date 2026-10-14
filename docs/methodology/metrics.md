@@ -46,6 +46,86 @@ de medição são `300 <= i < 3900`. O cenário S3 posiciona seu choque (shock) 
   backlog deles (`never_inserted_backlog_delay_lower_bound_seconds`: fim da run menos partida
   agendada) é fornecido; ele nunca é mesclado nas médias de viagens concluídas.
 
+## Tabela canônica de métricas
+
+Esta é a lista canônica de campos persistidos em `run_metrics.json` e agregados em
+`combined_metrics.parquet`. Os nomes na coluna "Campo canônico" são os únicos que devem aparecer em
+relatórios e no texto do TCC; aliases estão em "Aliases e nomes históricos". A seção
+"Definições das métricas" mais abaixo espelha `src/traffic_agents/experiments/metric_definitions.py`
+com todos os detalhes (janela, casos extremos).
+
+Legenda: **Coorte** = veículos ofertados com partida AGENDADA em `[warmup, warmup + measurement_duration)`.
+**Concluídas** = viagens da coorte que chegaram antes do fim da run (métrica condicional à conclusão:
+ler junto com `throughput`, razões de conclusão e filas).
+
+| Campo canônico | Nome de exibição (PT) | Unidade | Fonte | População | Denominador | Fórmula | Cenários | Ressalva de interpretação |
+|---|---|---|---|---|---|---|---|---|
+| `throughput` | Vazão | veículos | `tripinfo.xml` (instante de chegada) | Todo veículo que CHEGA na janela de medição (inclui agendados no warmup) | n/a | contagem de chegadas em `[300, 3900)` | S1-S5 | Contagem de fluxo, não coorte; não isolada de backlog. Ler com razões de conclusão. |
+| `offered_vehicle_count` | Veículos ofertados | veículos | arquivo de rotas | Coorte | n/a | contagem de partidas agendadas na janela | S1-S4 | Idêntico entre controladores na mesma seed. |
+| `departed_vehicle_count` | Veículos inseridos | veículos | rotas + `tripinfo.xml` | Coorte | n/a | ofertados que entraram na rede | S1-S4 | Menor que ofertados indica starvation de inserção. |
+| `arrived_vehicle_count` | Veículos concluídos | veículos | rotas + `tripinfo.xml` | Coorte | n/a | inseridos que chegaram | S1-S4 | Difere de `throughput` (coorte vs. fluxo na janela). |
+| `never_inserted_vehicle_count` | Veículos nunca inseridos | veículos | rotas + `tripinfo.xml` | Coorte | n/a | `offered - departed` | S1-S4 | Valor alto indica sobrecarga (no S4 é intencional). |
+| `unfinished_in_network_count` | Veículos não concluídos na rede | veículos | rotas + `tripinfo.xml` | Coorte | n/a | `departed - arrived` | S1-S4 | Viagens não concluídas ficam fora das médias de viagem. |
+| `departure_ratio` | Razão de inserção | razão | contagens | Coorte | `offered_vehicle_count` | `departed / offered` | S1-S4 | 0.0 se ofertados = 0. |
+| `completion_ratio_offered` | Razão de conclusão (sobre ofertados) | razão | contagens | Coorte | `offered_vehicle_count` | `arrived / offered` | S1-S5 | Preferida para comparar controladores (inclui não inseridos). |
+| `completion_ratio_departed` | Razão de conclusão (sobre inseridos) | razão | contagens | Coorte | `departed_vehicle_count` | `arrived / departed` | S1-S4 | Oculta starvation de inserção; não usar isolada. |
+| `mean_depart_delay_seconds` | Atraso médio de inserção | s/veículo | `departDelay` do `tripinfo.xml` | Inseridos da coorte | inseridos | média de `departDelay` | S1-S4 | Exclui nunca inseridos (viés de sobrevivência). |
+| `mean_waiting_time` | Tempo de espera médio | s/veículo | `waitingTime` do `tripinfo.xml` | Concluídas da coorte | concluídas | média | S1, S4, S5 | Condicional à conclusão. |
+| `mean_time_loss` | Perda de tempo média | s/veículo | `timeLoss` do `tripinfo.xml` | Concluídas da coorte | concluídas | média | S1, S2, S4, S5 | Condicional à conclusão. |
+| `mean_travel_time` | Tempo de viagem médio | s/veículo | `duration` do `tripinfo.xml` | Concluídas da coorte | concluídas | média de (chegada - inserção) | S1, S4 | Exclui atraso de inserção; condicional à conclusão. |
+| `mean_stops` | Paradas médias | paradas/veículo | `waitingCount` do `tripinfo.xml` | Concluídas da coorte | concluídas | média | S1, S2 | Condicional à conclusão. |
+| `mean_lane_queue_vehicles` | Fila média por lane | veículos | `lane_telemetry.parquet` | Lanes de entrada únicas, passos da medição | passos x lanes | média de `lane_queue` (veículos parados) | S1-S4 | Escala por lane; não comparar diretamente com a fila de rede. |
+| `mean_network_queue_vehicles` | Fila média da rede | veículos | `lane_telemetry.parquet` | Lanes de entrada únicas, passos da medição | passos de medição | média de `network_total_queue` (soma das filas das lanes) | S1-S5 | Nunca somar linhas de movimento (duplicaria lanes). |
+| `max_network_queue_vehicles` | Fila máxima da rede | veículos | `lane_telemetry.parquet` | idem | passos de medição | máximo de `network_total_queue` | S1-S4 | Estatística de pico, sensível a outliers. |
+| `max_lane_queue_vehicles` | Fila máxima por lane | veículos | `lane_telemetry.parquet` | idem | passos x lanes | máximo de `lane_queue` | S1-S4 | Satura na capacidade física da lane (~30 veículos) em cenários sobrecarregados. |
+| `internal_lane_persistence_events` | Eventos de persistência em lane interna | eventos | `junction_telemetry.parquet` | Lanes internas das interseções | n/a | veículos nas lanes internas em passos consecutivos, somado sobre interseções e passos de medição | S4 | Proxy; não é spillback nem gridlock medido diretamente. |
+| `post_shock_queue_auc_vehicle_seconds` | AUC da fila pós-choque | veículo-s | `lane_telemetry.parquet` | `network_total_queue` pós-choque | n/a | integral de `network_total_queue` do choque ao fim da medição | S3 | Definição congelada (ver "AUC da fila pós-choque"). |
+| `post_shock_time_loss` | Perda de tempo pós-choque | s/veículo | `timeLoss` do `tripinfo.xml` | Concluídas da coorte agendadas em/depois do choque | concluídas pós-choque | média | S3 | Condicional à conclusão; população definida por partida agendada. |
+| `sumo_teleports_total` | Teleportes do SUMO | veículos | `sumo/statistics.xml` (`<teleports total>`) | Run inteira (não é coorte) | n/a | contagem de teleportes | S1-S5 (gate no S4) | S4 usa `ALLOW_AND_MEASURE`: reportar ao lado de todo resultado do S4. Persistido em `counts` do `run_metrics.json`. |
+| `messages_sent` | Mensagens enviadas | mensagens | `MessageBus` | Run simulada completa (inclui warmup) | n/a | total publicado | S5 (C1/C2) | 0 para B0/B1/B2. |
+| `messages_delivered` | Mensagens entregues | mensagens | `MessageBus` | idem | n/a | total entregue | S5 | Depende de `drop_probability` e `delay_steps`. |
+| `messages_dropped` | Mensagens perdidas | mensagens | `MessageBus` | idem | n/a | total descartado por perda | S5 | Ver política de perda. |
+| `messages_stale` | Mensagens obsoletas | mensagens | contabilização de atualidade dos cooperativos | idem | n/a | recebidas com `age > max_message_age_steps` | S5 | Ignoradas pelo ajuste cooperativo. |
+| `bytes_sent` | Bytes enviados | bytes | `MessageBus` (mensagens serializadas) | idem | n/a | total serializado publicado | S5 | Custo de comunicação. |
+| `bytes_delivered` | Bytes entregues | bytes | `MessageBus` | idem | n/a | total serializado entregue | S5 | idem |
+| `mean_message_age_steps` | Idade média da mensagem | passos | atualidade dos cooperativos | idem | mensagens observadas | média de `current_step - created_step` | S5 | Nome canônico; ver aliases. |
+| `max_message_age_steps` | Idade máxima da mensagem | passos | atualidade dos cooperativos | idem | n/a | máximo observado | S5 | Nome canônico; ver aliases. |
+| `controller_decision_mean_ms` | Tempo médio de decisão do controlador | ms | `performance.json` / `run_metrics.json` | Todos os passos (inclui warmup) | passos | média do tempo de decisão | S1-S5 | Desempenho computacional, dependente da máquina; não é métrica de tráfego. |
+| `controller_decision_max_ms` | Tempo máximo de decisão do controlador | ms | `performance.json` | idem | passos | máximo | S1-S5 | Implementado em `metrics/performance.py` e persistido em `performance.json`. Também existem `controller_decision_p50_ms` e `controller_decision_p95_ms`. |
+
+Todas as métricas de tráfego acima são calculadas pelo pipeline canônico de finalização da run; a
+campanha final não usa métricas calculadas manualmente.
+
+## Aliases e nomes históricos
+
+Os nomes canônicos são os da coluna "Campo canônico". `METRIC_DEFINITION_ALIASES`
+(`src/traffic_agents/experiments/metric_definitions.py`) mapeia nomes alternativos para o canônico e
+é usado para resolver definições; **nenhum campo persistido foi renomeado**, portanto artefatos
+existentes continuam legíveis.
+
+| Nome histórico / alias | Canônico | Onde ainda aparece e por quê |
+|---|---|---|
+| `average_message_age` | `mean_message_age_steps` | Atributo interno do resultado do ajuste cooperativo (`cooperative_compact.py`) e saída do `demo`; o trace usa `average`. Compatibilidade interna, não persistido como métrica. |
+| `max_observed_message_age` | `max_message_age_steps` | idem |
+| `mean_waiting_time_seconds`, `mean_time_loss_seconds`, `mean_travel_time_seconds` | `mean_waiting_time`, `mean_time_loss`, `mean_travel_time` | Nomes pedidos em prompts do Pilot V2; explicados em `pilot-assessment.md`. |
+| `avg_waiting_time`, `average_waiting_time`, `avg_time_loss`, `average_time_loss` | `mean_waiting_time`, `mean_time_loss` | Listas de nomes candidatos de `TRAFFIC_METRIC_FIGURES` em `experiments/report.py`: alias de exibição **intencional** (tolerância de leitura para figuras), não campo obsoleto nem bug. |
+| `network_throughput`, `vehicles_arrived`, `arrived` | `throughput` | Aliases de definição. |
+| `corridor_travel_time`, `corridor_stops` | `corridor_mean_travel_time`, `corridor_mean_stops` | Aliases de definição. |
+
+Nomes de fila ambíguos (`mean_queue`, `max_queue`, `queue`) NÃO são aliasados: toda métrica de fila
+deve nomear seu escopo (lane / interseção / rede).
+
+## Métricas futuras / opcionais (NÃO implementadas)
+
+As métricas abaixo **não** fazem parte do conjunto central atual e não existem em `run_metrics.json`:
+
+- `recovery_time_seconds`: nenhuma regra de limiar fixa foi congelada antes dos resultados. O S3 usa
+  as métricas de fila e de perda de tempo pós-choque.
+- Métrica agregada de ocupação a jusante: a ocupação downstream existe só como entrada da lógica dos
+  controladores; não é agregada como métrica final por run.
+- Tempo de viagem da rota de referência (`reference_route_*`): definida em
+  [`reference-route.md`](reference-route.md) como futura; ainda não implementada.
+
 ## Métricas de fila
 
 A telemetria de fila (queue) é produzida pelo runner da simulação para todo controlador (incluindo

@@ -19,6 +19,16 @@ from traffic_agents.controllers.fixed_time import (
     UnsupportedControllerError,
     build_controller,
 )
+from traffic_agents.controllers.fixed_time_plan import (
+    FIXED_TIME_PLAN_CONTROLLER_ID,
+    FIXED_TIME_PLAN_CONTROLLER_VERSION,
+    FixedTimePlan,
+    FixedTimePlanController,
+    FixedTimePlanError,
+    TrafficLightTiming,
+    load_plan,
+    plan_from_payload,
+)
 from traffic_agents.controllers.local_adaptive import (
     LOCAL_ADAPTIVE_CONTROLLER_ID,
     LOCAL_ADAPTIVE_CONTROLLER_VERSION,
@@ -51,6 +61,8 @@ __all__ = [
     "COOPERATIVE_EXPANDED_CONTROLLER_VERSION",
     "FIXED_TIME_CONTROLLER_ID",
     "FIXED_TIME_CONTROLLER_VERSION",
+    "FIXED_TIME_PLAN_CONTROLLER_ID",
+    "FIXED_TIME_PLAN_CONTROLLER_VERSION",
     "LOCAL_ADAPTIVE_CONTROLLER_ID",
     "LOCAL_ADAPTIVE_CONTROLLER_VERSION",
     "LOCAL_PRESSURE_CONTROLLER_ID",
@@ -61,6 +73,9 @@ __all__ = [
     "CooperativePressureAdjustment",
     "CooperativePressureConfig",
     "FixedTimeController",
+    "FixedTimePlan",
+    "FixedTimePlanController",
+    "FixedTimePlanError",
     "LocalAdaptiveConfig",
     "LocalAdaptiveController",
     "LocalAdaptivePolicy",
@@ -75,7 +90,10 @@ __all__ = [
     "PhasePressureCalculator",
     "PhaseSafetyManager",
     "PhaseSafetyViolationError",
+    "TrafficLightTiming",
     "UnsafePhaseProgramError",
     "UnsupportedControllerError",
     "build_controller",
+    "load_plan",
+    "plan_from_payload",
 ]

@@ -150,6 +150,8 @@ class CompactNeighborMessageFactory:
             summary[movement.turn_type] += queue * self.config.turn_weight(movement.turn_type)
         return {turn_type: value for turn_type, value in summary.items() if value > 0.0}
 
+    # Historical name: the value is a current-state estimate (measured arrival rate now),
+    # not a temporal trend or forecast.
     def _arrival_trend(
         self,
         observation: AgentObservation,

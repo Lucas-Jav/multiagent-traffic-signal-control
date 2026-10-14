@@ -4,6 +4,13 @@
   "phase_min_green_seconds": 10.0,
   "phase_yellow_seconds": 3.0,
   "scenario_id": "grid_3x3",
+  "traffic_light_cycle_seconds": 98.0,
+  "traffic_light_green_seconds_by_phase": [
+    18.0,
+    20.0,
+    20.0,
+    20.0
+  ],
   "traffic_light_ids": {
     "A1": "A2",
     "A2": "B2",
@@ -28,7 +35,6 @@
     "C1": 50,
     "C2": 20
   },
-  "traffic_light_protected_through_green_seconds": 32.0,
-  "traffic_light_protected_turn_green_seconds": 10.0,
+  "traffic_light_program_source": "netgenerate_default_static_incoming_layout",
   "traffic_light_stop_offset_meters": 7.0
 }

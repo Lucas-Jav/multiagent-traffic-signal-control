@@ -1,5 +1,6 @@
 experiment_id: s5_communication_degradation_c1
-description: S5 communication degradation matrix. Fixed S2 demand; C1_COOPERATIVE_COMPACT
+description: DEPRECATED/HISTORICAL exploratory S5 matrix (delay x drop), superseded
+  by final_s5_packet_loss.yaml (drop 0/20/50/100%, delay 0). Fixed S2 demand; C1_COOPERATIVE_COMPACT
   varies delay/drop and B2_LOCAL_PRESSURE is the local reference.
 scenario: ../../scenarios/grid_3x3/scenario_s2_directional_peak.yaml
 controllers:

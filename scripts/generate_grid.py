@@ -27,8 +27,13 @@ PHASE_MIN_GREEN_SECONDS = 10.0
 PHASE_YELLOW_SECONDS = 3.0
 PHASE_ALL_RED_SECONDS = 2.0
 PHASE_MAX_GREEN_SECONDS = 60.0
+# Only used by apply_protected_turn_phases, which rewrites phases that contain permissive
+# lowercase "g" signals. The incoming-layout grid from netgenerate has only protected "G"
+# approach greens, so these constants are DORMANT for grid_3x3 and are not recorded in
+# metadata.json. The actual green durations (18/20/20/20 s) are netgenerate defaults.
 PROTECTED_THROUGH_GREEN_SECONDS = 32.0
 PROTECTED_TURN_GREEN_SECONDS = 10.0
+TRAFFIC_LIGHT_PROGRAM_SOURCE = "netgenerate_default_static_incoming_layout"
 PROTECTED_TURN_YELLOW_SECONDS = PHASE_YELLOW_SECONDS
 TRAFFIC_LIGHT_INTERGREEN_SECONDS = PHASE_ALL_RED_SECONDS
 TLS_CYCLE_SECONDS = 98
@@ -112,6 +117,7 @@ def generate_grid(sumo_info: SumoEnvironmentInfo) -> GeneratedGridInfo:
         traffic_light_offsets,
         TRAFFIC_LIGHT_STOP_OFFSET_METERS,
         TRAFFIC_LIGHT_INTERGREEN_SECONDS,
+        read_program_timing(NETWORK_PATH),
     )
     validate_network(sumo_info, NETWORK_PATH)
 
@@ -371,12 +377,32 @@ def normalize_generated_network_header(network_path: Path) -> None:
     network_path.write_text(normalized, encoding="utf-8")
 
 
+def read_program_timing(network_path: Path) -> dict[str, object]:
+    """Describe the static fixed-time program actually stored in the generated network."""
+    root = ET.parse(network_path).getroot()
+    programs = root.findall("tlLogic")
+    if not programs:
+        return {}
+    phases = programs[0].findall("phase")
+    durations = [float(phase.attrib["duration"]) for phase in phases]
+    greens = [
+        float(phase.attrib["duration"])
+        for phase in phases
+        if _has_green(phase.attrib.get("state", ""))
+    ]
+    return {
+        "traffic_light_cycle_seconds": sum(durations),
+        "traffic_light_green_seconds_by_phase": greens,
+    }
+
+
 def write_metadata(
     metadata_path: Path,
     traffic_light_ids: dict[str, str],
     traffic_light_offsets: Mapping[str, int],
     stop_offset_meters: float,
     intergreen_seconds: float,
+    program_timing: Mapping[str, object] | None = None,
 ) -> None:
     payload = {
         "scenario_id": "grid_3x3",
@@ -386,12 +412,13 @@ def write_metadata(
         "phase_all_red_seconds": PHASE_ALL_RED_SECONDS,
         "phase_max_green_seconds": PHASE_MAX_GREEN_SECONDS,
         "traffic_light_intergreen_seconds": intergreen_seconds,
-        "traffic_light_protected_through_green_seconds": PROTECTED_THROUGH_GREEN_SECONDS,
-        "traffic_light_protected_turn_green_seconds": PROTECTED_TURN_GREEN_SECONDS,
+        "traffic_light_program_source": TRAFFIC_LIGHT_PROGRAM_SOURCE,
         "traffic_light_stop_offset_meters": stop_offset_meters,
         "traffic_light_ids": traffic_light_ids,
         "traffic_light_offsets_seconds": traffic_light_offsets,
     }
+    if program_timing:
+        payload.update(program_timing)
     metadata_path.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",

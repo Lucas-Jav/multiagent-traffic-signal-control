@@ -1,0 +1,63 @@
+{
+  "all_red_seconds": 2,
+  "calibration_seeds": [
+    101,
+    1009,
+    2029
+  ],
+  "campaign_role": "BASELINE_CALIBRATION",
+  "controller": "B0 only (fixed-time plans, no traffic-responsive behavior)",
+  "cycles": [
+    68,
+    84,
+    100,
+    116,
+    132
+  ],
+  "demand_levels": "gen.CALIBRATED (already fixed by the Pilot V2 scenario calibration)",
+  "green_bounds": [
+    10,
+    60
+  ],
+  "method": "EMPIRICAL_FIXED_TIME (predeclared grid search; Webster is NOT claimed)",
+  "objective": {
+    "aggregate": "J_plan = mean over the 4 scenarios of the mean over seeds of J_run",
+    "guards_per_scenario_mean": {
+      "completion_ratio_offered_min_rel": 0.95,
+      "departure_ratio_min_rel": 0.95,
+      "mean_network_queue_vehicles_max_rel": 1.25,
+      "mean_time_loss_max_rel": 1.25
+    },
+    "per_run": "J_run = 1 - 0.40*dC + 0.35*dQ + 0.25*dL ; dC=(c-c_ref)/c_ref, dQ=(q-q_ref)/q_ref, dL=(l-l_ref)/l_ref ; c=completion_ratio_offered, q=mean_network_queue_vehicles, l=mean_time_loss ; *_ref = same scenario and seed under the historical static plan",
+    "selection": "minimum J_plan among candidates that pass every guard in every scenario",
+    "tie_break": "candidates with J within 0.005 of the minimum: higher mean completion_ratio_offered, then shorter cycle, then plan_id",
+    "validation": "selected plan vs reference on untouched validation seeds: J <= 1.0 and all guards pass",
+    "weights": {
+      "completion": 0.4,
+      "queue": 0.35,
+      "time_loss": 0.25
+    }
+  },
+  "offsets": [
+    "ZERO",
+    "STAGGER",
+    "ALTERNATE"
+  ],
+  "reference": "static98",
+  "scenarios": [
+    "s1",
+    "s2",
+    "s3",
+    "s4"
+  ],
+  "splits": [
+    "EQUAL",
+    "DEMAND_PROPORTIONAL"
+  ],
+  "validation_seeds": [
+    3011,
+    4021,
+    5003
+  ],
+  "yellow_seconds": 3
+}

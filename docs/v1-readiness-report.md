@@ -1,5 +1,10 @@
 # Relatório de Prontidão da V1
 
+> **HISTORICAL / SUPERSEDED.** Instantâneo de prontidão técnica de 2026-09-29 (pré-Pilot V2).
+> `V1_READY = YES` aqui significa prontidão **técnica** do pipeline, **não** congelamento científico
+> final: a integração do `B0_FIXED_CALIBRATED` na config final, a decisão de seeds, a execução do S5 e o congelamento final
+> continuam abertos. Documentação vigente: `docs/methodology/` e `docs/advisor-feedback-checklist.md`.
+
 ## Status Geral
 
 V1_READY = YES

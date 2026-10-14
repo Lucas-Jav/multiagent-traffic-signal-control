@@ -2,7 +2,11 @@
 
 Este documento faz parte do material de congelamento da metodologia da V1. Ele
 documenta as entradas e as fórmulas dos controladores sem ajustar parâmetros
-dos controladores.
+dos controladores. O documento canônico de papéis, semântica temporal e papel experimental é
+[`baselines.md`](baselines.md); este arquivo mantém as fórmulas e os parâmetros.
+
+Todos os controladores são **reativos** (decidem com o estado corrente observado); nenhum prevê
+demanda futura nem usa aprendizado de máquina (ver [`tcc-scope-alignment.md`](tcc-scope-alignment.md)).
 
 ## Semântica de atuação (B1, B2, C1, C2)
 
@@ -49,10 +53,19 @@ eles são independentes das razões de conversão dos cenários (S1-S4:
   atuação TraCI e não recalcula a temporização dos semáforos durante a
   execução.
 - Fonte da temporização: o plano fixo atual vem do `tlLogic` versionado do SUMO
-  em `scenarios/grid_3x3/network.net.xml`, gerado por
-  `scripts/generate_grid.py` com constantes de temporização estáticas. O plano
-  gerado usa durações fixas de verde, amarelo e all-red, além de offsets fixos;
-  essas temporizações não são calibradas com a metodologia de Webster.
+  em `scenarios/grid_3x3/network.net.xml`, gerado por `scripts/generate_grid.py`.
+  Os verdes (18/20/20/20 s) são **defaults do `netgenerate`** (layout `incoming`); amarelo
+  = 3 s (`--tls.yellow.time`); all-red = 2 s (inserido pelo script); ciclo = 98 s;
+  offsets fixos por interseção. Essas temporizações não são calibradas com a metodologia de
+  Webster nem a partir da demanda.
+- `B0_FIXED_METHOD = STATIC_DEFAULT`; `B0_CALIBRATION_STATUS = DONE`: este é o B0 **histórico** (`B0_FIXED_STATIC`); o baseline final é o `B0_FIXED_CALIBRATED` (`fixed_time_plan.py`, ver `fixed-time-calibration.md`). O B0 do Pilot V2 é um
+  baseline de tempo fixo de engenharia/referência, não o baseline calibrado final solicitado pelo
+  orientador (ver [`baselines.md`](baselines.md)). Isso não o torna inválido.
+- Nota sobre as constantes `PROTECTED_THROUGH_GREEN_SECONDS = 32` e
+  `PROTECTED_TURN_GREEN_SECONDS = 10` de `generate_grid.py`: elas só atuam sobre fases com
+  sinais permissivos (`g` minúsculo). A rede `incoming` do grid só tem verdes protegidos (`G`),
+  então o passo é inativo e esses valores **não** descrevem o plano real (foram removidos do
+  `metadata.json`).
 - Classificação: arbitrário/estático com temporizações de segurança
   documentadas; não é Webster calibrado manualmente nem efetivamente calculado
   por Webster.
@@ -101,13 +114,17 @@ queue_weight * upstream_queue
 - Atualidade (freshness): uma mensagem recebida só é usada quando
   `current_step - created_step <= max_message_age_steps`; mensagens obsoletas
   são contadas e ignoradas.
-- Demanda projetada compacta:
+- Demanda de entrada estimada a partir do estado atual (compacta):
 
 ```text
 sum(outgoing_queue_summary.values()) + arrival_trend
 ```
 
-- O ajuste cooperativo soma a pressão de entrada projetada às fases locais
+  Nota: os nomes `arrival_trend`, `projected_incoming_weight` e "demanda projetada" são
+  históricos. O valor representa uma estimativa do estado corrente (filas atuais e taxa de chegada
+  medida atual); não é previsão temporal nem tendência calculada ao longo do tempo.
+
+- O ajuste cooperativo soma a pressão de entrada estimada às fases locais
   compatíveis usando `projected_incoming_weight`, os pesos de conversão e
   `directed_pressure_weight`; ele subtrai o congestionamento a jusante usando
   `downstream_congestion_weight`.
@@ -125,7 +142,7 @@ sum(outgoing_queue_summary.values()) + arrival_trend
 - Entradas permitidas: observação local mais a `ExpandedNeighborMessage`
   recebida.
 - Atualidade (freshness): mesmo tratamento de mensagens obsoletas do C1.
-- Demanda projetada expandida:
+- Demanda de entrada estimada a partir do estado atual (expandida):
 
 ```text
 sum(queue_per_outgoing_movement.values())

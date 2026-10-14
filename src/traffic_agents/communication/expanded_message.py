@@ -167,6 +167,8 @@ class ExpandedNeighborMessageFactory:
             for movement in movements
         }
 
+    # Historical name: the value is a current-state estimate (measured arrival rate now),
+    # not a temporal trend or forecast.
     def _arrival_trend(
         self,
         observation: AgentObservation,

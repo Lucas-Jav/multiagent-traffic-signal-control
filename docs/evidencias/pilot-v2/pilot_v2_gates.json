@@ -1,0 +1,81 @@
+{
+  "gates": {
+    "METRICS_FINALIZED_ALL_RUNS": true,
+    "S1_STABLE_REGIME_VALID": true,
+    "S2_DIRECTIONAL_SCENARIO_VALID": true,
+    "S3_ADAPTATION_SCENARIO_VALID": false,
+    "S4_SATURATION_SCENARIO_VALID": true,
+    "B0_MEASUREMENT_FAIR": true,
+    "GREEN_HOLD_SEMANTICS_OBSERVED": true,
+    "SCIENTIFIC_PILOT_VALID": false,
+    "READY_FOR_SEED_DECISION": false
+  },
+  "paired": {},
+  "green_hold": {
+    "B0_FIXED": {
+      "runs": 20,
+      "green_over_20": 0,
+      "green_count": 28480,
+      "green_max": 20,
+      "yellow": [
+        3
+      ],
+      "allred": [
+        2
+      ],
+      "bad": 0
+    },
+    "B1_LOCAL_ADAPTIVE": {
+      "runs": 20,
+      "green_over_20": 3473,
+      "green_count": 38266,
+      "green_max": 60,
+      "yellow": [
+        3
+      ],
+      "allred": [
+        2
+      ],
+      "bad": 0
+    },
+    "B2_LOCAL_PRESSURE": {
+      "runs": 20,
+      "green_over_20": 2637,
+      "green_count": 38964,
+      "green_max": 60,
+      "yellow": [
+        3
+      ],
+      "allred": [
+        2
+      ],
+      "bad": 0
+    },
+    "C1_COOPERATIVE_COMPACT": {
+      "runs": 20,
+      "green_over_20": 3786,
+      "green_count": 36174,
+      "green_max": 60,
+      "yellow": [
+        3
+      ],
+      "allred": [
+        2
+      ],
+      "bad": 0
+    },
+    "C2_COOPERATIVE_EXPANDED": {
+      "runs": 20,
+      "green_over_20": 7012,
+      "green_count": 26502,
+      "green_max": 60,
+      "yellow": [
+        3
+      ],
+      "allred": [
+        2
+      ],
+      "bad": 0
+    }
+  }
+}

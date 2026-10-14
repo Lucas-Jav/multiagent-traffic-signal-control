@@ -1,0 +1,43 @@
+{
+  "campaign_role": "BASELINE_CALIBRATION",
+  "selected_plan_id": "fx_c84_demand_proportional_alternate",
+  "passed": true,
+  "plan_id": "fx_c84_demand_proportional_alternate",
+  "J": 0.8486451047212631,
+  "mean_completion": 0.8064674451294783,
+  "guards_ok": true,
+  "per_scenario": {
+    "s1": {
+      "J": 0.7829582723058386,
+      "completion_ratio_offered": 0.9669211899572309,
+      "departure_ratio": 1.0,
+      "mean_network_queue_vehicles": 28.893148148148146,
+      "mean_time_loss": 77.45263042292295,
+      "guard_ok": true
+    },
+    "s2": {
+      "J": 0.7698056952594019,
+      "completion_ratio_offered": 0.97311769869197,
+      "departure_ratio": 1.0,
+      "mean_network_queue_vehicles": 19.374537037037037,
+      "mean_time_loss": 79.37753369034044,
+      "guard_ok": true
+    },
+    "s3": {
+      "J": 0.7678270311438582,
+      "completion_ratio_offered": 0.9359282955054673,
+      "departure_ratio": 1.0,
+      "mean_network_queue_vehicles": 40.58870370370371,
+      "mean_time_loss": 92.34359168504052,
+      "guard_ok": true
+    },
+    "s4": {
+      "J": 1.0739894201759537,
+      "completion_ratio_offered": 0.34990259636324533,
+      "departure_ratio": 0.46892226222173744,
+      "mean_network_queue_vehicles": 332.4782407407408,
+      "mean_time_loss": 799.4122856563973,
+      "guard_ok": true
+    }
+  }
+}

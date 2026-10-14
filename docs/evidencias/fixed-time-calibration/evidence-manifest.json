@@ -1,0 +1,18 @@
+{
+  "campaign_role": "BASELINE_CALIBRATION",
+  "created": "2026-10-13",
+  "source_dir": "artifacts/calibration/fixed_time_b0 (git-ignored)",
+  "script": "scripts/calibrate_fixed_time.py",
+  "git_sha_runs": "0215e852603cb56a2c1ebd2ddd615b94c50b95ad (working tree with uncommitted changes: Prompt 55 docs + 55.5 code)",
+  "kind": "derived (run tables) / raw copies (plan, selection, validation)",
+  "sha256": {
+    "b0_fixed_calibrated.json": "a950d82d1d59562766b183c096477f39215f0de8a905960b223a7a6fcef1f0fe",
+    "calibration-candidates.csv": "1edb802b9ed468dd2ddc7e00e70ed44373572f1d03fa99687a7f13ae7a5618ac",
+    "calibration-plan.json": "6340a2c248df4f48c28a23a77a99108c6f200bfef35dac0d6989c5a4c2374e54",
+    "calibration-plan.sha256": "0c73a0d2a7ba61fd625f9d0104518d7e819e36186e11c31e9cc48845e557ae86",
+    "calibration-runs.csv": "cf3c5dec2f70b1612d129d9023125f3b363ec173c04d1f0752da5c7b86fc9585",
+    "selection.json": "184f6f0842e01d0a1014950b137fbcf0fa242397436b196a16729253113992cf",
+    "validation-runs.csv": "f2c52d476d6ee8ae166f122f923d408ab5f1406cf3b61cfdffb647b074ee1de3",
+    "validation.json": "856310e0a93992908d9237acc6bf353eb8454513731a774024a74c6b80468279"
+  }
+}

@@ -9,6 +9,10 @@ from traffic_agents.controllers.cooperative_compact import (
     CooperativeCompactController,
     CooperativePressureConfig,
 )
+from traffic_agents.controllers.fixed_time_plan import (
+    FIXED_TIME_PLAN_CONTROLLER_ID,
+    FixedTimePlanController,
+)
 from traffic_agents.controllers.local_adaptive import (
     LOCAL_ADAPTIVE_CONTROLLER_ID,
     LocalAdaptiveController,
@@ -29,7 +33,13 @@ class UnsupportedControllerError(ValueError):
 
 @dataclass(frozen=True)
 class FixedTimeController:
-    """Baseline controller that leaves the SUMO fixed-time program untouched."""
+    """Baseline controller that leaves the SUMO fixed-time program untouched.
+
+    This is the historical Pilot V2 baseline (documented as ``B0_FIXED_STATIC``): the static
+    98 s plan stored in ``network.net.xml``. Its ``controller_id`` stays ``B0_FIXED`` so that Pilot
+    V2 artifacts remain valid. The final calibrated variant is ``B0_FIXED_CALIBRATED``
+    (``fixed_time_plan.py``).
+    """
 
     controller_id: ClassVar[str] = FIXED_TIME_CONTROLLER_ID
     controller_version: ClassVar[str] = FIXED_TIME_CONTROLLER_VERSION
@@ -55,12 +65,15 @@ def build_controller(
     controller_id: str,
 ) -> (
     FixedTimeController
+    | FixedTimePlanController
     | LocalAdaptiveController
     | LocalPressureController
     | CooperativeCompactController
 ):
     if controller_id == FIXED_TIME_CONTROLLER_ID:
         return FixedTimeController()
+    if controller_id == FIXED_TIME_PLAN_CONTROLLER_ID:
+        return FixedTimePlanController()
     if controller_id == COOPERATIVE_COMPACT_CONTROLLER_ID:
         return CooperativeCompactController()
     if controller_id == COOPERATIVE_EXPANDED_CONTROLLER_ID:

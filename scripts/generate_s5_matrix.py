@@ -76,7 +76,8 @@ def build_s5_payload(
     return {
         "experiment_id": f"s5_communication_degradation_{controller_key}",
         "description": (
-            "S5 communication degradation matrix. Fixed S2 demand; "
+            "DEPRECATED/HISTORICAL exploratory S5 matrix (delay x drop), superseded by "
+            "final_s5_packet_loss.yaml (drop 0/20/50/100%, delay 0). Fixed S2 demand; "
             f"{controller_id} varies delay/drop and B2_LOCAL_PRESSURE is the "
             "local reference."
         ),
