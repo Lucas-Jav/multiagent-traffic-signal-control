@@ -1,3 +1,5 @@
+> ⚠ **HISTÓRICO / SUPERADO** — Este documento registra uma etapa anterior do projeto. Para o conteúdo científico final, use `docs/tcc-final-content/` e `docs/evidencias/final-analysis/`.
+
 # Experimentos
 
 ## S5 Degradação da Comunicação (definição canônica ativa)

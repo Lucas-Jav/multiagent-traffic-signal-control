@@ -160,6 +160,8 @@ resultados são reportados em conjunto (Figura 13).
 
 *Figuras 14, 14B e 15 (FIG14, FIG14B, FIG15) e Tabela 5 (TABLE05).*
 
+> Nota de leitura: a Tabela 5 (TABLE05) usa **bytes entregues** por execução (coluna "Bytes entregues/run"); a Tabela 6 (TABLE06) usa **bytes enviados** por execução. São grandezas diferentes: com 0% de perda, as médias diferem em cerca de {{bytes_gap_pct(C1)}}% (C1), diferença pequena entre as duas grandezas (não é inconsistência nos dados); a causa dessa pequena diferença não foi investigada e não afeta nenhuma conclusão.
+
 **Validação da comunicação (fatos, não conclusões de tráfego).** Com 0% de perda, não houve descartes. Com 20% e 50%, a
 taxa de descarte observada ficou entre {{drop_ratio(0.2,'min')}} e {{drop_ratio(0.2,'max')}} (20%) e entre {{drop_ratio(0.5,'min')}} e {{drop_ratio(0.5,'max')}} (50%) — a taxa
 observada não precisa igualar a nominal em amostras finitas. Com 100% de perda, {{total100('sent')}} mensagens foram enviadas, {{total100('dropped')}} descartadas e
@@ -190,6 +192,8 @@ apenas quatro níveis foram avaliados e o efeito não é monotônico. O mecanism
 ## 6.9 Custo de comunicação: C1 × C2
 
 *Figuras 16 e 17 (FIG16, FIG17) e Tabela 6 (TABLE06).*
+
+> Nota de leitura: a Tabela 6 (TABLE06) usa **bytes enviados** por execução; a Tabela 5 (TABLE05) usa **bytes entregues**. Por isso, o valor do C1 com 0% de perda é {{comm(C1,0.0,'mean_bytes_sent')}} MB aqui (enviados) e {{comm(C1,0.0,'mean_bytes_delivered')}} MB na Tabela 5 (entregues); não há alteração de dados.
 
 C1 e C2 enviam aproximadamente o mesmo número de mensagens por execução ({{comm(C1,0.0,'mean_messages_sent')}} e {{comm(C2,0.0,'mean_messages_sent')}}), mas a mensagem expandida é maior:
 

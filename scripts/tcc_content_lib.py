@@ -85,6 +85,11 @@ def pt(x: float, d: int = 1, sign: bool = False) -> str:
     return s.replace(".", ",").replace("-", "−")
 
 
+def en(s: str) -> str:
+    """English number format for an already formatted pt-BR value (decimal point, ASCII minus sign kept as U+2212)."""
+    return str(s).replace(",", ".")
+
+
 def thousands(x: float, d: int = 0) -> str:
     s = f"{x:,.{d}f}"
     return s.replace(",", "§").replace(".", ",").replace("§", ".").replace("-", "−")
@@ -309,6 +314,12 @@ def eq_b2():
 
 def n_runs_s4_below(thr=0.5):
     return None
+
+
+def bytes_gap_pct(c, exp="FINAL_S5", scn="S2_DIRECTIONAL_PEAK", loss=0.0):
+    r = next(x for x in COMM if x["experiment"] == exp and x["scenario"] == scn and x["controller"] == c and float(x["packet_loss"]) == loss)
+    gap = (1 - float(r["mean_bytes_delivered"]) / float(r["mean_bytes_sent"])) * 100
+    return _rec(pt(gap, 2), artifact="s5_communication_summary.csv", scenario=f"{exp} {scn}", comparison=f"{c}@{loss}", metric="bytes_sent vs bytes_delivered gap (%)", N=10, kind="derived")
 
 
 def ratio_bytes(exp="FINAL_S5", scn="S2_DIRECTIONAL_PEAK", loss=0.0, d=2):

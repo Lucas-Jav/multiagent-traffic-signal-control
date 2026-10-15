@@ -121,6 +121,8 @@
 
 **TABLE06_COMMUNICATION_COST** — Médias por run (S2, perda 0%, N = 10). Benefício geral de tráfego conforme a classificação final C1 vs C2 por cenário (análise final N = 10).
 
+> Nota sobre TABLE05 e TABLE06: a TABLE05 apresenta **bytes entregues** (onde rotulado) e a TABLE06 apresenta **bytes enviados** (onde rotulado). São grandezas diferentes; com 0% de perda, a diferença entre elas é de cerca de 0,09% (C1: 30,3 MB enviados vs 30,2 MB entregues) e não indica alteração dos dados.
+
 ## Recomendações de uso
 
 1. Mantenha o aviso de que a seed 42 dos vídeos é apenas ilustrativa; as figuras de resultado usam as 10 seeds.

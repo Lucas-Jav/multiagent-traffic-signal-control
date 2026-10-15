@@ -54,13 +54,13 @@
 | 200 | `analysis-validation.json` | — | — | FINAL_MAIN_RUNS_ANALYZED | 290 | — |
 | 90 | `analysis-validation.json` | — | — | FINAL_S5_RUNS_ANALYZED | 290 | — |
 | 290 | `analysis-validation.json` | — | — | TOTAL_FINAL_SCIENTIFIC_RUNS_ANALYZED | 290 | — |
-| −15,2% | `final_pairwise_summary.csv` | S2_DIRECTIONAL_PEAK | B2_LOCAL_PRESSURE→C1_COOPERATIVE_COMPACT | mean_waiting_time | 10 | FIG04, FIG05, TABLE03, FIG06 |
-| −18,3% | `final_pairwise_summary.csv` | S2_DIRECTIONAL_PEAK | B2_LOCAL_PRESSURE→C1_COOPERATIVE_COMPACT | mean_network_queue_vehicles | 10 | FIG04, FIG05, TABLE03, FIG06 |
-| −5,7% | `final_pairwise_summary.csv` | S2_DIRECTIONAL_PEAK | B2_LOCAL_PRESSURE→C1_COOPERATIVE_COMPACT | throughput | 10 | FIG04, FIG05, TABLE03, FIG06 |
-| +8,8% | `final_pairwise_summary.csv` | S4_LOCAL_SATURATION | B2_LOCAL_PRESSURE→C1_COOPERATIVE_COMPACT | throughput | 10 | FIG04, FIG05, TABLE03, FIG09/FIG10 |
-| −19,5% | `final_pairwise_summary.csv` | S4_LOCAL_SATURATION | B2_LOCAL_PRESSURE→C1_COOPERATIVE_COMPACT | mean_waiting_time | 10 | FIG04, FIG05, TABLE03, FIG09/FIG10 |
-| −17,3% | `final_pairwise_summary.csv` | S4_LOCAL_SATURATION | B2_LOCAL_PRESSURE→C1_COOPERATIVE_COMPACT | mean_network_queue_vehicles | 10 | FIG04, FIG05, TABLE03, FIG09/FIG10 |
-| 2,3 | `communication_overhead_ratio.csv` | FINAL_S5 S2_DIRECTIONAL_PEAK | C2/C1 | bytes_sent | 10 | FIG16, FIG17, TABLE06 |
+| −15.2% | `final_pairwise_summary.csv` | S2_DIRECTIONAL_PEAK | B2_LOCAL_PRESSURE→C1_COOPERATIVE_COMPACT | mean_waiting_time | 10 | FIG04, FIG05, TABLE03, FIG06 |
+| −18.3% | `final_pairwise_summary.csv` | S2_DIRECTIONAL_PEAK | B2_LOCAL_PRESSURE→C1_COOPERATIVE_COMPACT | mean_network_queue_vehicles | 10 | FIG04, FIG05, TABLE03, FIG06 |
+| −5.7% | `final_pairwise_summary.csv` | S2_DIRECTIONAL_PEAK | B2_LOCAL_PRESSURE→C1_COOPERATIVE_COMPACT | throughput | 10 | FIG04, FIG05, TABLE03, FIG06 |
+| +8.8% | `final_pairwise_summary.csv` | S4_LOCAL_SATURATION | B2_LOCAL_PRESSURE→C1_COOPERATIVE_COMPACT | throughput | 10 | FIG04, FIG05, TABLE03, FIG09/FIG10 |
+| −19.5% | `final_pairwise_summary.csv` | S4_LOCAL_SATURATION | B2_LOCAL_PRESSURE→C1_COOPERATIVE_COMPACT | mean_waiting_time | 10 | FIG04, FIG05, TABLE03, FIG09/FIG10 |
+| −17.3% | `final_pairwise_summary.csv` | S4_LOCAL_SATURATION | B2_LOCAL_PRESSURE→C1_COOPERATIVE_COMPACT | mean_network_queue_vehicles | 10 | FIG04, FIG05, TABLE03, FIG09/FIG10 |
+| 2.3 | `communication_overhead_ratio.csv` | FINAL_S5 S2_DIRECTIONAL_PEAK | C2/C1 | bytes_sent | 10 | FIG16, FIG17, TABLE06 |
 
 ### `05-metodologia.md`
 
@@ -218,6 +218,7 @@
 | +0,9 p.p. | `reference_route_pairwise.csv` | S3_DEMAND_SHIFT | B2_LOCAL_PRESSURE→C1_COOPERATIVE_COMPACT | reference_route_completion_ratio_offered | 10 | FIG11, FIG12, TABLE04 |
 | 2.019 | `final_controller_summary.csv` | S3_DEMAND_SHIFT | B2_LOCAL_PRESSURE | offered_vehicle_count | 10 | FIG02 |
 | 113,1 | `reference_route_cohort_summary.csv` | S3_DEMAND_SHIFT | B2_LOCAL_PRESSURE | reference_route_offered | 10 | FIG11, FIG12, TABLE04 |
+| 0,09 | `s5_communication_summary.csv` | FINAL_S5 S2_DIRECTIONAL_PEAK | C1_COOPERATIVE_COMPACT@0.0 | bytes_sent vs bytes_delivered gap (%) | 10 | FIG16, FIG17, TABLE06 |
 | 19,9% | `s5_communication_summary.csv` | S5 | loss 0.2 | observed_drop_ratio_min | 20 | FIG16, FIG17, TABLE06 |
 | 20,2% | `s5_communication_summary.csv` | S5 | loss 0.2 | observed_drop_ratio_max | 20 | FIG16, FIG17, TABLE06 |
 | 49,7% | `s5_communication_summary.csv` | S5 | loss 0.5 | observed_drop_ratio_min | 20 | FIG16, FIG17, TABLE06 |
@@ -241,6 +242,8 @@
 | −15,2% | `s5_pairwise.csv` | S5 (tráfego S2) | B2@REF→C1_COOPERATIVE_COMPACT@0.00 | mean_waiting_time | 10 | FIG14, FIG14B, FIG15, TABLE05 |
 | −13,5% | `s5_pairwise.csv` | S5 (tráfego S2) | B2@REF→C2_COOPERATIVE_EXPANDED@0.00 | throughput | 10 | FIG14, FIG14B, FIG15, TABLE05 |
 | (tabela completa) | `s5_controller_summary.csv + s5_communication_summary.csv` | S5 (tráfego S2) | B2, C1, C2 | resumo S5 | 10 | FIG14, FIG14B, FIG15, TABLE05 |
+| 30,3 | `s5_communication_summary.csv` | FINAL_S5 S2_DIRECTIONAL_PEAK | C1_COOPERATIVE_COMPACT@0.0 | mean_bytes_sent | 10 | FIG16, FIG17, TABLE06 |
+| 30,2 | `s5_communication_summary.csv` | FINAL_S5 S2_DIRECTIONAL_PEAK | C1_COOPERATIVE_COMPACT@0.0 | mean_bytes_delivered | 10 | FIG16, FIG17, TABLE06 |
 | 93.600 | `s5_communication_summary.csv` | FINAL_S5 S2_DIRECTIONAL_PEAK | C1_COOPERATIVE_COMPACT@0.0 | mean_messages_sent | 10 | FIG16, FIG17, TABLE06 |
 | 93.600 | `s5_communication_summary.csv` | FINAL_S5 S2_DIRECTIONAL_PEAK | C2_COOPERATIVE_EXPANDED@0.0 | mean_messages_sent | 10 | FIG16, FIG17, TABLE06 |
 | (tabela completa) | `s5_communication_summary.csv` | S5 loss 0% | C1, C2 | custo de comunicação | 10 | FIG16, FIG17, TABLE06 |
@@ -316,6 +319,9 @@
 | / Figura/Tabela / Seção sugerida / Capítulo / Papel / N / Arquivo vetorial (PDF) /
 /---/---/---/---/---/---/
 / `FIG01_FINAL_OVERVIEW` / 3.2 Rede e visão gera... | `artifacts/tcc-visuals/final/figure-manifest.json` | — | — | figuras e tabelas | — | — |
+| 0,09 | `s5_communication_summary.csv` | FINAL_S5 S2_DIRECTIONAL_PEAK | C1_COOPERATIVE_COMPACT@0.0 | bytes_sent vs bytes_delivered gap (%) | 10 | FIG16, FIG17, TABLE06 |
+| 30,3 | `s5_communication_summary.csv` | FINAL_S5 S2_DIRECTIONAL_PEAK | C1_COOPERATIVE_COMPACT@0.0 | mean_bytes_sent | 10 | FIG16, FIG17, TABLE06 |
+| 30,2 | `s5_communication_summary.csv` | FINAL_S5 S2_DIRECTIONAL_PEAK | C1_COOPERATIVE_COMPACT@0.0 | mean_bytes_delivered | 10 | FIG16, FIG17, TABLE06 |
 
 ### `14-advisor-checklist-final.md`
 

@@ -24,10 +24,10 @@ seed-paired comparisons and 95% paired bootstrap confidence intervals, and inclu
 reference route. The results indicate that the effect of cooperation was scenario-dependent.
 Relative to the local-pressure controller, the compact cooperative controller performed worse in
 the balanced and demand-shift scenarios, showed a trade-off in the directional peak (waiting time
-−15,2% and mean queue −18,3%, but throughput −5,7%) and was advantageous under localized saturation
-(throughput +8,8%, waiting time −19,5%, mean queue −17,3%). Calibrated fixed-time control
+−15.2% and mean queue −18.3%, but throughput −5.7%) and was advantageous under localized saturation
+(throughput +8.8%, waiting time −19.5%, mean queue −17.3%). Calibrated fixed-time control
 outperformed the local-pressure controller in the directional-peak, demand-shift and localized-saturation
-scenarios. The expanded communication sent about 2,3 times more bytes than the compact one
+scenarios. The expanded communication sent about 2.3 times more bytes than the compact one
 without a general traffic benefit, and communication degradation was non-monotonic. No evidence
 of general superiority of cooperation was observed: the largest benefit appeared under localized
 saturation, while in other regimes local adaptive control or calibrated fixed-time control were

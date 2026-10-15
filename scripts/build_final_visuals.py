@@ -50,7 +50,7 @@ SEED = 42
 DISCLAIMER = "Visualização ilustrativa — resultados científicos utilizam 10 seeds."
 B0, B1, B2, C1, C2 = ("B0_FIXED_CALIBRATED", "B1_LOCAL_ADAPTIVE", "B2_LOCAL_PRESSURE",
                       "C1_COOPERATIVE_COMPACT", "C2_COOPERATIVE_EXPANDED")
-NAMES = {B0: "Tempo fixo calibrado", B1: "Adaptativo local simples", B2: "Adaptativo local",
+NAMES = {B0: "Tempo fixo calibrado", B1: "Adaptativo local", B2: "Pressão local",
          C1: "Cooperativo compacto", C2: "Cooperativo expandido"}
 SCENARIO_TITLE = {"S1_BALANCED": "S1 — Demanda balanceada", "S2_DIRECTIONAL_PEAK": "S2 — Pico direcional",
                   "S3_DEMAND_SHIFT": "S3 — Mudança de demanda", "S4_LOCAL_SATURATION": "S4 — Saturação localizada"}
@@ -180,17 +180,17 @@ def clip_card(clip: str, size: tuple[int, int]) -> Image.Image:
     if clip == "s1_b0_vs_b2":
         scn = "S1_BALANCED"
         return render_card(size, "S1 — Resultado final com 10 seeds", [
-            ("h", "Tempo fixo calibrado → Adaptativo local"),
+            ("h", "Tempo fixo calibrado → Pressão local"),
             ("b", f"Espera {rel(scn, B0, B2, 'mean_waiting_time')}, perda de tempo {rel(scn, B0, B2, 'mean_time_loss')}, fila média {rel(scn, B0, B2, 'mean_network_queue_vehicles')}; vazão {rel(scn, B0, B2, 'throughput')}."),
-            ("p", "Em S1, o adaptativo local (B2) teve melhor desempenho que o tempo fixo calibrado (B0)."),
+            ("p", "Em S1, a pressão local (B2) teve melhor desempenho que o tempo fixo calibrado (B0)."),
             ("note", "Resultado específico de S1: em S2, S3 e S4 o tempo fixo calibrado foi mais competitivo."),
         ], "Variação relativa média pareada por seed (B2 vs B0); IC95% por bootstrap exclui zero nas métricas citadas. A seed 42 mostrada é apenas ilustrativa.", "Contexto científico")
     if clip == "s1_b2_vs_c1":
         scn = "S1_BALANCED"
         return render_card(size, "S1 — Resultado final com 10 seeds", [
-            ("h", "Adaptativo local → Cooperativo compacto"),
+            ("h", "Pressão local → Cooperativo compacto"),
             ("b", f"Com a cooperação: espera {rel(scn, B2, C1, 'mean_waiting_time')}, fila média {rel(scn, B2, C1, 'mean_network_queue_vehicles')}, conclusão {dif(scn, B2, C1, 'completion_ratio_offered')} (fração oferecida)."),
-            ("p", "Em S1, o adaptativo local (B2) teve melhor desempenho que o cooperativo compacto (C1), em 10/10 seeds nas métricas de atraso."),
+            ("p", "Em S1, a pressão local (B2) teve melhor desempenho que o cooperativo compacto (C1), em 10/10 seeds nas métricas de atraso."),
             ("big", "A cooperação não ajudou de forma universal."),
         ], "Variação relativa média pareada por seed (C1 vs B2). A seed 42 mostrada é apenas ilustrativa.", "Contexto científico")
     if clip == "s2_b2_vs_c1":
@@ -198,7 +198,7 @@ def clip_card(clip: str, size: tuple[int, int]) -> Image.Image:
         return render_card(size, "S2 — Resultado final com 10 seeds", [
             ("big", "Trade-off entre métricas"),
             ("h", "Trade-off: menos fila, menor capacidade concluída"),
-            ("b", f"Cooperativo vs adaptativo local — espera {rel(scn, B2, C1, 'mean_waiting_time')}, fila média {rel(scn, B2, C1, 'mean_network_queue_vehicles')} (10/10 seeds)."),
+            ("b", f"Cooperativo vs pressão local — espera {rel(scn, B2, C1, 'mean_waiting_time')}, fila média {rel(scn, B2, C1, 'mean_network_queue_vehicles')} (10/10 seeds)."),
             ("b", f"Vazão {rel(scn, B2, C1, 'throughput')}; conclusão {pt(cmean(scn, B2, 'completion_ratio_offered'), 3)} → {pt(cmean(scn, C1, 'completion_ratio_offered'), 3)}; {pt(float(g(scn, B2, C1, 'never_inserted_vehicle_count')['mean_difference']), 0, True)} veículos a mais não inseridos."),
             ("note", "Tempo de viagem menor é condicional a menos viagens concluídas; nenhum controlador é apontado como vencedor."),
         ], "Variação relativa média pareada por seed (C1 vs B2). A seed 42 mostrada é apenas ilustrativa.", "Contexto científico")
@@ -206,7 +206,7 @@ def clip_card(clip: str, size: tuple[int, int]) -> Image.Image:
         scn = "S3_DEMAND_SHIFT"
         return render_card(size, "S3 — Resultado final com 10 seeds", [
             ("h", "Mudança de demanda — rede inteira"),
-            ("b", f"Na rede, o adaptativo local (B2) teve melhor desempenho: com a cooperação, espera {rel(scn, B2, C1, 'mean_waiting_time')}, fila média {rel(scn, B2, C1, 'mean_network_queue_vehicles')}, área de fila pós-choque {rel(scn, B2, C1, 'post_shock_queue_auc_vehicle_seconds')}."),
+            ("b", f"Na rede, a pressão local (B2) teve melhor desempenho: com a cooperação, espera {rel(scn, B2, C1, 'mean_waiting_time')}, fila média {rel(scn, B2, C1, 'mean_network_queue_vehicles')}, área de fila pós-choque {rel(scn, B2, C1, 'post_shock_queue_auc_vehicle_seconds')}."),
             ("note", "Metodologia de S3 congelada (choque em 2100 s); nenhuma métrica nova de recuperação. O gate composto de validade foi formalizado post-hoc."),
             ("note", "Rota de referência conta outra história: ver cartão \"rede e rota\"."),
         ], "Variação relativa média pareada por seed (C1 vs B2). A seed 42 mostrada é apenas ilustrativa.", "Contexto científico")
@@ -216,7 +216,7 @@ def clip_card(clip: str, size: tuple[int, int]) -> Image.Image:
         tot = sum(v["total"] for v in t.values())
         return render_card(size, "S4 — Resultado final com 10 seeds", [
             ("big", "Cooperação ajudou sob saturação localizada"),
-            ("b", f"Cooperativo vs adaptativo local: vazão {rel(scn, B2, C1, 'throughput')}, espera {rel(scn, B2, C1, 'mean_waiting_time')}, fila média {rel(scn, B2, C1, 'mean_network_queue_vehicles')} (10/10 seeds)."),
+            ("b", f"Cooperativo vs pressão local: vazão {rel(scn, B2, C1, 'throughput')}, espera {rel(scn, B2, C1, 'mean_waiting_time')}, fila média {rel(scn, B2, C1, 'mean_network_queue_vehicles')} (10/10 seeds)."),
             ("b", f"Mas o atraso de partida piorou ({rel(scn, B2, C1, 'mean_depart_delay_seconds')}); saturação severa: só {pt(min(cmean(scn, c, 'completion_ratio_offered') for c in (B0, B1, B2, C1, C2)) * 100, 0)}–{pt(max(cmean(scn, c, 'completion_ratio_offered') for c in (B0, B1, B2, C1, C2)) * 100, 0)}% das viagens oferecidas concluem."),
             ("note", f"Teleports SUMO foram medidos e mantidos nos resultados ({tot:.0f} no total: B0 {t[B0]['total']:.0f}, B2 {t[B2]['total']:.0f}, demais 0)."),
         ], "Variação relativa média pareada por seed (C1 vs B2). Métricas de tempo valem para as viagens concluídas. A seed 42 mostrada é apenas ilustrativa.", "Contexto científico")
@@ -236,7 +236,7 @@ def reference_card(size: tuple[int, int]) -> Image.Image:
     d = ImageDraw.Draw(img)
     s = h / 1080
     x0, y0 = round(70 * s), round(540 * s)
-    cols = ["Cenário", "Tempo fixo calibrado", "Adaptativo local", "Coop. compacto", "Δ B0→B2 (s)", "Δ B2→C1 (s)"]
+    cols = ["Cenário", "Tempo fixo calibrado", "Pressão local", "Coop. compacto", "Δ B0→B2 (s)", "Δ B2→C1 (s)"]
     cw = [round(x * s) for x in (130, 330, 330, 330, 340, 340)]
     fnt, fb = font(round(26 * s)), font(round(26 * s), True)
     xs = [x0]
@@ -265,9 +265,9 @@ def netroute_card(size: tuple[int, int]) -> Image.Image:
     rcm = rr(scn, B2, C1, CMP)
     ncm = g(scn, B2, C1, "completion_ratio_offered")
     img = render_card(size, "S3: rede e rota contam histórias diferentes", [
-        ("h", "Rede inteira — adaptativo local → cooperativo compacto"),
+        ("h", "Rede inteira — pressão local → cooperativo compacto"),
         ("b", f"Tempo de viagem {pt(float(n['network_mean_travel_time_diff']), 1, True)} s [{'; '.join(pt(float(v), 1) for v in n['network_mean_travel_time_ci'].strip('[]').split(','))}]; conclusão {dif(scn, B2, C1, 'completion_ratio_offered')} (IC95% exclui zero)."),
-        ("p", "Na rede, o adaptativo local (B2) teve melhor desempenho que o cooperativo (C1)."),
+        ("p", "Na rede, a pressão local (B2) teve melhor desempenho que o cooperativo (C1)."),
         ("h", "Rota de referência (left1A1 → A1B1 → B1C1 → C1right1)"),
         ("b", f"Tempo de viagem {pt(float(rtt['paired_mean_diff']), 1, True)} s [{pt(float(rtt['ci95_low']), 1)}; {pt(float(rtt['ci95_high']), 1)}]; conclusão {pt(float(rcm['paired_mean_diff']), 3, True)} (IC inclui zero)."),
         ("p", "Na rota, o cooperativo (C1) reduziu o tempo de viagem condicional em relação a B2."),
@@ -296,7 +296,7 @@ def s5_card(size: tuple[int, int]) -> Image.Image:
                                        ("mean_waiting_time", "Espera média (s)")), strict=True):
         ax.plot(xs, ser[metric]["C1"], "-o", color="#1f6f9f", label="Cooperativo compacto (C1)", lw=2.4)
         ax.plot(xs, ser[metric]["C2"], "-s", color="#d98000", label="Cooperativo expandido (C2)", lw=2.4)
-        ax.plot(xs, ser[metric]["B2"], "--", color="#5b6770", label="Adaptativo local (B2, referência)", lw=2)
+        ax.plot(xs, ser[metric]["B2"], "--", color="#5b6770", label="Pressão local (B2, referência)", lw=2)
         ax.set_title(ttl, fontsize=13)
         ax.set_xlabel("Perda de pacotes (%)", fontsize=11)
         ax.set_xticks(xs)
@@ -351,7 +351,7 @@ def conclusion_card(size: tuple[int, int]) -> Image.Image:
     return render_card(size, "Conclusão", [
         ("p", "A cooperação não foi universalmente superior."),
         ("p", "Seu efeito dependeu do cenário."),
-        ("p", "O maior benefício apareceu sob saturação localizada, enquanto em outros regimes o controle adaptativo local ou até o tempo fixo calibrado foram mais competitivos."),
+        ("p", "O maior benefício apareceu sob saturação localizada, enquanto em outros regimes o controle de pressão local (B2) ou até o tempo fixo calibrado foram mais competitivos."),
         ("note", "Simulação SUMO, rede 3×3, 10 seeds por condição; resultados sob os parâmetros congelados dos controladores."),
     ], "", "Síntese dos resultados finais")
 
@@ -618,7 +618,7 @@ def build_summary() -> None:
     ], "", "Controle distribuído e cooperativo de semáforos urbanos")
     net = render_card(size, "Rede 3×3 multiagente (SUMO)", [
         ("b", "9 interseções semaforizadas, um agente por interseção."),
-        ("b", "Controladores: tempo fixo calibrado (B0), adaptativo local simples (B1), adaptativo local por pressão (B2), cooperativo compacto (C1) e cooperativo expandido (C2)."),
+        ("b", "Controladores: tempo fixo calibrado (B0), adaptativo local (B1), pressão local (B2), cooperativo compacto (C1) e cooperativo expandido (C2)."),
         ("b", "4 cenários de demanda (S1–S4) + experimento de perda de comunicação (S5); 10 seeds por condição."),
         ("note", "Os vídeos a seguir mostram a seed 42, apenas para ilustração: cada trecho é a janela predeclarada, a 8× de velocidade."),
     ], "", "Método")

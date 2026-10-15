@@ -51,8 +51,8 @@ Use a lista abaixo para revisá-lo.
 
 ## Marcadores [CITAÇÃO NECESSÁRIA]
 
-Há **18** marcadores **[CITAÇÃO NECESSÁRIA]** nestes arquivos (distribuídos por: `03-introducao-ajustes`: 4, `04-fundamentacao-ajustes`: 11, `11-trabalhos-futuros`: 3). Cada um corresponde a uma afirmação teórica ou de contexto que depende de fonte do(a)
-autor(a) ou do orientador. Nenhum DOI, autor, ano ou artigo foi inventado.
+Há **15 lacunas de citação** que exigem bibliografia (marcador **[CITAÇÃO NECESSÁRIA]** no corpo do texto; distribuídas por: `03-introducao-ajustes`: 3, `04-fundamentacao-ajustes`: 10, `11-trabalhos-futuros`: 2). Cada uma corresponde a uma afirmação teórica ou de contexto que depende de fonte do(a)
+autor(a) ou do orientador. No total há 18 ocorrências textuais do marcador nestes arquivos (`03-introducao-ajustes`: 4, `04-fundamentacao-ajustes`: 11, `11-trabalhos-futuros`: 3), incluindo 3 em notas de cabeçalho/instrução (linhas iniciadas por `>`) que não são lacunas de citação. Nenhum DOI, autor, ano ou artigo foi inventado.
 
 ## Convenções de leitura dos números
 

@@ -1,3 +1,5 @@
+> ⚠ **HISTÓRICO / SUPERADO** — Este documento registra uma etapa anterior do projeto. Para o conteúdo científico final, use `docs/tcc-final-content/` e `docs/evidencias/final-analysis/`.
+
 # Alinhamento de Escopo do TCC
 
 Status: nota de escopo que alinha o texto acadêmico ao que está **efetivamente implementado e

@@ -70,6 +70,12 @@ def main() -> int:
     counts = {n: t.count(CITE) for n, t in rendered.items() if t.count(CITE)}
     L.NS["CITE_TOTAL"] = str(sum(counts.values()))
     L.NS["CITE_BY_FILE"] = ", ".join(f"`{n}`: {c}" for n, c in counts.items())
+    # real citation slots = markers outside blockquote (">") header/instruction notes
+    slots = {n: sum(ln.count(CITE) for ln in t.splitlines() if not ln.lstrip().startswith(">")) for n, t in rendered.items()}
+    slots = {n: c for n, c in slots.items() if c}
+    L.NS["CITE_SLOTS"] = str(sum(slots.values()))
+    L.NS["CITE_SLOTS_BY_FILE"] = ", ".join(f"`{n}`: {c}" for n, c in slots.items())
+    L.NS["CITE_NOTES"] = str(sum(counts.values()) - sum(slots.values()))
     outline = L.render((TPL / "00-outline-final.md").read_text(encoding="utf-8"), "00-outline-final")
     rendered = {"00-outline-final": outline, **rendered}
     # the outline text itself mentions the marker; recount excluding it
