@@ -1,0 +1,30 @@
+{
+  "scientific_source_git_sha": "176178e36eeafb329a5a1350161be61cf97902b0",
+  "freeze_manifest_sha256": "de4af93262e4ab6734ed72a35a5d0d9aeeb0507c6db32c29fc7adc47978164ec",
+  "runs_indexed": 290,
+  "files": {
+    "analysis-validation.json": "4974b86fc2c47441a941fa74f0a9c4366c496c7595e37d34a9dac3e6b9b16166",
+    "communication_by_run.csv": "62e81360966f0c9b4059c4171d7c0f2969d26c304aa0f361fb7a0550c0fa97de",
+    "communication_overhead_ratio.csv": "a0ea13450a34e80dcc9fa5090ccbf926a54629e3e4153aed562b929cc3606738",
+    "final_analysis.json": "82c3c8837350f5c43de24e972346460ae62b1dae8dc0d46173a058d5a24db353",
+    "final_analysis.md": "fc56cb9a5ffee1f68f3bc2d06295b9a544c634e43df9da5584d5af40d8ca4045",
+    "final_controller_summary.csv": "a25169c56f4be4e77ba24f12285ffa218a95a42955cd00fcddd309e20d4629e2",
+    "final_outliers_flagged_not_removed.csv": "4aa2d470c307bb75d1ab7d6d6abe3b5f567d791884c4259da46302f17bd29048",
+    "final_pairwise_summary.csv": "c0188c668f3a307875ea25f87830efcc029aacc3fe74de5618b9aaff4c2ba5bc",
+    "final_scenario_pair_classification.csv": "79f6f30aec4160d24ed23203a7f6f2678ee38cbf08420dc3ccb769f7cf7685bd",
+    "n10_variability.csv": "f4657530d676167608dcc7722ddd58da6540c5f2c47f1952cd17cebcc8a30b59",
+    "network_vs_reference_route_direction.csv": "363b61cc35645e116ec05c0a2a99642ceedc2385e2c396eacbce5828a8a8e4b5",
+    "pilot_vs_final.csv": "3afcb79b67265e5949c1eefa57e4594253e4d3195a923233efe976164b21741e",
+    "reference_route_cohort_summary.csv": "65fd306fd2b304414d2b67188349de39c8b81893758ed741af98703510c70641",
+    "reference_route_pairwise.csv": "cd7de551de8832f3d2d402c404b5f706f76fe6e832eaa88b24a8e8619d3a769f",
+    "reference_route_summary.csv": "190ca081de139e31ddc742f483d058290b272072bc646b228fd6c84b0a16232d",
+    "run_index.csv": "7b2906c2a489856e988404ef0b7f6d74b5cc05518076ade556c0c782120c1e9a",
+    "s4_teleports_by_run.csv": "1f824bd02d45b7dcbbf9fe943bd061fb9d2e984976068698b772a153a2c431bd",
+    "s5_communication_summary.csv": "c3852bde30ebcd9279faed9531cdff6e18822fc55de7fa0d9d11e778e2112a30",
+    "s5_controller_summary.csv": "34ffbc5c0cadf6b503b5b3ddf2505160ee015afea67eac495fb3ff903ac7394a",
+    "s5_pair_classification.csv": "a35edcbf4223c5abdfd25810298b44a7f856632dd5393cc56129c9b784c28bb8",
+    "s5_pairwise.csv": "369c7529e8cfa50886b71e6633d21f74c401936262d7f62c4c5b9dfc6b2823c8",
+    "supplementary_B0_vs_cooperative_exploratory.csv": "4ca9f03b64cb98d50623ae9b881a16ba0995d7926be56e819fa54f5ea71d5c56"
+  },
+  "note": "lightweight derived evidence only; raw artifacts stay in the git-ignored artifacts/ tree"
+}

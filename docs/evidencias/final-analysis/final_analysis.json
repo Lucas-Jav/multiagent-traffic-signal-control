@@ -1,0 +1,569 @@
+{
+  "provenance": {
+    "scientific_source_git_sha": "176178e36eeafb329a5a1350161be61cf97902b0",
+    "freeze_manifest_sha256": "de4af93262e4ab6734ed72a35a5d0d9aeeb0507c6db32c29fc7adc47978164ec",
+    "scientific_tree_sha256": "b713917890e2dc65b7c25dfca80c627a7607146539bd2dadf5613f70451cdeff",
+    "head_git_sha": "d64d8dc76d03b105130db528ce21494dc6caeda9",
+    "bootstrap": {
+      "seed": 20260910,
+      "resamples": 10000,
+      "route_seed_base": 20260930
+    }
+  },
+  "classification_rule": {
+    "service_keys": [
+      "throughput",
+      "completion_ratio_offered",
+      "departure_ratio"
+    ],
+    "delay_keys": [
+      "mean_waiting_time",
+      "mean_time_loss",
+      "mean_network_queue_vehicles"
+    ],
+    "rule": "per key metric: TREATMENT_BETTER/BASELINE_BETTER only if the paired bootstrap 95% CI excludes 0 in that direction; scenario/pair label: TRADE_OFF if both occur, otherwise the better side, otherwise NO_CLEAR_DIFFERENCE. mean_travel_time is conditional and excluded from the vote.",
+    "relative_difference": "mean paired difference / baseline mean (statistical-plan.json); the frozen mean-of-pair-ratios is also kept as relative_difference_mean_of_pairs"
+  },
+  "scenario_pair_classification": [
+    {
+      "scenario": "S1_BALANCED",
+      "baseline": "B2_LOCAL_PRESSURE",
+      "treatment": "C1_COOPERATIVE_COMPACT",
+      "classification": "B2_LOCAL_PRESSURE_BETTER",
+      "treatment_favourable_key_metrics": [],
+      "baseline_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ]
+    },
+    {
+      "scenario": "S1_BALANCED",
+      "baseline": "B0_FIXED_CALIBRATED",
+      "treatment": "B2_LOCAL_PRESSURE",
+      "classification": "B2_LOCAL_PRESSURE_BETTER",
+      "treatment_favourable_key_metrics": [
+        "throughput",
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ],
+      "baseline_favourable_key_metrics": []
+    },
+    {
+      "scenario": "S1_BALANCED",
+      "baseline": "B0_FIXED_CALIBRATED",
+      "treatment": "B1_LOCAL_ADAPTIVE",
+      "classification": "NO_CLEAR_DIFFERENCE",
+      "treatment_favourable_key_metrics": [],
+      "baseline_favourable_key_metrics": []
+    },
+    {
+      "scenario": "S1_BALANCED",
+      "baseline": "C1_COOPERATIVE_COMPACT",
+      "treatment": "C2_COOPERATIVE_EXPANDED",
+      "classification": "C1_COOPERATIVE_COMPACT_BETTER",
+      "treatment_favourable_key_metrics": [],
+      "baseline_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio",
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ]
+    },
+    {
+      "scenario": "S2_DIRECTIONAL_PEAK",
+      "baseline": "B2_LOCAL_PRESSURE",
+      "treatment": "C1_COOPERATIVE_COMPACT",
+      "classification": "TRADE_OFF",
+      "treatment_favourable_key_metrics": [
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ],
+      "baseline_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio"
+      ]
+    },
+    {
+      "scenario": "S2_DIRECTIONAL_PEAK",
+      "baseline": "B0_FIXED_CALIBRATED",
+      "treatment": "B2_LOCAL_PRESSURE",
+      "classification": "B0_FIXED_CALIBRATED_BETTER",
+      "treatment_favourable_key_metrics": [],
+      "baseline_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio",
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ]
+    },
+    {
+      "scenario": "S2_DIRECTIONAL_PEAK",
+      "baseline": "B0_FIXED_CALIBRATED",
+      "treatment": "B1_LOCAL_ADAPTIVE",
+      "classification": "B0_FIXED_CALIBRATED_BETTER",
+      "treatment_favourable_key_metrics": [],
+      "baseline_favourable_key_metrics": [
+        "completion_ratio_offered",
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ]
+    },
+    {
+      "scenario": "S2_DIRECTIONAL_PEAK",
+      "baseline": "C1_COOPERATIVE_COMPACT",
+      "treatment": "C2_COOPERATIVE_EXPANDED",
+      "classification": "C1_COOPERATIVE_COMPACT_BETTER",
+      "treatment_favourable_key_metrics": [],
+      "baseline_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio",
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ]
+    },
+    {
+      "scenario": "S3_DEMAND_SHIFT",
+      "baseline": "B2_LOCAL_PRESSURE",
+      "treatment": "C1_COOPERATIVE_COMPACT",
+      "classification": "B2_LOCAL_PRESSURE_BETTER",
+      "treatment_favourable_key_metrics": [],
+      "baseline_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio",
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ]
+    },
+    {
+      "scenario": "S3_DEMAND_SHIFT",
+      "baseline": "B0_FIXED_CALIBRATED",
+      "treatment": "B2_LOCAL_PRESSURE",
+      "classification": "B0_FIXED_CALIBRATED_BETTER",
+      "treatment_favourable_key_metrics": [],
+      "baseline_favourable_key_metrics": [
+        "completion_ratio_offered",
+        "departure_ratio",
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ]
+    },
+    {
+      "scenario": "S3_DEMAND_SHIFT",
+      "baseline": "B0_FIXED_CALIBRATED",
+      "treatment": "B1_LOCAL_ADAPTIVE",
+      "classification": "B0_FIXED_CALIBRATED_BETTER",
+      "treatment_favourable_key_metrics": [],
+      "baseline_favourable_key_metrics": [
+        "departure_ratio",
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ]
+    },
+    {
+      "scenario": "S3_DEMAND_SHIFT",
+      "baseline": "C1_COOPERATIVE_COMPACT",
+      "treatment": "C2_COOPERATIVE_EXPANDED",
+      "classification": "C1_COOPERATIVE_COMPACT_BETTER",
+      "treatment_favourable_key_metrics": [],
+      "baseline_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio",
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ]
+    },
+    {
+      "scenario": "S4_LOCAL_SATURATION",
+      "baseline": "B2_LOCAL_PRESSURE",
+      "treatment": "C1_COOPERATIVE_COMPACT",
+      "classification": "C1_COOPERATIVE_COMPACT_BETTER",
+      "treatment_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ],
+      "baseline_favourable_key_metrics": []
+    },
+    {
+      "scenario": "S4_LOCAL_SATURATION",
+      "baseline": "B0_FIXED_CALIBRATED",
+      "treatment": "B2_LOCAL_PRESSURE",
+      "classification": "B0_FIXED_CALIBRATED_BETTER",
+      "treatment_favourable_key_metrics": [],
+      "baseline_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio",
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ]
+    },
+    {
+      "scenario": "S4_LOCAL_SATURATION",
+      "baseline": "B0_FIXED_CALIBRATED",
+      "treatment": "B1_LOCAL_ADAPTIVE",
+      "classification": "B0_FIXED_CALIBRATED_BETTER",
+      "treatment_favourable_key_metrics": [],
+      "baseline_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio",
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ]
+    },
+    {
+      "scenario": "S4_LOCAL_SATURATION",
+      "baseline": "C1_COOPERATIVE_COMPACT",
+      "treatment": "C2_COOPERATIVE_EXPANDED",
+      "classification": "TRADE_OFF",
+      "treatment_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ],
+      "baseline_favourable_key_metrics": [
+        "departure_ratio"
+      ]
+    }
+  ],
+  "s5_pair_classification": [
+    {
+      "family": "DEGRADATION_VS_0",
+      "baseline": "C1_COOPERATIVE_COMPACT@0.00",
+      "treatment": "C1_COOPERATIVE_COMPACT@0.20",
+      "classification": "TRADE_OFF",
+      "treatment_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio",
+        "mean_waiting_time"
+      ],
+      "baseline_favourable_key_metrics": [
+        "mean_network_queue_vehicles"
+      ]
+    },
+    {
+      "family": "DEGRADATION_VS_0",
+      "baseline": "C1_COOPERATIVE_COMPACT@0.00",
+      "treatment": "C1_COOPERATIVE_COMPACT@0.50",
+      "classification": "TRADE_OFF",
+      "treatment_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio"
+      ],
+      "baseline_favourable_key_metrics": [
+        "mean_network_queue_vehicles"
+      ]
+    },
+    {
+      "family": "DEGRADATION_VS_0",
+      "baseline": "C1_COOPERATIVE_COMPACT@0.00",
+      "treatment": "C1_COOPERATIVE_COMPACT@1.00",
+      "classification": "TRADE_OFF",
+      "treatment_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio"
+      ],
+      "baseline_favourable_key_metrics": [
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ]
+    },
+    {
+      "family": "VS_B2_REFERENCE",
+      "baseline": "B2_LOCAL_PRESSURE@REF",
+      "treatment": "C1_COOPERATIVE_COMPACT@0.00",
+      "classification": "TRADE_OFF",
+      "treatment_favourable_key_metrics": [
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ],
+      "baseline_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio"
+      ]
+    },
+    {
+      "family": "VS_B2_REFERENCE",
+      "baseline": "B2_LOCAL_PRESSURE@REF",
+      "treatment": "C1_COOPERATIVE_COMPACT@0.20",
+      "classification": "C1_COOPERATIVE_COMPACT@0.20_BETTER",
+      "treatment_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ],
+      "baseline_favourable_key_metrics": []
+    },
+    {
+      "family": "VS_B2_REFERENCE",
+      "baseline": "B2_LOCAL_PRESSURE@REF",
+      "treatment": "C1_COOPERATIVE_COMPACT@0.50",
+      "classification": "C1_COOPERATIVE_COMPACT@0.50_BETTER",
+      "treatment_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio",
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ],
+      "baseline_favourable_key_metrics": []
+    },
+    {
+      "family": "VS_B2_REFERENCE",
+      "baseline": "B2_LOCAL_PRESSURE@REF",
+      "treatment": "C1_COOPERATIVE_COMPACT@1.00",
+      "classification": "NO_CLEAR_DIFFERENCE",
+      "treatment_favourable_key_metrics": [],
+      "baseline_favourable_key_metrics": []
+    },
+    {
+      "family": "DEGRADATION_VS_0",
+      "baseline": "C2_COOPERATIVE_EXPANDED@0.00",
+      "treatment": "C2_COOPERATIVE_EXPANDED@0.20",
+      "classification": "C2_COOPERATIVE_EXPANDED@0.20_BETTER",
+      "treatment_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio",
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ],
+      "baseline_favourable_key_metrics": []
+    },
+    {
+      "family": "DEGRADATION_VS_0",
+      "baseline": "C2_COOPERATIVE_EXPANDED@0.00",
+      "treatment": "C2_COOPERATIVE_EXPANDED@0.50",
+      "classification": "C2_COOPERATIVE_EXPANDED@0.50_BETTER",
+      "treatment_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio",
+        "mean_waiting_time",
+        "mean_time_loss"
+      ],
+      "baseline_favourable_key_metrics": []
+    },
+    {
+      "family": "DEGRADATION_VS_0",
+      "baseline": "C2_COOPERATIVE_EXPANDED@0.00",
+      "treatment": "C2_COOPERATIVE_EXPANDED@1.00",
+      "classification": "TRADE_OFF",
+      "treatment_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio"
+      ],
+      "baseline_favourable_key_metrics": [
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ]
+    },
+    {
+      "family": "VS_B2_REFERENCE",
+      "baseline": "B2_LOCAL_PRESSURE@REF",
+      "treatment": "C2_COOPERATIVE_EXPANDED@0.00",
+      "classification": "TRADE_OFF",
+      "treatment_favourable_key_metrics": [
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ],
+      "baseline_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio"
+      ]
+    },
+    {
+      "family": "VS_B2_REFERENCE",
+      "baseline": "B2_LOCAL_PRESSURE@REF",
+      "treatment": "C2_COOPERATIVE_EXPANDED@0.20",
+      "classification": "C2_COOPERATIVE_EXPANDED@0.20_BETTER",
+      "treatment_favourable_key_metrics": [
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ],
+      "baseline_favourable_key_metrics": []
+    },
+    {
+      "family": "VS_B2_REFERENCE",
+      "baseline": "B2_LOCAL_PRESSURE@REF",
+      "treatment": "C2_COOPERATIVE_EXPANDED@0.50",
+      "classification": "C2_COOPERATIVE_EXPANDED@0.50_BETTER",
+      "treatment_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio",
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ],
+      "baseline_favourable_key_metrics": []
+    },
+    {
+      "family": "VS_B2_REFERENCE",
+      "baseline": "B2_LOCAL_PRESSURE@REF",
+      "treatment": "C2_COOPERATIVE_EXPANDED@1.00",
+      "classification": "NO_CLEAR_DIFFERENCE",
+      "treatment_favourable_key_metrics": [],
+      "baseline_favourable_key_metrics": []
+    },
+    {
+      "family": "C1_VS_C2",
+      "baseline": "C1_COOPERATIVE_COMPACT@0.00",
+      "treatment": "C2_COOPERATIVE_EXPANDED@0.00",
+      "classification": "C1_COOPERATIVE_COMPACT@0.00_BETTER",
+      "treatment_favourable_key_metrics": [],
+      "baseline_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio",
+        "mean_waiting_time",
+        "mean_time_loss",
+        "mean_network_queue_vehicles"
+      ]
+    },
+    {
+      "family": "C1_VS_C2",
+      "baseline": "C1_COOPERATIVE_COMPACT@0.20",
+      "treatment": "C2_COOPERATIVE_EXPANDED@0.20",
+      "classification": "C1_COOPERATIVE_COMPACT@0.20_BETTER",
+      "treatment_favourable_key_metrics": [],
+      "baseline_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio",
+        "mean_waiting_time",
+        "mean_time_loss"
+      ]
+    },
+    {
+      "family": "C1_VS_C2",
+      "baseline": "C1_COOPERATIVE_COMPACT@0.50",
+      "treatment": "C2_COOPERATIVE_EXPANDED@0.50",
+      "classification": "C1_COOPERATIVE_COMPACT@0.50_BETTER",
+      "treatment_favourable_key_metrics": [],
+      "baseline_favourable_key_metrics": [
+        "throughput",
+        "completion_ratio_offered",
+        "departure_ratio"
+      ]
+    },
+    {
+      "family": "C1_VS_C2",
+      "baseline": "C1_COOPERATIVE_COMPACT@1.00",
+      "treatment": "C2_COOPERATIVE_EXPANDED@1.00",
+      "classification": "NO_CLEAR_DIFFERENCE",
+      "treatment_favourable_key_metrics": [],
+      "baseline_favourable_key_metrics": []
+    }
+  ],
+  "s4_teleports": {
+    "per_controller": {
+      "B0_FIXED_CALIBRATED": {
+        "runs": 10,
+        "runs_with_teleports": 10,
+        "total": 28.0,
+        "max": 6.0,
+        "seeds_with_teleports": [
+          42,
+          2027,
+          3253,
+          4517,
+          5791,
+          6841,
+          8089,
+          10007,
+          12011,
+          16001
+        ]
+      },
+      "B1_LOCAL_ADAPTIVE": {
+        "runs": 10,
+        "runs_with_teleports": 0,
+        "total": 0.0,
+        "max": 0.0,
+        "seeds_with_teleports": []
+      },
+      "B2_LOCAL_PRESSURE": {
+        "runs": 10,
+        "runs_with_teleports": 1,
+        "total": 3.0,
+        "max": 3.0,
+        "seeds_with_teleports": [
+          5791
+        ]
+      },
+      "C1_COOPERATIVE_COMPACT": {
+        "runs": 10,
+        "runs_with_teleports": 0,
+        "total": 0.0,
+        "max": 0.0,
+        "seeds_with_teleports": []
+      },
+      "C2_COOPERATIVE_EXPANDED": {
+        "runs": 10,
+        "runs_with_teleports": 0,
+        "total": 0.0,
+        "max": 0.0,
+        "seeds_with_teleports": []
+      }
+    },
+    "teleports_in_other_scenarios_total": {
+      "S1_BALANCED": 0,
+      "S2_DIRECTIONAL_PEAK": 0,
+      "S3_DEMAND_SHIFT": 0,
+      "S4_LOCAL_SATURATION": 31.0
+    }
+  },
+  "s5_total_at_100_percent_loss": {
+    "sent": 1872000,
+    "delivered": 0,
+    "dropped": 1872000,
+    "bytes_delivered": 0
+  },
+  "determinism_check": {
+    "compared_runs": 30,
+    "max_abs_diff": 0.0,
+    "identical_runs": 30
+  },
+  "outliers_flagged_not_removed": 209,
+  "validation_ref": "analysis-validation.json"
+}

@@ -1,0 +1,51 @@
+{
+  "git_status_short_before_outputs": "?? scripts/final_analysis.py",
+  "freeze_verify_rc": 0,
+  "scientific_tree_now": [
+    "b713917890e2dc65b7c25dfca80c627a7607146539bd2dadf5613f70451cdeff"
+  ],
+  "freeze_manifest_sha256_now": "de4af93262e4ab6734ed72a35a5d0d9aeeb0507c6db32c29fc7adc47978164ec",
+  "FINAL_MAIN_VALID": "YES",
+  "S5_VALID": "YES",
+  "FINAL_MAIN_RUNS_ANALYZED": "200/200",
+  "FINAL_S5_RUNS_ANALYZED": "90/90",
+  "TOTAL_FINAL_SCIENTIFIC_RUNS_ANALYZED": "290/290",
+  "duplicate_main_identities": [],
+  "duplicate_s5_identities": [],
+  "duplicate_metric_observations": 0,
+  "pilot_run_ids_in_final_population": [],
+  "historical_b0_ids_in_final_population": [],
+  "calibration_or_replay_runs_included": 0,
+  "experiment_config_sha256_values": {
+    "2627c67e77d8236f4e4b86d49198d13b4fc6375ad7595ce0ff8597b04a995f3f": 200,
+    "9131a7fd39b6862e6840aae1f9200071720c706e39c1145671f738dff0a2eeff": 90
+  },
+  "LONG_PATH_RUNS_READABLE": "YES",
+  "runs_readable": "290/290",
+  "runs_needing_extended_path": 12,
+  "long_path_workaround": "files opened with the extended-length prefix (\\\\?\\); no raw artifact renamed, moved or rewritten",
+  "S5_retried_identities": 12,
+  "S5_retried_identities_expected_set_ok": true,
+  "retry_failed_attempt_dirs_contributing": 0,
+  "LONG_PATH_S5_IDENTITIES_INCLUDED": "12/12",
+  "main_retried_identities": 0,
+  "combined_metrics_crosscheck": {
+    "values_checked": 4600,
+    "mismatches": 0
+  },
+  "reference_route_route_hash_ok": "120/120",
+  "reference_route_runs": 120,
+  "pilot_first5_vs_final_first5_max_abs_value_diff_excluding_wall_clock_metrics": 0.0,
+  "s5_0pct_vs_main_s2_determinism_check": {
+    "compared_runs": 30,
+    "max_abs_diff": 0.0,
+    "identical_runs": 30
+  },
+  "bootstrap": {
+    "seed": 20260910,
+    "resamples": 10000,
+    "route_seed_base": 20260930
+  },
+  "problems": [],
+  "FINAL_ANALYSIS_VALID": "YES"
+}
