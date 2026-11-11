@@ -1,31 +1,31 @@
-"""Cross-platform hashing and scientific-tree fingerprint for the final freeze (FREEZE TOOLING).
+"""Hashing multiplataforma e fingerprint da árvore científica do freeze final (FERRAMENTAS).
 
-This module is tooling only: it is excluded from the scientific tree it fingerprints and is never
-imported by the simulation / experiment execution path (enforced by a test).
+Este módulo é apenas ferramenta: é excluído da árvore científica que ele fingerprinta e nunca é
+importado pelo caminho de execução de simulação / experimento (garantido por um teste).
 
-Hash schemas
-------------
-``CANONICAL_TEXT_LF_V1`` (text files)
-    Implemented once in ``traffic_agents.experiments.text_hashing`` (shared with the route-artifact
-    validation) and re-exported here: decode UTF-8 (BOM dropped), CRLF and lone CR become LF,
-    encode UTF-8, SHA-256. Nothing else is normalised.
+Schemas de hash
+---------------
+``CANONICAL_TEXT_LF_V1`` (arquivos de texto)
+    Implementado uma única vez em ``traffic_agents.experiments.text_hashing`` (compartilhado com a
+    validação de artefatos de rota) e reexportado aqui: decodifica UTF-8 (BOM removido), CRLF e CR
+    isolado viram LF, codifica UTF-8, SHA-256. Nada mais é normalizado.
 
-``SCIENTIFIC_METADATA_V1`` (route metadata JSON only)
-    Parse the JSON, drop ONLY the top-level provenance key ``generated_at``, serialise with
-    ``json.dumps(sort_keys=True, separators=(",", ":"))`` (standard serializer, ASCII escapes),
-    encode UTF-8, SHA-256. Every other field (seed, demand, routes, turning ratios, counts,
-    hashes, ...) is part of the identity.
+``SCIENTIFIC_METADATA_V1`` (somente JSON de metadados de rota)
+    Faz o parse do JSON, remove APENAS a chave de proveniência de nível superior ``generated_at``,
+    serializa com ``json.dumps(sort_keys=True, separators=(",", ":"))`` (serializador padrão,
+    escapes ASCII), codifica UTF-8, SHA-256. Todo outro campo (seed, demanda, rotas, razões de
+    conversão, contagens, hashes, ...) faz parte da identidade.
 
-``SCIENTIFIC_TREE_V1`` (the tree fingerprint)
-    One record per included file, sorted by repository-relative POSIX path::
+``SCIENTIFIC_TREE_V1`` (a impressão digital da árvore)
+    Um registro por arquivo incluído, ordenado por caminho POSIX relativo ao repositório::
 
         <relative_path>\\t<hash_mode>\\t<authoritative_hash>\\n
 
-    ``hash_mode`` is ``canonical`` (text), ``semantic`` (route metadata) or ``raw`` (binary or
-    unknown extension). The fingerprint is the SHA-256 of the UTF-8 concatenation of the records.
+    ``hash_mode`` é ``canonical`` (texto), ``semantic`` (metadados de rota) ou ``raw`` (binário ou
+    extensão desconhecida). A impressão digital é o SHA-256 da concatenação UTF-8 dos registros.
 
-Raw byte hashes are kept beside the authoritative ones as forensic / local evidence; they depend
-on the checkout line endings and are NOT used for cross-platform verification.
+Os hashes de bytes brutos são mantidos ao lado dos autoritativos como evidência forense / local;
+eles dependem das quebras de linha do checkout e NÃO são usados na verificação multiplataforma.
 """
 
 from __future__ import annotations
@@ -63,7 +63,8 @@ __all__ = [
 SEMANTIC_METADATA_SCHEMA = "SCIENTIFIC_METADATA_V1"
 SCIENTIFIC_TREE_SCHEMA = "SCIENTIFIC_TREE_V1"
 
-# Provenance fields excluded from the semantic hash. Deliberately a one-element allow-list.
+# Campos de proveniência excluídos do hash semântico. Deliberadamente uma lista permitida de um
+# elemento.
 SEMANTIC_EXCLUDED_TOP_LEVEL_KEYS: tuple[str, ...] = ("generated_at",)
 SEMANTIC_METADATA_SUFFIX = ".metadata.json"
 
@@ -81,7 +82,7 @@ def is_semantic_metadata_path(path: str) -> bool:
 
 
 def semantic_metadata_object(data: bytes) -> dict[str, object]:
-    """Metadata JSON without the documented provenance fields (``SCIENTIFIC_METADATA_V1``)."""
+    """JSON de metadados sem os campos de proveniência documentados (``SCIENTIFIC_METADATA_V1``)."""
 
     try:
         payload = json.loads(data.decode("utf-8-sig"))
@@ -103,7 +104,7 @@ def semantic_metadata_sha256(data: bytes) -> str:
 
 @dataclass(frozen=True)
 class FileHashes:
-    """All hashes of one file; ``authoritative`` is the cross-platform one for ``mode``."""
+    """Todos os hashes de um arquivo; ``authoritative`` é o multiplataforma para o ``mode``."""
 
     path: str
     mode: str
@@ -121,7 +122,9 @@ class FileHashes:
 
 
 def hash_file_bytes(path: str, data: bytes, *, semantic: bool = False) -> FileHashes:
-    """Hash one file. ``semantic=True`` selects the metadata semantic identity (JSON only)."""
+    """Calcula o hash de um arquivo. ``semantic=True`` seleciona a identidade semântica de metadados
+    (somente JSON).
+    """
 
     posix = PurePosixPath(path.replace("\\", "/")).as_posix()
     raw = raw_byte_sha256(data)
@@ -139,14 +142,17 @@ def hash_file_bytes(path: str, data: bytes, *, semantic: bool = False) -> FileHa
     return FileHashes(posix, MODE_CANONICAL, raw, canonical, None)
 
 
-# --- Sources: working tree or a git commit --------------------------------------------------------
+# --- Fontes: árvore de trabalho ou um commit git
+# --------------------------------------------------------
 class FileSource(Protocol):
     def exists(self, path: str) -> bool: ...
 
     def read(self, path: str) -> bytes: ...
 
     def list_dir(self, directory: str) -> list[str]:
-        """Repository-relative POSIX paths of every file below ``directory`` (recursive)."""
+        """Caminhos POSIX relativos ao repositório de todo arquivo abaixo de ``directory``
+        (recursivo).
+        """
         ...
 
 
@@ -200,10 +206,13 @@ class GitCommitSource:
         return sorted(p for p in self._files if p.startswith(prefix) and "__pycache__" not in p)
 
 
-# --- Scientific file set ------------------------------------------------------------------------
+# --- Conjunto de arquivos científicos
+# ------------------------------------------------------------------------
 @dataclass(frozen=True)
 class TreeRoot:
-    """Every file below ``directory`` with one of ``suffixes``, minus excluded prefixes/files."""
+    """Todo arquivo abaixo de ``directory`` com um dos ``suffixes``, menos prefixos/arquivos
+    excluídos.
+    """
 
     directory: str
     suffixes: tuple[str, ...]
@@ -213,7 +222,7 @@ class TreeRoot:
 
 @dataclass(frozen=True)
 class ScientificSpec:
-    """Explicit definition of the files that make up SCIENTIFIC_TREE_SHA256."""
+    """Definição explícita dos arquivos que compõem SCIENTIFIC_TREE_SHA256."""
 
     tree_roots: tuple[TreeRoot, ...]
     fixed_files: tuple[str, ...]
@@ -267,7 +276,7 @@ def compute_scientific_tree(spec: ScientificSpec, source: FileSource) -> Scienti
 
 
 def diff_trees(before: ScientificTree, after: ScientificTree) -> list[str]:
-    """Human-readable differences between two scientific trees (empty = identical)."""
+    """Diferenças legíveis entre duas árvores científicas (vazio = idênticas)."""
 
     old, new = before.by_path(), after.by_path()
     differences = [f"added: {path}" for path in sorted(new.keys() - old.keys())]
@@ -279,7 +288,8 @@ def diff_trees(before: ScientificTree, after: ScientificTree) -> list[str]:
     return differences
 
 
-# --- Git state -----------------------------------------------------------------------------------
+# --- Estado do git
+# -----------------------------------------------------------------------------------
 def _git(root: Path, *args: str) -> str:
     completed = subprocess.run(
         ["git", "-C", str(root), *args], capture_output=True, text=True, check=False
@@ -302,7 +312,9 @@ _COMMIT_SHA_PATTERN = re.compile(r"^[0-9a-fA-F]{7,64}$")
 
 
 def git_resolve_commit(root: Path, sha: str) -> str | None:
-    """Full commit SHA for a hex ``sha`` (abbreviations allowed), or None if it is no commit."""
+    """SHA completo do commit para um ``sha`` hexadecimal (abreviações permitidas), ou None se não
+    for um commit.
+    """
 
     if not _COMMIT_SHA_PATTERN.match(sha):
         return None
@@ -327,7 +339,7 @@ def git_is_ancestor(root: Path, ancestor: str, descendant: str = "HEAD") -> bool
 
 @dataclass(frozen=True)
 class FreezePreconditions:
-    """Result of the checks that must hold BEFORE scientific inputs are inspected."""
+    """Resultado das verificações que devem valer ANTES de inspecionar as entradas científicas."""
 
     head_sha: str
     scientific_source_git_sha: str
@@ -370,11 +382,11 @@ def check_freeze_preconditions(
     spec: ScientificSpec,
     scientific_source_git_sha: str,
 ) -> FreezePreconditions:
-    """Inspect the repository for the definitive freeze (does not write anything).
+    """Inspeciona o repositório para o freeze definitivo (não grava nada).
 
-    ``scientific_source_git_sha`` is supplied by the caller (it cannot be known before the source
-    commit exists). It must exist, be an ancestor of ``HEAD`` (``HEAD`` itself is allowed) and its
-    scientific tree must equal the current one; the working tree must be clean.
+    ``scientific_source_git_sha`` é informado pelo chamador (não pode ser conhecido antes de o
+    commit-fonte existir). Deve existir, ser ancestral de ``HEAD`` (o próprio ``HEAD`` é permitido)
+    e sua árvore científica deve ser igual à atual; a árvore de trabalho deve estar limpa.
     """
 
     dirty = git_working_tree_dirty(repo_root)
@@ -403,13 +415,15 @@ def check_freeze_preconditions(
 
 
 def manifest_file_sha256(path: Path) -> str:
-    """Line-ending-independent SHA-256 of the finalized manifest (stored OUTSIDE the manifest)."""
+    """SHA-256 do manifesto finalizado, independente de quebras de linha (armazenado FORA do
+    manifesto).
+    """
 
     return canonical_sha256(path.read_bytes())
 
 
 def write_manifest_checksum(manifest_path: Path) -> Path:
-    """Write ``<sha256>  <name>`` next to the manifest (the manifest never embeds its own hash)."""
+    """Grava ``<sha256>  <name>`` ao lado do manifesto (o manifesto nunca embute o próprio hash)."""
 
     checksum_path = manifest_path.with_suffix(".sha256")
     checksum_path.write_text(

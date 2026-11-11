@@ -57,18 +57,21 @@ if TYPE_CHECKING:
     from traffic_agents.experiments.runner import ExperimentConfig
 
 
-# Schema 1: raw ``sha256`` only. Schema 2 adds ``raw_byte_sha256`` / ``canonical_sha256`` /
-# ``hash_schema`` per text file; the canonical hash (``CANONICAL_TEXT_LF_V1``) is then the
-# authoritative, line-ending independent identity. Binary files keep the raw hash only.
-# Schema 3 (current) also makes paths repository-portable: ``relative_path`` (POSIX, relative to
-# the git top-level) replaces the machine-specific absolute ``path`` / ``scenario_path``.
-# Schemas 1 and 2 keep their absolute paths (verified as before, non-portable by construction).
+# Schema 1: apenas ``sha256`` bruto. O schema 2 adiciona ``raw_byte_sha256`` / ``canonical_sha256``
+# /
+# ``hash_schema`` por arquivo de texto; o hash canônico (``CANONICAL_TEXT_LF_V1``) passa a ser a
+# identidade autoritativa, independente de quebra de linha. Arquivos binários mantêm só o hash
+# bruto.
+# O schema 3 (atual) também torna os caminhos portáveis entre repositórios: ``relative_path``
+# (POSIX, relativo à raiz do git) substitui o ``path`` / ``scenario_path`` absoluto, específico da
+# máquina. Os schemas 1 e 2 mantêm seus caminhos absolutos (verificados como antes, não portáveis
+# por construção).
 CHECKSUMS_SCHEMA_VERSION = 3
 PORTABLE_SCHEMA_MIN_VERSION = 3
 
-# Trusted canonical identities of legacy (schema 1) records, keyed by the RAW hash they recorded.
-# Only artifacts whose canonical identity is known from committed content appear here, so a raw
-# mismatch is never accepted unconditionally.
+# Identidades canônicas confiáveis de registros legados (schema 1), indexadas pelo hash BRUTO que
+# registraram. Só aparecem aqui artefatos cuja identidade canônica é conhecida a partir de
+# conteúdo commitado, de modo que uma divergência bruta nunca é aceita incondicionalmente.
 _TRUSTED_LEGACY_CANONICAL: Mapping[str, str] = {
     **LEGACY_ROUTE_CANONICAL_BY_RAW,
     **LEGACY_NETWORK_CANONICAL_BY_RAW,
@@ -76,7 +79,7 @@ _TRUSTED_LEGACY_CANONICAL: Mapping[str, str] = {
 
 
 class ExperimentFreezeError(ValueError):
-    """Raised when an experiment cannot be frozen or no longer matches its freeze."""
+    """Lançada quando um experimento não pode ser congelado ou não corresponde mais ao freeze."""
 
 
 @dataclass(frozen=True)
@@ -134,7 +137,9 @@ class FrozenExperimentConfig:
                 raise ExperimentFreezeError(msg)
 
     def _root(self, explicit: Path | None) -> Path | None:
-        """Repository root for portable records: explicit, configured, or resolved by git."""
+        """Raiz do repositório para registros portáveis: explícita, configurada ou resolvida pelo
+        git.
+        """
 
         if not self.is_portable:
             return None
@@ -415,7 +420,7 @@ def _file_entry(label: str, path: Path, repository_root: Path) -> dict[str, str]
     entry = {
         "label": label,
         "relative_path": _relative_or_error(path, repository_root),
-        "sha256": raw,  # legacy key (raw), kept for older readers
+        "sha256": raw,  # chave legada (bruta), mantida para leitores antigos
         "raw_byte_sha256": raw,
     }
     if is_text_path(path.name):
@@ -425,7 +430,7 @@ def _file_entry(label: str, path: Path, repository_root: Path) -> dict[str, str]
 
 
 def _entry_path(entry: Mapping[str, Any], repository_root: Path | None, *, portable: bool) -> Path:
-    """Local file of a record. Portable records resolve inside the repository only."""
+    """Arquivo local de um registro. Registros portáveis resolvem apenas dentro do repositório."""
 
     if not portable:
         return Path(_required_string(entry, "path"))
@@ -443,11 +448,12 @@ def _display_path(entry: Mapping[str, Any]) -> str:
 
 
 def _file_matches_entry(path: Path, entry: Mapping[str, Any]) -> bool:
-    """Verify a frozen file independent of line endings, never by blind canonical acceptance.
+    """Verifica um arquivo congelado sem depender de quebras de linha nem de aceite cego.
 
-    * schema 2 text entry: the canonical hash recorded in the freeze must match;
-    * otherwise (legacy record or binary file): the raw hash must match, or - text only - the file's
-      canonical hash must equal the trusted canonical identity known for the recorded raw hash.
+    * entrada de texto schema 2: o hash canônico registrado no freeze deve coincidir;
+    * caso contrário (registro legado ou arquivo binário): o hash bruto deve coincidir ou - só para
+      texto - o hash canônico do arquivo deve ser igual à identidade canônica confiável conhecida
+      para o hash bruto registrado.
     """
 
     data = path.read_bytes()

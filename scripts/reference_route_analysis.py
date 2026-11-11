@@ -1,10 +1,10 @@
-"""Official reference-route analysis (Prompt 56): B0_FIXED_CALIBRATED vs B2 vs C1.
+"""Análise oficial da rota de referência (Prompt 56): B0_FIXED_CALIBRATED vs B2 vs C1.
 
     uv run python scripts/reference_route_analysis.py
 
-Reuses the Pilot V2 B2/C1 tripinfo (after verifying every pairing invariant) and the 20 new
-``B0_FIXED_CALIBRATED`` runs. Writes ``artifacts/reference-route/`` and a lightweight versioned
-copy under ``docs/evidencias/reference-route/``. No simulation is launched here.
+Reutiliza o tripinfo B2/C1 do Pilot V2 (após verificar todo invariante de pareamento) e as 20
+novas execuções ``B0_FIXED_CALIBRATED``. Grava ``artifacts/reference-route/`` e uma cópia leve
+versionada em ``docs/evidencias/reference-route/``. Nenhuma simulação é iniciada aqui.
 """
 
 from __future__ import annotations
@@ -62,7 +62,7 @@ def completed_run_keys(status_path: Path) -> set[str]:
 
 
 def discover_runs() -> dict[tuple[str, int, str], dict[str, Any]]:
-    """(scenario, seed, controller) -> run info, from Pilot V2 (B2, C1) and the new B0 runs."""
+    """(cenário, seed, controlador) -> informações da execução, do Pilot V2 (B2, C1) e das novas execuções B0."""
 
     runs: dict[tuple[str, int, str], dict[str, Any]] = {}
     sources = (
@@ -94,10 +94,11 @@ def discover_runs() -> dict[tuple[str, int, str], dict[str, Any]]:
 
 
 def expected_scenario_hashes() -> dict[tuple[str, int, str], tuple[str, str]]:
-    """(scenario, seed, controller) -> (hash the runner records, controller-neutral hash).
+    """(cenário, seed, controlador) -> (hash que o executor registra, hash neutro ao controlador).
 
-    Rebuilds the run configuration exactly as the experiment runner does from the scenario YAML
-    and the experiment config, so the manifest hash can be verified instead of trusted.
+    Reconstrói a configuração de execução exatamente como o executor de experimentos faz a partir
+    do YAML do cenário e da config do experimento, de modo que o hash do manifesto possa ser
+    verificado em vez de confiado.
     """
 
     hashes: dict[tuple[str, int, str], tuple[str, str]] = {}
@@ -164,7 +165,7 @@ def main() -> int:
         print(f"CRITICAL: missing={missing} extra={extra}")
         return 2
 
-    # --- pairing (CRITICAL on any mismatch) ---
+    # --- pareamento (CRÍTICO em qualquer divergência) ---
     scenario_hashes = expected_scenario_hashes()
     pairing_report: list[dict[str, Any]] = []
     critical: list[str] = []
@@ -203,7 +204,7 @@ def main() -> int:
         print("CRITICAL pairing mismatches:\n" + "\n".join(critical))
         return 3
 
-    # --- per-run cohort, rows, metrics ---
+    # --- coorte, linhas e métricas por execução ---
     vehicle_rows: list[dict[str, Any]] = []
     seed_rows: list[dict[str, Any]] = []
     provenance: list[dict[str, Any]] = []
@@ -278,7 +279,7 @@ def main() -> int:
             print(f"CRITICAL: cohort differs between controllers for {key}")
             return 4
 
-    # --- statistics ---
+    # --- estatística ---
     pairwise: list[dict[str, Any]] = []
     for scenario in rr.SCENARIOS:
         for baseline, treatment in rr.COMPARISONS:
@@ -295,7 +296,7 @@ def main() -> int:
                 )
     index = {(p["scenario"], p["baseline"], p["treatment"], p["metric"]): p for p in pairwise}
 
-    # --- advisor table ---
+    # --- tabela para o orientador ---
     advisor: list[dict[str, Any]] = []
     for scenario in rr.SCENARIOS:
 
@@ -325,7 +326,7 @@ def main() -> int:
             row[f"{label}_interpretation"] = rr.interpret(tt, comp)
         advisor.append(row)
 
-    # --- files ---
+    # --- arquivos ---
     definition = {
         "campaign_role": CAMPAIGN_ROLE,
         "reference_route_id": rr.REFERENCE_ROUTE_ID,

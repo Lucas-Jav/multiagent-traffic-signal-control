@@ -76,7 +76,7 @@ def test_routing_graph_contains_only_legal_movements(graph: RoutingGraph) -> Non
     for edge_id, options in graph.successors.items():
         assert set(options) == {"straight", "left", "right"}, edge_id
         assert edge_id not in graph.exit_edges
-        # no movement returns onto the edge itself and every movement has a distinct target
+        # nenhum movimento retorna à própria aresta e todo movimento tem um destino distinto
         assert edge_id not in options.values()
         assert len(set(options.values())) == 3
     for edge_id in graph.entry_edges | graph.exit_edges:
@@ -206,7 +206,7 @@ def test_per_entry_turning_override_applies_only_to_that_entry(graph: RoutingGra
 
 
 def test_via_intersection_routes_pass_through_that_intersection(graph: RoutingGraph) -> None:
-    b1 = "B1"  # SUMO id of project intersection A5
+    b1 = "B1"  # id SUMO da interseção A5 do projeto
     entries = [
         entry(
             f"via_{edge}",
@@ -280,12 +280,12 @@ def test_generator_writes_reproducible_route_artifacts(tmp_path: Path) -> None:
     assert metadata["offered"]["offered_vehicle_count"] == sum(
         metadata["offered"]["offered_by_entry"].values()
     )
-    # the checked-in artifact for the same scenario is byte-identical (deterministic seed).
+    # o artefato versionado do mesmo cenário é idêntico byte a byte (seed determinística).
     assert first_bytes == (SCENARIO_DIR / config.route_file).read_bytes()
 
 
 # ---------------------------------------------------------------------------------------
-# Structure of the versioned V1 scenarios (checked-in YAMLs and route artifacts).
+# Estrutura dos cenários V1 versionados (YAMLs e artefatos de rota versionados).
 # ---------------------------------------------------------------------------------------
 
 SEEDS = (42, 2027, 3253, 4517, 5791)
@@ -295,7 +295,7 @@ SCENARIO_FILES = {
     "S3_DEMAND_SHIFT": "scenario_s3_demand_shift_seed_{seed}.yaml",
     "S4_LOCAL_SATURATION": "scenario_s4_local_saturation_seed_{seed}.yaml",
 }
-NOMINAL_APPROACH_CAPACITY_VEH_PER_HOUR = 320.0  # measured B0 discharge per approach in Pilot V1
+NOMINAL_APPROACH_CAPACITY_VEH_PER_HOUR = 320.0  # descarga medida do B0 por aproximação no Pilot V1
 
 
 def metadata_for(profile: str, seed: int = 42) -> dict[str, Any]:
@@ -353,12 +353,12 @@ def test_s1_uses_the_full_grid_with_balanced_border_demand() -> None:
     assert max(offered_by_entry.values()) - min(offered_by_entry.values()) <= 1
     shares = pass_shares(metadata)
     assert set(shares) == {f"A{index}" for index in range(1, 10)}
-    # no unused corners and no single intersection forced into every route
+    # sem cantos não usados e sem uma única interseção forçada em toda rota
     assert all(0.08 <= share <= 0.15 for share in shares.values()), shares
     realized = metadata["turning"]["realized_movement_proportions"]
     for movement, expected in {"straight": 0.70, "left": 0.15, "right": 0.15}.items():
         assert abs(realized[movement] - expected) <= 0.03
-    # calibrated S1 intensity must stay well below one approach's nominal capacity
+    # a intensidade calibrada do S1 deve ficar bem abaixo da capacidade nominal de uma aproximação
     assert (
         metadata["max_expected_approach_load_veh_per_hour"]
         <= 0.6 * NOMINAL_APPROACH_CAPACITY_VEH_PER_HOUR
@@ -376,12 +376,14 @@ def test_s2_offers_about_80_percent_from_the_west_dominant_profile() -> None:
     by_group = metadata["offered"]["offered_by_group"]
     dominant_share = by_group["dominant"] / sum(by_group.values())
     assert 0.78 <= dominant_share <= 0.82
-    # calibrated dominant demand stays within one approach's nominal capacity (not entry-starved)
+    # a demanda dominante calibrada fica dentro da capacidade nominal de uma aproximação (sem
+    # starvation de entrada)
     dominant_rate = dominant[0].vehicles_per_hour["MEDIUM"]
     assert dominant_rate <= NOMINAL_APPROACH_CAPACITY_VEH_PER_HOUR
     counts = metadata["turning"]["realized_movement_counts_by_group"]["dominant"]
     assert counts["left"] > 0 and counts["right"] > 0 and counts["straight"] > counts["left"]
-    # corridor traffic is visible: some routes traverse the middle row eastbound (A1B1 -> B1C1)
+    # o tráfego de corredor é visível: algumas rotas atravessam a linha central no sentido leste
+    # (A1B1 -> B1C1)
     route_text = (SCENARIO_DIR / "routes_s2_seed_42.rou.xml").read_text(encoding="utf-8")
     assert "A1B1 B1C1" in route_text
 
@@ -397,12 +399,12 @@ def test_s3_structure_balanced_first_half_then_west_shock_through_a5() -> None:
     assert config.shock_start_measurement_offset_seconds == 1800
     base = [item for item in config.traffic.entries if item.group == "base"]
     shock = [item for item in config.traffic.entries if item.group == "shock"]
-    # first half equals the S1 balanced base (same entries, same rates, from t=0)
+    # a primeira metade é igual à base balanceada do S1 (mesmas entradas, mesmas taxas, desde t=0)
     assert {item.entry_edge_id for item in base} == set(ALL_ENTRIES)
     assert all(item.begin_seconds == 0 for item in base)
     s1_rates = {item.entry_edge_id: item.vehicles_per_hour for item in s1.traffic.entries}
     assert {item.entry_edge_id: item.vehicles_per_hour for item in base} == s1_rates
-    # the shock: one border only, abrupt at 50% of the measurement window, routed through A5
+    # o choque: uma única borda, abrupto em 50% da janela de medição, roteado por A5
     assert shock
     assert all(item.begin_seconds == shock_start for item in shock)
     assert {item.entry_edge_id for item in shock} <= {"left0A0", "left1A1", "left2A2"}
@@ -425,7 +427,8 @@ def test_s3_structure_balanced_first_half_then_west_shock_through_a5() -> None:
     first_half = [v for v in root.findall("vehicle") if float(v.attrib["depart"]) < shock_start]
     assert first_half
     assert not any(v.attrib["id"].startswith("shock_") for v in first_half)
-    # the base phase is not structurally saturated: S3 base demand equals the calibrated S1 level
+    # a fase base não está estruturalmente saturada: a demanda base do S3 é igual ao nível calibrado
+    # do S1
     assert (
         metadata_for("S1_BALANCED")["max_expected_approach_load_veh_per_hour"]
         <= 0.6 * NOMINAL_APPROACH_CAPACITY_VEH_PER_HOUR
@@ -436,7 +439,7 @@ def test_s3_shock_time_must_be_at_half_of_the_measurement_window() -> None:
     payload = load_scenario_config(
         SCENARIO_DIR / SCENARIO_FILES["S3_DEMAND_SHIFT"].format(seed=42)
     ).model_dump(mode="json")
-    payload["traffic"]["shock_start_seconds"] = 1950  # 50% of TOTAL time, not of measurement
+    payload["traffic"]["shock_start_seconds"] = 1950  # 50% do tempo TOTAL, não da medição
 
     with pytest.raises(ValueError, match="50% of the measurement"):
         ScenarioConfig.model_validate(payload)
@@ -468,16 +471,16 @@ def test_s4_hotspot_concentrates_traffic_around_a5() -> None:
     shares = pass_shares(metadata)
     neighbours = ("A2", "A4", "A6", "A8")
     corners = ("A1", "A3", "A7", "A9")
-    # congestion is concentrated around A5 ...
+    # a congestão se concentra em torno de A5 ...
     assert shares["A5"] >= 0.20
     assert shares["A5"] >= 1.5 * max(shares[node] for node in neighbours)
-    # ... and propagates to A2/A4/A6/A8 rather than to the corners.
+    # ... e se propaga para A2/A4/A6/A8 em vez dos cantos.
     assert min(shares[node] for node in neighbours) > max(shares[node] for node in corners)
     loads = metadata["expected_approach_load_veh_per_hour"]
     a5_incoming = [loads[edge] for edge in ("A1B1", "C1B1", "B0B1", "B2B1")]
     assert min(a5_incoming) > loads["left1A1"]
     assert metadata["max_expected_approach_load_veh_per_hour"] == pytest.approx(max(a5_incoming))
-    # every hotspot vehicle traverses A5 (checked on the generated route file).
+    # todo veículo do hotspot atravessa A5 (verificado no arquivo de rotas gerado).
     import xml.etree.ElementTree as ET
 
     root = ET.parse(SCENARIO_DIR / "routes_s4_seed_42.rou.xml").getroot()

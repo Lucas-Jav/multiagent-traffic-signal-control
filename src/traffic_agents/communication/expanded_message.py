@@ -17,7 +17,7 @@ from traffic_agents.traffic_model import IntersectionTrafficModel, Movement
 
 
 class ExpandedNeighborMessageError(ValueError):
-    """Raised when an expanded C2 message cannot be built from local data."""
+    """Lançada quando uma mensagem expandida C2 não pode ser construída a partir de dados locais."""
 
 
 @dataclass(frozen=True)
@@ -167,8 +167,8 @@ class ExpandedNeighborMessageFactory:
             for movement in movements
         }
 
-    # Historical name: the value is a current-state estimate (measured arrival rate now),
-    # not a temporal trend or forecast.
+    # Nome histórico: o valor é uma estimativa do estado atual (taxa de chegada medida agora),
+    # e não uma tendência temporal nem uma previsão.
     def _arrival_trend(
         self,
         observation: AgentObservation,

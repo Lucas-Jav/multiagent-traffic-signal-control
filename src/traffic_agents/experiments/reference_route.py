@@ -1,9 +1,10 @@
-"""Reference-route experiment: travel time of one fixed origin-destination route (Prompt 56).
+"""Experimento de rota de referência: tempo de viagem de uma rota origem-destino fixa (Prompt 56).
 
-The reference cohort is selected only by the PLANNED EDGE SEQUENCE of a vehicle. SUMO route ids
-(``r2``, ``r12``, ...) change between scenarios and seeds and are never used. Population accounting
-and trip means follow the project rules: means use COMPLETED trips only, an unfinished trip never
-gets a duration, and the completion ratio always accompanies every travel-time metric.
+A coorte de referência é selecionada apenas pela SEQUÊNCIA PLANEJADA DE ARESTAS de um veículo. Os
+ids de rota do SUMO (``r2``, ``r12``, ...) mudam entre cenários e seeds e nunca são usados. A
+contabilização da população e as médias de viagem seguem as regras do projeto: médias usam apenas
+viagens CONCLUÍDAS, uma viagem não finalizada nunca recebe duração, e a razão de conclusão sempre
+acompanha toda métrica de tempo de viagem.
 """
 
 from __future__ import annotations
@@ -26,7 +27,7 @@ B0_CALIBRATED = "B0_FIXED_CALIBRATED"
 B2 = "B2_LOCAL_PRESSURE"
 C1 = "C1_COOPERATIVE_COMPACT"
 CONTROLLERS: tuple[str, ...] = (B0_CALIBRATED, B2, C1)
-# (baseline, treatment): the difference is always treatment - baseline.
+# (baseline, tratamento): a diferença é sempre tratamento - baseline.
 COMPARISONS: tuple[tuple[str, str], ...] = ((B0_CALIBRATED, B2), (B2, C1), (B0_CALIBRATED, C1))
 SCENARIOS: tuple[str, ...] = (
     "S1_BALANCED",
@@ -56,10 +57,11 @@ POPULATION_KEYS: tuple[str, ...] = (
     "reference_route_unfinished",
 )
 
-# Pairing invariants: any mismatch between controllers of the same scenario+seed is CRITICAL.
-# ``scenario_neutral_sha256`` is the scenario config hash with the controller id neutralised: the
-# manifest ``scenario_sha256`` includes ``controller_id`` and therefore differs between controllers
-# by design (it differs between B2 and C1 inside Pilot V2 itself).
+# Invariantes de pareamento: qualquer divergência entre controladores do mesmo cenário+seed é
+# CRÍTICA.
+# ``scenario_neutral_sha256`` é o hash da config do cenário com o id do controlador neutralizado: o
+# ``scenario_sha256`` do manifesto inclui ``controller_id`` e, portanto, difere entre controladores
+# por construção (difere entre B2 e C1 dentro do próprio Pilot V2).
 PAIRING_FIELDS: tuple[str, ...] = (
     "network_sha256",
     "route_sha256",
@@ -80,9 +82,11 @@ SANITY_RANGES: Mapping[str, tuple[int, int]] = {
 }
 
 
-# --- Cohort ---------------------------------------------------------------------------------------
+# --- Coorte ---------------------------------------------------------------------------------------
 def matches_reference_route(route: Sequence[str]) -> bool:
-    """True only for the exact planned edge sequence (no prefix, suffix or sub-path match)."""
+    """Verdadeiro apenas para a sequência planejada exata de arestas (sem correspondência de
+    prefixo, sufixo ou subcaminho).
+    """
 
     return tuple(route) == REFERENCE_ROUTE_EDGES
 
@@ -93,9 +97,9 @@ def select_reference_cohort(
     warmup_seconds: float,
     measurement_duration_seconds: float,
 ) -> tuple[OfferedVehicle, ...]:
-    """Offered vehicles on the reference route scheduled inside the measurement window.
+    """Veículos ofertados na rota de referência programados dentro da janela de medição.
 
-    The result is ordered by ``(scheduled_depart, vehicle_id)`` so it is deterministic.
+    O resultado é ordenado por ``(scheduled_depart, vehicle_id)`` para ser determinístico.
     """
 
     end = warmup_seconds + measurement_duration_seconds
@@ -108,7 +112,7 @@ def select_reference_cohort(
     return tuple(sorted(cohort, key=lambda v: (v.scheduled_depart, v.vehicle_id)))
 
 
-# --- Per-vehicle rows (also the data for the future visual replay) --------------------------------
+# --- Linhas por veículo (também os dados do futuro replay visual) --------------------------------
 @dataclass(frozen=True)
 class VehicleRow:
     vehicle_id: str
@@ -117,7 +121,9 @@ class VehicleRow:
     actual_depart_time: float | None
     depart_delay: float | None
     arrival_time: float | None
-    travel_time: float | None  # None unless the trip completed: never zero for unfinished trips
+    travel_time: (
+        float | None
+    )  # None a menos que a viagem tenha sido concluída: nunca zero para viagens não finalizadas
     waiting_time: float | None
     time_loss: float | None
     stops: float | None
@@ -193,7 +199,9 @@ def population_counts(rows: Sequence[VehicleRow]) -> dict[str, int]:
 
 
 def run_metrics(rows: Sequence[VehicleRow]) -> dict[str, float | None]:
-    """Reference-route metrics of one run; trip means use COMPLETED trips only."""
+    """Métricas da rota de referência de uma execução; as médias de viagem usam apenas viagens
+    CONCLUÍDAS.
+    """
 
     counts = population_counts(rows)
     completed = [row for row in rows if row.status == "COMPLETED"]
@@ -215,7 +223,8 @@ def run_metrics(rows: Sequence[VehicleRow]) -> dict[str, float | None]:
     }
 
 
-# --- Pairing --------------------------------------------------------------------------------------
+# --- Pareamento
+# --------------------------------------------------------------------------------------
 def pairing_fields(manifest: Mapping[str, object]) -> dict[str, object]:
     measurement = manifest.get("measurement")
     duration = (
@@ -234,7 +243,7 @@ def pairing_fields(manifest: Mapping[str, object]) -> dict[str, object]:
 
 
 def pairing_mismatches(manifests_by_controller: Mapping[str, Mapping[str, object]]) -> list[str]:
-    """Fields in which the controllers of one scenario+seed disagree (empty list = paired)."""
+    """Campos em que os controladores de um cenário+seed divergem (lista vazia = pareado)."""
 
     fields = {controller: pairing_fields(m) for controller, m in manifests_by_controller.items()}
     mismatches = []
@@ -245,9 +254,10 @@ def pairing_mismatches(manifests_by_controller: Mapping[str, Mapping[str, object
     return mismatches
 
 
-# --- Statistics -----------------------------------------------------------------------------------
+# --- Estatística
+# -----------------------------------------------------------------------------------
 def stable_seed(label: str, base_seed: int = BOOTSTRAP_BASE_SEED) -> int:
-    """Deterministic, label-specific RNG seed (independent of iteration order)."""
+    """Seed de RNG determinística e específica do rótulo (independente da ordem de iteração)."""
 
     return (base_seed + zlib.crc32(label.encode("utf-8"))) % (2**32)
 
@@ -259,7 +269,7 @@ def paired_bootstrap_ci(
     n_resamples: int = BOOTSTRAP_RESAMPLES,
     confidence: float = 0.95,
 ) -> tuple[float, float]:
-    """Percentile bootstrap CI of the mean of paired differences (resampling the pairs)."""
+    """IC bootstrap por percentil da média das diferenças pareadas (reamostrando os pares)."""
 
     values = np.asarray(differences, dtype=float)
     if values.size == 0:
@@ -281,7 +291,7 @@ def pairwise_comparison(
     values_by_controller: Mapping[str, Mapping[int, float | None]],
     seeds: Sequence[int],
 ) -> dict[str, object]:
-    """Paired comparison (treatment - baseline) of one metric over seeds, one scenario."""
+    """Comparação pareada (tratamento - baseline) de uma métrica nas seeds, em um cenário."""
 
     paired = [
         (seed, values_by_controller[baseline].get(seed), values_by_controller[treatment].get(seed))
@@ -335,7 +345,7 @@ def interpret(
     travel_time: Mapping[str, object],
     completion: Mapping[str, object] | None,
 ) -> str:
-    """Neutral reading of a travel-time comparison; the sign is never forced."""
+    """Leitura neutra de uma comparação de tempo de viagem; o sinal nunca é forçado."""
 
     low, high = travel_time.get("ci95_low"), travel_time.get("ci95_high")
     diff = travel_time.get("paired_mean_diff")

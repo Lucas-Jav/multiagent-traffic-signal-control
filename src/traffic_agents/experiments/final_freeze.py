@@ -1,12 +1,13 @@
-"""Final scientific campaign freeze (Prompt 59).
+"""Freeze da campanha científica final (Prompt 59).
 
-Single source of truth for the immutable specification of the FINAL TCC campaign: seeds,
-controllers, the main (200 runs) and S5 (90 runs) matrices, the primary/secondary comparisons and
-the statistical plan. The two canonical configs under ``experiments/configs`` are GENERATED from
-this module and checked against it, so a hand edit of a frozen config is detected.
+Fonte única da verdade para a especificação imutável da campanha FINAL do TCC: seeds,
+controladores, as matrizes principal (200 execuções) e S5 (90 execuções), as comparações
+primárias/secundárias e o plano estatístico. As duas configs canônicas em
+``experiments/configs`` são GERADAS a partir deste módulo e verificadas contra ele, de modo que
+uma edição manual de uma config congelada é detectada.
 
-Nothing here runs a simulation. After the freeze, none of the values below may change; a
-correctness defect requires a NEW freeze (see ``docs/methodology/final-campaign-freeze.md``).
+Nada aqui executa simulação. Após o freeze, nenhum dos valores abaixo pode mudar; um defeito de
+correção exige um NOVO freeze (ver ``docs/methodology/final-campaign-freeze.md``).
 """
 
 from __future__ import annotations
@@ -70,13 +71,15 @@ from traffic_agents.traffic_model import load_grid_traffic_models
 
 FREEZE_SCHEMA_VERSION = 2
 LEGACY_SCHEMA_VERSION = 1
-# NOTE: the scientific source commit SHA is NOT a constant. It cannot be known before that commit
-# exists, so it is supplied explicitly (``--scientific-source-sha``) and validated: it must exist,
-# be an ancestor of HEAD (HEAD itself is allowed) and have the same scientific tree as now.
+# NOTA: o SHA do commit-fonte científico NÃO é uma constante. Ele não pode ser conhecido antes de
+# esse commit existir, então é informado explicitamente (``--scientific-source-sha``) e validado:
+# deve existir, ser ancestral de HEAD (o próprio HEAD é permitido) e ter a mesma árvore científica
+# atual.
 MANIFEST_FILE_NAME = "final-freeze-manifest.json"
 CAMPAIGN_ROLE = "FINAL_SCIENTIFIC"
 
-# --- Seeds --------------------------------------------------------------------------------------
+# --- Seeds (sementes)
+# --------------------------------------------------------------------------------------
 PILOT_V2_SEEDS: tuple[int, ...] = (42, 2027, 3253, 4517, 5791)
 EXTENSION_SEEDS: tuple[int, ...] = (6841, 8089, 10007, 12011, 16001)
 FINAL_SEEDS: tuple[int, ...] = PILOT_V2_SEEDS + EXTENSION_SEEDS
@@ -85,7 +88,7 @@ SEED_PROVENANCE = (
     "No seed was selected according to controller performance."
 )
 
-# --- Controllers --------------------------------------------------------------------------------
+# --- Controladores --------------------------------------------------------------------------------
 B0_FINAL = "B0_FIXED_CALIBRATED"
 FINAL_CONTROLLERS: tuple[str, ...] = (
     B0_FINAL,
@@ -107,12 +110,12 @@ B0_IDENTITY: dict[str, object] = {
     "offsets_seconds": [0, 42],
 }
 B0_PLAN_RELATIVE_PATH = Path("experiments/fixed_time/b0_fixed_calibrated.json")
-# Cross-platform authority (CANONICAL_TEXT_LF_V1). The raw hash depends on checkout line endings
-# (a950d82d... on this Windows CRLF checkout; equal to the canonical one on an LF checkout).
+# Autoridade multiplataforma (CANONICAL_TEXT_LF_V1). O hash bruto depende das quebras de linha do
+# checkout (a950d82d... neste checkout Windows CRLF; igual ao canônico em um checkout LF).
 B0_CANONICAL_SHA256 = "4ebbed94ef4feae63f7af62bc70944634bc5cbf399d0cd7856693d6758e6da19"
 B0_EVIDENCE_RELATIVE_PATH = Path("docs/evidencias/fixed-time-calibration/b0_fixed_calibrated.json")
 
-# --- Scenarios and matrices ---------------------------------------------------------------------
+# --- Cenários e matrizes ---------------------------------------------------------------------
 MAIN_SCENARIOS: tuple[str, ...] = (
     "S1_BALANCED",
     "S2_DIRECTIONAL_PEAK",
@@ -137,7 +140,7 @@ EXPECTED_MAIN_RUNS = 200
 EXPECTED_S5_RUNS = 90
 EXPECTED_TOTAL_RUNS = 290
 
-# --- Comparisons --------------------------------------------------------------------------------
+# --- Comparações --------------------------------------------------------------------------------
 PRIMARY_COMPARISON: tuple[str, str] = ("B2_LOCAL_PRESSURE", "C1_COOPERATIVE_COMPACT")
 SECONDARY_COMPARISONS: tuple[tuple[str, str, str], ...] = (
     (
@@ -157,7 +160,7 @@ FINAL_CONTROLLER_PAIRS: tuple[tuple[str, str], ...] = (
     *((baseline, treatment) for baseline, treatment, _ in SECONDARY_COMPARISONS),
 )
 
-# --- Statistics ---------------------------------------------------------------------------------
+# --- Estatística ---------------------------------------------------------------------------------
 ANALYSIS_BOOTSTRAP_SEED = 20260910
 REFERENCE_ROUTE_BOOTSTRAP_BASE_SEED = rr.BOOTSTRAP_BASE_SEED
 BOOTSTRAP_RESAMPLES = 10_000
@@ -217,12 +220,12 @@ METHODOLOGY_DOCS: tuple[Path, ...] = (
     Path("docs/methodology/fixed-time-calibration.md"),
 )
 
-# Source files that define scientific behaviour. The replay package (presentation only) and this
-# tooling module are tracked separately.
+# Arquivos-fonte que definem o comportamento científico. O pacote replay (apenas apresentação) e
+# este módulo de ferramentas são rastreados separadamente.
 
 
 class FinalFreezeError(ValueError):
-    """Raised when the final campaign specification is inconsistent."""
+    """Lançada quando a especificação da campanha final é inconsistente."""
 
 
 @dataclass(frozen=True)
@@ -279,7 +282,7 @@ def _drop_label(drop_probability: float) -> str:
 def s5_runs() -> tuple[FinalRun, ...]:
     runs: list[FinalRun] = []
     for seed in FINAL_SEEDS:
-        # B2 does not use communication: ONE reference run per seed.
+        # B2 não usa comunicação: UMA execução de referência por seed.
         runs.append(
             FinalRun(
                 campaign=S5_EXPERIMENT_ID,
@@ -384,7 +387,7 @@ def write_final_configs(repo_root: Path) -> tuple[Path, Path]:
     return main_path, s5_path
 
 
-# --- Statistical plan ---------------------------------------------------------------------------
+# --- Plano estatístico ---------------------------------------------------------------------------
 def statistical_plan() -> dict[str, Any]:
     return {
         "schema_version": FREEZE_SCHEMA_VERSION,
@@ -431,7 +434,7 @@ def statistical_plan() -> dict[str, Any]:
     }
 
 
-# --- Validation (no simulation) -----------------------------------------------------------------
+# --- Validação (sem simulação) -----------------------------------------------------------------
 def _load_config(path: Path) -> ExperimentConfig:
     return load_experiment_config(path)
 
@@ -459,7 +462,7 @@ def _duplicates(values: Iterable[object]) -> list[object]:
 
 
 def validate_final_campaign(repo_root: Path) -> dict[str, Any]:
-    """Verify the frozen configs against this module without running any simulation."""
+    """Verifica as configs congeladas contra este módulo sem executar nenhuma simulação."""
 
     problems: list[str] = []
     scenario_dir = repo_root / SCENARIO_DIR_RELATIVE
@@ -588,7 +591,8 @@ def _validate_metric_identity() -> list[str]:
     return [f"canonical metric not defined: {name}" for name in missing]
 
 
-# --- Hashes -------------------------------------------------------------------------------------
+# --- Hashes (resumos criptográficos)
+# -------------------------------------------------------------------------------------
 def metric_definitions_sha256() -> str:
     return json_sha256(
         {
@@ -637,7 +641,7 @@ def _file_hashes(repo_root: Path, relative: Path | str, *, semantic: bool = Fals
 
 
 def replay_tree_sha256(repo_root: Path) -> str:
-    """Canonical fingerprint of the replay tooling (presentation only, outside the science)."""
+    """Impressão digital canônica das ferramentas de replay (só apresentação, fora da ciência)."""
 
     files = sorted(
         {
@@ -653,8 +657,9 @@ def replay_tree_sha256(repo_root: Path) -> str:
     return fingerprint_entries(_file_hashes(repo_root, path) for path in files)
 
 
-# --- Scientific file set (SCIENTIFIC_TREE_SHA256) ------------------------------------------------
-# Freeze/replay tooling is excluded so the scientific fingerprint never depends on its verifier.
+# --- Conjunto de arquivos científicos (SCIENTIFIC_TREE_SHA256) -----------------------------------
+# As ferramentas de freeze/replay são excluídas para que a impressão digital científica nunca
+# dependa do seu verificador.
 FREEZE_TOOLING_FILES: tuple[str, ...] = (
     "src/traffic_agents/experiments/final_freeze.py",
     "src/traffic_agents/experiments/freeze_hashing.py",
@@ -676,16 +681,17 @@ def route_metadata_file_name(scenario_base: str, seed: int) -> str:
 
 
 def scientific_spec() -> ScientificSpec:
-    """Exactly which files make up the scientific tree (authoritative inclusion rules).
+    """Exatamente quais arquivos compõem a árvore científica (regras de inclusão autoritativas).
 
-    Included: all scientific source (``src/traffic_agents`` and ``analysis``), the two final
-    configs, the B0 plan, the network and its metadata, the scenario template, every final
-    scenario x seed scenario YAML / route file (canonical text hash) and route metadata (semantic
-    hash, ``generated_at`` excluded), the scenario/route generators, ``pyproject.toml`` and
+    Incluídos: todo o código-fonte científico (``src/traffic_agents`` e ``analysis``), as duas
+    configs finais, o plano B0, a rede e seus metadados, o template de cenário, todo YAML de
+    cenário x seed final / arquivo de rotas (hash de texto canônico) e metadados de rota (hash
+    semântico, ``generated_at`` excluído), os geradores de cenário/rota, ``pyproject.toml`` e
     ``uv.lock``.
 
-    Excluded: replay package, freeze tooling modules, tests, docs, evidence, ``artifacts/``,
-    caches, GUI-only files (``viewsettings.xml``) and every file not used by a final run.
+    Excluídos: pacote replay, módulos de ferramentas de freeze, testes, docs, evidências,
+    ``artifacts/``, caches, arquivos apenas de GUI (``viewsettings.xml``) e todo arquivo não
+    usado por uma execução final.
     """
 
     scenario_dir = SCENARIO_DIR_RELATIVE.as_posix()
@@ -749,7 +755,7 @@ SCENARIO_INPUT_COLUMNS: tuple[str, ...] = (
 
 
 def scenario_input_rows(repo_root: Path) -> list[dict[str, object]]:
-    """Per scenario x seed hashes. Canonical/semantic ones are the cross-platform authorities."""
+    """Hashes por cenário x seed. Os canônicos/semânticos são as autoridades multiplataforma."""
 
     scenario_dir = repo_root / SCENARIO_DIR_RELATIVE
     rows: list[dict[str, object]] = []
@@ -810,7 +816,7 @@ SCIENTIFIC_TREE_COLUMNS: tuple[str, ...] = (
 
 
 def run_matrix_rows(repo_root: Path) -> list[dict[str, object]]:
-    """One row per final run; ``scenario_neutral_sha256`` ignores the controller id."""
+    """Uma linha por execução final; ``scenario_neutral_sha256`` ignora o id do controlador."""
 
     scenario_dir = repo_root / SCENARIO_DIR_RELATIVE
     route_hash_cache: dict[str, str | None] = {}
@@ -861,7 +867,7 @@ def write_csv(path: Path, columns: Sequence[str], rows: Iterable[Mapping[str, ob
         writer.writerows(rows)
 
 
-# --- Environment / git --------------------------------------------------------------------------
+# --- Ambiente / git --------------------------------------------------------------------------
 def _git(repo_root: Path, *args: str) -> str | None:
     completed = subprocess.run(
         ["git", "-C", str(repo_root), *args], capture_output=True, text=True, check=False
@@ -913,18 +919,18 @@ def environment_record(repo_root: Path) -> dict[str, Any]:
     }
 
 
-# --- Manifest -----------------------------------------------------------------------------------
+# --- Manifesto -----------------------------------------------------------------------------------
 def build_freeze_manifest(
     repo_root: Path,
     *,
     generated_at: str,
     preconditions: FreezePreconditions,
 ) -> dict[str, Any]:
-    """Assemble the freeze manifest from inputs inspected under ``preconditions``.
+    """Monta o manifesto do freeze a partir de entradas inspecionadas sob ``preconditions``.
 
-    The caller (``generate_definitive_freeze``) must have verified ``preconditions.ok``; the
-    manifest records the observed state either way so it can never claim a clean inspection that
-    did not happen.
+    O chamador (``generate_definitive_freeze``) deve ter verificado ``preconditions.ok``; o
+    manifesto registra o estado observado em qualquer caso, de modo que nunca pode alegar uma
+    inspeção limpa que não ocorreu.
     """
 
     scenario_dir = repo_root / SCENARIO_DIR_RELATIVE
@@ -1163,7 +1169,9 @@ def write_freeze_evidence(
     manifest: Mapping[str, Any],
     preconditions: FreezePreconditions,
 ) -> list[Path]:
-    """Write the manifest (artifacts + versioned copy), evidence tables and manifest checksums."""
+    """Grava o manifesto (artefatos + cópia versionada), as tabelas de evidência e os checksums do
+    manifesto.
+    """
 
     written: list[Path] = []
     text = json.dumps(manifest, indent=2, sort_keys=True) + "\n"
@@ -1172,7 +1180,7 @@ def write_freeze_evidence(
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8", newline="\n")
         written.append(path)
-        # The manifest never contains its own hash; it lives in a sibling checksum file.
+        # O manifesto nunca contém o próprio hash; ele fica em um arquivo de checksum irmão.
         written.append(write_manifest_checksum(path))
     docs = repo_root / FREEZE_DOCS_DIR
     write_csv(docs / "run-matrix.csv", RUN_MATRIX_COLUMNS, run_matrix_rows(repo_root))
@@ -1200,15 +1208,17 @@ def write_freeze_evidence(
 
 
 class FreezePreconditionError(FinalFreezeError):
-    """Raised when the definitive freeze cannot be generated from the current repository state."""
+    """Lançada quando o freeze definitivo não pode ser gerado a partir do estado atual do
+    repositório.
+    """
 
 
 def reject_historical_b0(labels: Sequence[str]) -> None:
-    """The final analysis must name ``B0_FIXED_CALIBRATED`` explicitly.
+    """A análise final deve nomear ``B0_FIXED_CALIBRATED`` explicitamente.
 
-    ``analysis/statistics.py`` still maps the bare alias ``B0`` to the historical ``B0_FIXED``
-    (that file is part of the frozen scientific source, so it is not edited); final inputs and
-    comparisons are therefore checked here instead.
+    ``analysis/statistics.py`` ainda mapeia o alias simples ``B0`` para o histórico ``B0_FIXED``
+    (esse arquivo faz parte do código-fonte científico congelado, portanto não é editado); as
+    entradas e comparações finais são, por isso, verificadas aqui.
     """
 
     forbidden = [*HISTORICAL_CONTROLLERS, "B0"]
@@ -1224,11 +1234,11 @@ def generate_definitive_freeze(
     generated_at: str,
     scientific_source_sha: str,
 ) -> tuple[list[Path], FreezePreconditions]:
-    """Definitive generation flow. Nothing is written unless every precondition holds.
+    """Fluxo de geração definitivo. Nada é gravado a menos que todas as pré-condições valham.
 
-    1. clean working tree; 2. scientific source SHA is an ancestor of HEAD; 3. scientific tree
-    computed and compared with the source commit's tree; 4. inputs inspected while clean;
-    5. evidence written afterwards.
+    1. árvore de trabalho limpa; 2. SHA-fonte científico é ancestral de HEAD; 3. árvore científica
+    calculada e comparada com a árvore do commit-fonte; 4. entradas inspecionadas enquanto
+    limpa; 5. evidências gravadas depois.
     """
 
     preconditions = check_freeze_preconditions(repo_root, scientific_spec(), scientific_source_sha)
@@ -1249,8 +1259,8 @@ def verify_freeze_manifest(
     *,
     scientific_source_sha: str | None = None,
 ) -> list[str]:
-    """Verify a schema-2 manifest: git identity (source SHA from the manifest or the caller)
-    plus every cross-platform hash. Returns the list of mismatches."""
+    """Verifica um manifesto schema 2: identidade git (SHA-fonte do manifesto ou do chamador)
+    mais todo hash multiplataforma. Retorna a lista de divergências."""
 
     path = manifest_path or repo_root / FREEZE_DOCS_DIR / MANIFEST_FILE_NAME
     recorded = json.loads(path.read_text(encoding="utf-8"))
@@ -1280,7 +1290,7 @@ def verify_freeze_manifest(
 
 
 def verify_manifest_hashes(repo_root: Path, recorded: Mapping[str, Any]) -> list[str]:
-    """Recompute the cross-platform hashes recorded in a schema-2 manifest (no git access)."""
+    """Recalcula os hashes multiplataforma de um manifesto schema 2 (sem acesso ao git)."""
 
     problems: list[str] = []
 

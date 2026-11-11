@@ -1,4 +1,4 @@
-"""Agent communication primitives."""
+"""Primitivas de comunicação entre agentes."""
 
 from traffic_agents.communication.compact_message import (
     CompactNeighborMessageConfig,

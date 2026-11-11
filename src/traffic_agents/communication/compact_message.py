@@ -15,7 +15,7 @@ FULL_OCCUPANCY = 1.0
 
 
 class CompactNeighborMessageError(ValueError):
-    """Raised when a compact C1 message cannot be built from local data."""
+    """Lançada quando uma mensagem compacta C1 não pode ser construída a partir de dados locais."""
 
 
 @dataclass(frozen=True)
@@ -150,8 +150,8 @@ class CompactNeighborMessageFactory:
             summary[movement.turn_type] += queue * self.config.turn_weight(movement.turn_type)
         return {turn_type: value for turn_type, value in summary.items() if value > 0.0}
 
-    # Historical name: the value is a current-state estimate (measured arrival rate now),
-    # not a temporal trend or forecast.
+    # Nome histórico: o valor é uma estimativa do estado atual (taxa de chegada medida agora),
+    # e não uma tendência temporal nem uma previsão.
     def _arrival_trend(
         self,
         observation: AgentObservation,

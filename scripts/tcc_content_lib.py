@@ -1,8 +1,9 @@
-"""Helpers for the TCC content generator (Prompt 65).
+"""Auxiliares do gerador de conteúdo do TCC (Prompt 65).
 
-Templates (scripts/tcc_content_templates/*.md) contain ``{{ expression }}`` markers. Each marker is
-evaluated with the helpers below; every number therefore comes from artifacts/final-analysis/ (the
-validated FINAL N=10 analysis) and every evaluation is recorded for the claims-traceability file.
+Os templates (scripts/tcc_content_templates/*.md) contêm marcadores ``{{ expressão }}``. Cada
+marcador é avaliado com os auxiliares abaixo; todo número, portanto, vem de
+artifacts/final-analysis/ (a análise FINAL N=10 validada) e toda avaliação é registrada para o
+arquivo de rastreabilidade de afirmações.
 """
 
 from __future__ import annotations
@@ -86,7 +87,7 @@ def pt(x: float, d: int = 1, sign: bool = False) -> str:
 
 
 def en(s: str) -> str:
-    """English number format for an already formatted pt-BR value (decimal point, ASCII minus sign kept as U+2212)."""
+    """Formato numérico em inglês para um valor pt-BR já formatado (ponto decimal, sinal de menos mantido como U+2212)."""
     return str(s).replace(",", ".")
 
 
@@ -103,7 +104,7 @@ def _digits(m: str) -> int:
     return 3 if m in RATIO else 1
 
 
-# ---- main experiment helpers ------------------------------------------------------------------
+# ---- auxiliares do experimento principal ------------------------------------------------------------------
 def rel(scn, a, b, m, d=1):
     r = _pair(scn, a, b, m)
     return _rec(pt(float(r["relative_difference_of_means"]) * 100, d, True) + "%", artifact="final_pairwise_summary.csv", scenario=scn, comparison=f"{a}→{b}", metric=m, N=r["n_pairs"], kind="relative_difference_of_means")
@@ -191,7 +192,7 @@ def nmax(scn, c, m, d=None):
 
 
 def span(scn, m, key="mean", d=None):
-    """min–max of the 5 controller means (used for ranges)."""
+    """mín–máx das 5 médias dos controladores (usado para faixas)."""
     d = _digits(m) if d is None else d
     vals = [num(scn, c, m, key) for c in (B0, B1, B2, C1, C2)]
     fm = (lambda v: thousands(v, 0)) if d == 0 else (lambda v: pt(v, d))
@@ -203,7 +204,7 @@ def pct_not_completing(scn):
     return _rec(f"{pt(min(vals) * 100, 0)}–{pt(max(vals) * 100, 0)}%", artifact="final_controller_summary.csv", scenario=scn, comparison="B0–C2", metric="1 − completion_ratio_offered", N=10, kind="range")
 
 
-# ---- reference route -----------------------------------------------------------------------------
+# ---- rota de referência -----------------------------------------------------------------------------
 TT, CMP = "reference_route_mean_travel_time_seconds", "reference_route_completion_ratio_offered"
 
 
@@ -338,7 +339,7 @@ def bytes_msg(c, d=0):
 
 
 def s5_equal_b2():
-    """Number of (controller, seed, metric) comparisons at 100% loss that are identical to B2 (traffic metrics)."""
+    """Número de comparações (controlador, seed, métrica) com 100% de perda idênticas ao B2 (métricas de tráfego)."""
     tr = {}
     for r in pq.read_table(A / "s5_results.parquet").to_pylist():
         tr[(r["controller"], int(r["seed"]), r["packet_loss"], r["metric"])] = r["value"]
@@ -356,7 +357,7 @@ def s5_equal_b2():
     return n, bad
 
 
-# ---- teleports ----------------------------------------------------------------------------------------
+# ---- teletransportes ----------------------------------------------------------------------------------------
 def tele(c=None, what="total"):
     t = ANALYSIS["s4_teleports"]["per_controller"]
     if c is None:
@@ -368,7 +369,7 @@ def tele(c=None, what="total"):
     return _rec(f"{out:.0f}", artifact="final_analysis.json (s4_teleports)", scenario=S4, comparison=c or "todos", metric="sumo_teleports_total", N=10 if c else 50, kind=what)
 
 
-# ---- pilot vs final -----------------------------------------------------------------------------------
+# ---- piloto vs final -----------------------------------------------------------------------------------
 def pvf(scn, m, field, d=1, pct_=False):
     r = next(x for x in PVF if x["scenario"] == scn and x["metric"] == m)
     v = float(r[field])
@@ -401,7 +402,7 @@ def width_ratio(scn, m="throughput", d=2):
     return _rec(pt(float(r["ci_width_ratio_final_over_pilot"]), d), artifact="pilot_vs_final.csv", scenario=scn, comparison="final/piloto", metric=m, N="5/10", kind="ci_width_ratio")
 
 
-# ---- run counts / validation -----------------------------------------------------------------------------
+# ---- contagens de execuções / validação -----------------------------------------------------------------------------
 def val(key):
     return _rec(str(VALID[key]), artifact="analysis-validation.json", scenario="—", comparison="—", metric=key, N=290, kind="validation")
 
@@ -410,7 +411,7 @@ def tests(key):
     return _rec(str(TESTS.get(key, "n/d")), artifact="artifacts/tcc-content-validation/test_counts.json", scenario="—", comparison="—", metric=key, N="—", kind="validation")
 
 
-# ---- tables -------------------------------------------------------------------------------------------------
+# ---- tabelas -------------------------------------------------------------------------------------------------
 def md_table(header: list[str], rows: list[list[str]]) -> str:
     out = ["| " + " | ".join(header) + " |", "|" + "|".join("---" for _ in header) + "|"]
     out += ["| " + " | ".join(r) + " |" for r in rows]
@@ -500,7 +501,7 @@ def T_pilot():
     return md_table(["Cenário", "Métrica", "Piloto (N=5): Δ relativo C1 vs B2", "Final (N=10): Δ relativo C1 vs B2", "Direção persistiu", "Largura IC final/piloto"], rows)
 
 
-# ---- rendering ----------------------------------------------------------------------------------------------------
+# ---- renderização ----------------------------------------------------------------------------------------------------
 NS = {k: v for k, v in globals().items() if callable(v) or k in ("B0", "B1", "B2", "C1", "C2", "S1", "S2", "S3", "S4", "SCEN", "CT", "CT_PT", "SC_PT", "MET_PT", "TESTS", "VALID", "ANALYSIS")}
 PATTERN = re.compile(r"\{\{(.+?)\}\}", re.DOTALL)
 
@@ -517,7 +518,7 @@ def render(text: str, source: str) -> str:
     return PATTERN.sub(repl, text)
 
 
-# ---- figure / table placement -------------------------------------------------------------------------------
+# ---- posicionamento de figuras / tabelas -------------------------------------------------------------------------------
 PLACEMENT = {
     "FIG01_FINAL_OVERVIEW": ("3.2 Rede e visão geral do experimento", "Metodologia", "Visão geral: rede 3×3, 5 controladores, 4 cenários, 10 seeds, S5 e 290 execuções."),
     "FIG02_MAIN_CONTROLLER_OVERVIEW": ("6.1 Visão geral", "Resultados", "Médias finais por controlador e cenário (vazão, conclusão, espera, fila)."),

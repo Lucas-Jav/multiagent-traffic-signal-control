@@ -18,13 +18,13 @@ class TrafficLightConnection(Protocol):
 
 @dataclass(frozen=True)
 class TrafficLightActuator:
-    """Applies phase commands after PhaseSafetyManager has resolved them.
+    """Aplica comandos de fase depois que o PhaseSafetyManager os resolveu.
 
-    ``SET_PHASE`` switches to the next phase of the SUMO program (yellow/all-red
-    sequencing is decided by the safety manager). ``KEEP_PHASE`` with a hold time
-    extends the remaining duration of the current green through the TraCI
-    phase-duration mechanism, so a green can outlive SUMO's static program
-    duration until ``max_green``. Raw signal states are never manipulated.
+    ``SET_PHASE`` passa para a próxima fase do programa SUMO (a sequência de amarelo/vermelho
+    total é decidida pelo gerenciador de segurança). ``KEEP_PHASE`` com tempo de retenção
+    estende a duração restante do verde atual pelo mecanismo de duração de fase do TraCI, de
+    modo que um verde pode ultrapassar a duração do programa estático do SUMO até o
+    ``max_green``. Estados brutos de sinal nunca são manipulados.
     """
 
     trafficlight: TrafficLightApi

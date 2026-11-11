@@ -27,10 +27,10 @@ PHASE_MIN_GREEN_SECONDS = 10.0
 PHASE_YELLOW_SECONDS = 3.0
 PHASE_ALL_RED_SECONDS = 2.0
 PHASE_MAX_GREEN_SECONDS = 60.0
-# Only used by apply_protected_turn_phases, which rewrites phases that contain permissive
-# lowercase "g" signals. The incoming-layout grid from netgenerate has only protected "G"
-# approach greens, so these constants are DORMANT for grid_3x3 and are not recorded in
-# metadata.json. The actual green durations (18/20/20/20 s) are netgenerate defaults.
+# Usadas apenas por apply_protected_turn_phases, que reescreve fases que contêm sinais "g"
+# permissivos em minúsculas. A grade de layout de entrada do netgenerate tem apenas verdes de
+# aproximação "G" protegidos, então estas constantes ficam INATIVAS para grid_3x3 e não são
+# registradas em metadata.json. As durações reais de verde (18/20/20/20 s) são padrões do netgenerate.
 PROTECTED_THROUGH_GREEN_SECONDS = 32.0
 PROTECTED_TURN_GREEN_SECONDS = 10.0
 TRAFFIC_LIGHT_PROGRAM_SOURCE = "netgenerate_default_static_incoming_layout"
@@ -378,7 +378,7 @@ def normalize_generated_network_header(network_path: Path) -> None:
 
 
 def read_program_timing(network_path: Path) -> dict[str, object]:
-    """Describe the static fixed-time program actually stored in the generated network."""
+    """Descreve o programa estático de tempo fixo realmente armazenado na rede gerada."""
     root = ET.parse(network_path).getroot()
     programs = root.findall("tlLogic")
     if not programs:

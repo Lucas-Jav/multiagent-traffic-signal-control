@@ -1,4 +1,4 @@
-"""Simulation abstractions."""
+"""Abstrações de simulação."""
 
 from traffic_agents.simulation.sumo_environment import (
     EXPECTED_SUMO_VERSION,

@@ -1,4 +1,4 @@
-"""Configuration helpers."""
+"""Auxiliares de configuração."""
 
 from traffic_agents.config.scenario import (
     CommunicationConfig,

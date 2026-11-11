@@ -41,7 +41,7 @@ def _lf(data: bytes) -> bytes:
     return data.replace(b"\r\n", b"\n")
 
 
-# --- canonical text hash ------------------------------------------------------------------------
+# --- hash de texto canônico -----------------------------------------------------------------------
 def test_lf_and_crlf_have_different_raw_but_equal_canonical_hashes() -> None:
     lf = b"a: 1\nb: 2\n"
     crlf = b"a: 1\r\nb: 2\r\n"
@@ -60,10 +60,10 @@ def test_content_change_changes_canonical_hash() -> None:
 @pytest.mark.parametrize(
     ("original", "changed"),
     [
-        (b"a: 1\n", b"a: 1 \n"),  # trailing space is content
-        (b"a: 1\n", b"a: 1"),  # final newline is content
-        (b"a:\n  b: 1\n", b"a:\n    b: 1\n"),  # indentation is content
-        (b"a: 1\n\nb: 2\n", b"a: 1\nb: 2\n"),  # blank lines are content
+        (b"a: 1\n", b"a: 1 \n"),  # espaço no fim é conteúdo
+        (b"a: 1\n", b"a: 1"),  # nova linha final é conteúdo
+        (b"a:\n  b: 1\n", b"a:\n    b: 1\n"),  # indentação é conteúdo
+        (b"a: 1\n\nb: 2\n", b"a: 1\nb: 2\n"),  # linhas em branco são conteúdo
     ],
 )
 def test_only_line_endings_are_normalised(original: bytes, changed: bytes) -> None:
@@ -117,7 +117,7 @@ def test_text_files_keep_both_hashes() -> None:
     assert hashes.authoritative == hashes.canonical_sha256
 
 
-# --- real files: LF <-> CRLF copies -------------------------------------------------------------
+# --- arquivos reais: cópias LF <-> CRLF -----------------------------------------------------------
 REAL_FILES = [
     SCENARIO_DIR / "network.net.xml",
     SCENARIO_DIR / "routes_s4_seed_42.rou.xml",
@@ -148,7 +148,7 @@ def test_b0_plan_hashes_are_exposed_and_content_is_unchanged() -> None:
     assert raw_byte_sha256(data) in {raw_byte_sha256(_crlf(data)), raw_byte_sha256(_lf(data))}
 
 
-# --- semantic metadata hash ---------------------------------------------------------------------
+# --- hash semântico de metadados ------------------------------------------------------------------
 def _metadata_bytes() -> bytes:
     return (SCENARIO_DIR / "routes_s3_seed_6841.metadata.json").read_bytes()
 
@@ -157,7 +157,7 @@ def test_semantic_hash_ignores_only_generated_at() -> None:
     payload = json.loads(_metadata_bytes())
     changed = dict(payload, generated_at="1999-01-01T00:00:00Z")
     a = json.dumps(payload, indent=2).encode()
-    b = json.dumps(changed, indent=4).encode()  # different formatting too
+    b = json.dumps(changed, indent=4).encode()  # formatação diferente também
     assert raw_byte_sha256(a) != raw_byte_sha256(b)
     assert semantic_metadata_sha256(a) == semantic_metadata_sha256(b)
     removed = {k: v for k, v in payload.items() if k != "generated_at"}
@@ -235,7 +235,9 @@ def test_semantic_hash_is_stable_across_line_endings() -> None:
 
 
 def test_regenerated_extension_seed_metadata_differs_only_by_generated_at(tmp_path: Path) -> None:
-    """Regenerate in a temp dir (never in the repo) and compare with the committed files."""
+    """Regenera em um diretório temporário (nunca no repositório) e compara com os arquivos
+    commitados.
+    """
 
     sys.path.insert(0, str(REPO / "scripts"))
     try:
@@ -251,8 +253,9 @@ def test_regenerated_extension_seed_metadata_differs_only_by_generated_at(tmp_pa
             name = ff.route_metadata_file_name(scenario, seed)
             committed = (SCENARIO_DIR / name).read_bytes()
             regenerated = (tmp_path / name).read_bytes()
-            # the generator now also records raw/canonical artifact hashes (Prompt 59.1C); apart
-            # from those fields and the line-ending dependent raw hashes the identity is equal
+            # o gerador agora também registra hashes brutos/canônicos de artefatos (Prompt 59.1C);
+            # fora
+            # esses campos e os hashes brutos dependentes de quebra de linha, a identidade é igual
             ignored = {
                 "route_hash",
                 "network_hash",
@@ -269,7 +272,7 @@ def test_regenerated_extension_seed_metadata_differs_only_by_generated_at(tmp_pa
                 comparable[1]
             ), name
             assert json.loads(committed)["generated_at"] != json.loads(regenerated)["generated_at"]
-            # the scientific route files themselves are identical
+            # os próprios arquivos científicos de rota são idênticos
             route = ff.route_file_name(scenario, seed)
             assert canonical_sha256((SCENARIO_DIR / route).read_bytes()) == canonical_sha256(
                 (tmp_path / route).read_bytes()
@@ -278,7 +281,7 @@ def test_regenerated_extension_seed_metadata_differs_only_by_generated_at(tmp_pa
     assert compared == 20
 
 
-# --- scientific tree ----------------------------------------------------------------------------
+# --- árvore científica ----------------------------------------------------------------------------
 def _entry(path: str, content: bytes = b"x\n") -> FileHashes:
     return hash_file_bytes(path, content)
 
@@ -358,8 +361,9 @@ def test_scientific_tree_of_the_working_tree_is_deterministic() -> None:
 
 
 def test_experiment_freeze_module_belongs_to_the_scientific_tree() -> None:
-    """freeze.py runs inside ExperimentRunner (validate + run-manifest fields): it is execution
-    code, so by the documented rule it is part of the scientific tree, unlike the freeze tooling."""
+    """freeze.py roda dentro do ExperimentRunner (validação + campos do manifesto de execução): é
+    código de execução, então pela regra documentada faz parte da árvore científica, ao contrário
+    das ferramentas de freeze."""
 
     paths = ff.scientific_spec().paths(WorkingTreeSource(REPO))
     assert "src/traffic_agents/experiments/freeze.py" in paths
@@ -369,7 +373,7 @@ def test_experiment_freeze_module_belongs_to_the_scientific_tree() -> None:
     assert "src/traffic_agents/experiments/final_freeze.py" not in paths
 
 
-# --- git preconditions in a throw-away repository -----------------------------------------------
+# --- pré-condições do git em um repositório descartável -------------------------------------------
 def _git(repo: Path, *args: str) -> str:
     completed = subprocess.run(
         [
@@ -524,7 +528,7 @@ def test_missing_required_scientific_file_is_an_error(tmp_path: Path) -> None:
         compute_scientific_tree(spec, WorkingTreeSource(tmp_path))
 
 
-# --- definitive generation flow -----------------------------------------------------------------
+# --- fluxo de geração definitivo -----------------------------------------------------------------
 def _preconditions(**overrides: object) -> FreezePreconditions:
     tree = compute_scientific_tree(ff.scientific_spec(), WorkingTreeSource(REPO))
     values: dict[str, object] = {
@@ -583,7 +587,7 @@ def test_generation_passes_the_supplied_sha_to_the_preconditions(
     assert seen == ["abc1234"]
 
 
-# --- source SHA validation (throw-away repositories) ----------------------------------------------
+# --- validação do SHA-fonte (repositórios descartáveis) -------------------------------------------
 def test_nonexistent_source_sha_is_rejected(mini_repo: tuple[Path, ScientificSpec, str]) -> None:
     repo, spec, _ = mini_repo
     for bogus in ("deadbeef" * 5, "abc1234", "not-a-sha", "HEAD", "--help", ""):
@@ -625,7 +629,7 @@ def test_evidence_only_descendant_is_valid_after_the_freeze_commit(
 def test_new_source_commit_supersedes_the_old_one(
     mini_repo: tuple[Path, ScientificSpec, str],
 ) -> None:
-    """After a scientific change, the OLD sha is rejected and the NEW commit's sha is valid."""
+    """Após uma mudança científica, o SHA ANTIGO é rejeitado e o SHA do NOVO commit é válido."""
 
     repo, spec, old = mini_repo
     (repo / "src" / "science.py").write_text("VALUE = 2\n", encoding="utf-8", newline="\n")
@@ -668,7 +672,7 @@ def test_cli_requires_a_source_sha_and_rejects_a_bogus_one(
     assert "does not exist" in capsys.readouterr().err
 
 
-# --- historical B0 safety -----------------------------------------------------------------------
+# --- segurança do B0 histórico --------------------------------------------------------------------
 def test_final_comparisons_use_explicit_calibrated_b0() -> None:
     from analysis.statistics import CONTROLLER_ALIASES, DEFAULT_CONTROLLER_PAIRS
 
@@ -677,7 +681,7 @@ def test_final_comparisons_use_explicit_calibrated_b0() -> None:
     assert controllers.isdisjoint({"B0", *ff.HISTORICAL_CONTROLLERS})
     assert tuple(DEFAULT_CONTROLLER_PAIRS) == ff.FINAL_CONTROLLER_PAIRS
     ff.reject_historical_b0(sorted(controllers))
-    # the historical alias still exists in the (frozen) analysis code, hence the guard below
+    # o alias histórico ainda existe no código de análise (congelado), daí a salvaguarda abaixo
     assert CONTROLLER_ALIASES["B0"] == "B0_FIXED"
 
 

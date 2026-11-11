@@ -147,7 +147,7 @@ CONTROLLER_ALIASES: Mapping[str, str] = {
 
 
 class ReportGenerationError(ValueError):
-    """Raised when scientific figures cannot be generated from result files."""
+    """Lançada quando figuras científicas não podem ser geradas dos arquivos de resultado."""
 
 
 @dataclass(frozen=True)

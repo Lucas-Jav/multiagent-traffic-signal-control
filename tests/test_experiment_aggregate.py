@@ -106,7 +106,7 @@ def test_combined_metrics_are_built_from_finalized_runs_only(tmp_path: Path) -> 
     }
     assert all(row["status"] == "COMPLETED" and row["success"] is True for row in rows)
     assert all(row["scenario"] == "S1_BALANCED" and row["seed"] == 42 for row in rows)
-    # The paired analysis consumes the file without further preparation.
+    # A análise pareada consome o arquivo sem preparação adicional.
     normalized = _normalize_records(rows)
     assert len(normalized) == len(rows)
     assert {row["route_hash"] for row in normalized} == {"route"}

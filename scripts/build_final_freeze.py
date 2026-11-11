@@ -1,13 +1,14 @@
-"""Generate or verify the definitive final-campaign freeze (no simulations are run).
+"""Gera ou verifica o freeze definitivo da campanha final (nenhuma simulação é executada).
 
     python scripts/build_final_freeze.py --scientific-source-sha <SHA> --check
-    python scripts/build_final_freeze.py --scientific-source-sha <SHA>          # generate
+    python scripts/build_final_freeze.py --scientific-source-sha <SHA>          # gera
     python scripts/build_final_freeze.py --verify [--scientific-source-sha <SHA>]
 
-The scientific source commit SHA is never hardcoded: it cannot be known before that commit exists,
-so it is supplied explicitly and validated. It must exist, be an ancestor of HEAD (HEAD itself is
-valid, and so is a later evidence-only descendant), and its scientific tree must equal the current
-one; the working tree must be clean. The frozen configs are never rewritten.
+O SHA do commit-fonte científico nunca é fixado no código: não pode ser conhecido antes de esse
+commit existir, então é informado explicitamente e validado. Deve existir, ser ancestral de HEAD
+(o próprio HEAD é válido, assim como um descendente posterior que só tenha evidências) e sua árvore
+científica deve ser igual à atual; a árvore de trabalho deve estar limpa. As configs congeladas
+nunca são reescritas.
 """
 
 from __future__ import annotations

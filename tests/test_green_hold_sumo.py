@@ -117,7 +117,7 @@ def _run_controller(
 
 
 def _green_lengths(series: list[tuple[int, float]]) -> list[int]:
-    """Length in seconds of every green phase that started and ended inside the run."""
+    """Duração em segundos de toda fase verde que começou e terminou dentro da execução."""
     green = {0, 3, 6, 9}
     lengths: list[int] = []
     current: int | None = None
@@ -141,18 +141,20 @@ def test_adaptive_controller_holds_green_beyond_twenty_seconds_up_to_max_green(
 
     all_lengths = [length for series in observed.values() for length in _green_lengths(series)]
     assert all_lengths, "expected completed green phases"
-    # SUMO's static program keeps greens at 18/20 s; KEEP_PHASE must hold them longer.
+    # O programa estático do SUMO mantém verdes em 18/20 s; KEEP_PHASE deve mantê-los por mais
+    # tempo.
     assert max(all_lengths) > 20
-    # ... but never beyond the configured max_green (one step of observation slack).
+    # ... mas nunca além do max_green configurado (um passo de folga de observação).
     assert max(all_lengths) <= MAX_GREEN + 1
-    # yellow/all-red are preserved: after any green comes the next program phase.
+    # amarelo/vermelho total são preservados: após qualquer verde vem a próxima fase do programa.
     for series in observed.values():
         previous = None
         for phase, _spent in series:
             if previous is not None and phase != previous:
                 assert phase == (previous + 1) % 12
             previous = phase
-    # the debug telemetry switch gates only record building, not phase control
+    # a chave de telemetria de depuração controla apenas a montagem de registros, não o controle de
+    # fase
     assert controller.pop_step_telemetry_records() == ()
 
 

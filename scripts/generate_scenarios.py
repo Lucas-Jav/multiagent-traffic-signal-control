@@ -1,22 +1,22 @@
-"""Generate the V1 scenario YAMLs (S1-S4) and their seeded route artifacts.
+"""Gera os YAMLs de cenário V1 (S1-S4) e seus artefatos de rota com seed.
 
-The scenario definitions live here so the repository artifacts are reproducible:
+As definições dos cenários vivem aqui para que os artefatos do repositório sejam reproduzíveis:
 
     uv run python scripts/generate_scenarios.py
 
-For every scenario and every seed of the fixed V1 seed pool this writes
-``scenario_<profile>_seed_<seed>.yaml``, ``routes_<sN>_seed_<seed>.rou.xml`` and the route
-metadata; the seed-42 scenario is also written as the scenario's base file
-(``scenario.yaml`` for S1).
+Para cada cenário e cada seed do pool fixo de seeds V1, grava
+``scenario_<profile>_seed_<seed>.yaml``, ``routes_<sN>_seed_<seed>.rou.xml`` e os metadados de
+rota; o cenário da seed 42 também é gravado como arquivo-base do cenário (``scenario.yaml`` para
+o S1).
 
-All scenarios share the timing of the approved protocol: 300 s warmup, 3600 s measurement,
-1 s steps (total 3900 s). S3 places its shock at 50% of the MEASUREMENT window
-(300 + 3600 / 2 = 2100 s of simulation time).
+Todos os cenários compartilham o timing do protocolo aprovado: 300 s de warmup, 3600 s de
+medição, passos de 1 s (total 3900 s). O S3 coloca seu choque em 50% da janela de MEDIÇÃO
+(300 + 3600 / 2 = 2100 s de tempo de simulação).
 
-Demand intensities are the ``CALIBRATED`` parameters below (Prompt 46.7). They were selected
-with ``scripts/calibrate_scenarios.py`` using only ``B0_FIXED`` and dedicated calibration seeds,
-by predeclared controller-independent criteria (see the calibration artifacts). They must not
-be tuned from controller results.
+As intensidades de demanda são os parâmetros ``CALIBRATED`` abaixo (Prompt 46.7). Foram
+selecionadas com ``scripts/calibrate_scenarios.py`` usando apenas ``B0_FIXED`` e seeds de
+calibração dedicadas, por critérios pré-declarados independentes do controlador (ver os
+artefatos de calibração). Não devem ser ajustadas a partir de resultados de controladores.
 """
 
 from __future__ import annotations
@@ -56,21 +56,21 @@ Rates = dict[str, float]
 
 @dataclass(frozen=True)
 class DemandParameters:
-    """The only calibrated degrees of freedom: border entry rates (veh/h, MEDIUM level)."""
+    """Os únicos graus de liberdade calibrados: taxas de entrada de borda (veíc/h, nível MEDIUM)."""
 
-    s1_rate: float  # every one of the 12 borders
-    s2_dominant_rate: float  # each west border; every other border gets dominant / 12
-    s3_shock_rate: float  # each west border, added on top of the S1 base rate
-    s4_scale: float  # multiplies S4 background (40) and hotspot (110) veh/h per border
+    s1_rate: float  # cada uma das 12 bordas
+    s2_dominant_rate: float  # cada borda oeste; toda outra borda recebe dominante / 12
+    s3_shock_rate: float  # cada borda oeste, somada à taxa base do S1
+    s4_scale: float  # multiplica o fundo (40) e o hotspot (110) veíc/h do S4 por borda
 
 
 S4_BACKGROUND_RATE = 40.0
 S4_HOTSPOT_RATE = 110.0
-S2_RESIDUAL_DIVISOR = 12.0  # offered dominant share = 3d / (3d + 9d/12) = 0.80
+S2_RESIDUAL_DIVISOR = 12.0  # participação dominante ofertada = 3d / (3d + 9d/12) = 0,80
 
-# Calibrated levels (Prompt 46.7, artifacts/calibration/pilot_v2-scenario-calibration): highest
-# grid candidate satisfying every predeclared, controller-independent criterion on all three
-# calibration seeds (101, 1009, 2029), observed with B0_FIXED only.
+# Níveis calibrados (Prompt 46.7, artifacts/calibration/pilot_v2-scenario-calibration): maior
+# candidato da grade que satisfaz todo critério pré-declarado e independente do controlador nas
+# três seeds de calibração (101, 1009, 2029), observado apenas com B0_FIXED.
 CALIBRATED = DemandParameters(
     s1_rate=150.0, s2_dominant_rate=320.0, s3_shock_rate=150.0, s4_scale=2.0
 )
@@ -119,13 +119,13 @@ class ScenarioDefinition:
 
 
 def s1_entries(params: DemandParameters) -> list[dict[str, Any]]:
-    # Balanced demand from ALL 12 borders, identical rate at every entry.
+    # Demanda balanceada de TODAS as 12 bordas, taxa idêntica em cada entrada.
     return [_entry(f"base_{edge}", edge, _level_rates(params.s1_rate)) for edge in ALL_ENTRIES]
 
 
 def s2_entries(params: DemandParameters) -> list[dict[str, Any]]:
-    # West -> East directional peak: the three west border entries inject 80% of the offered
-    # demand (3d of 3d + 9d/12); the other nine borders inject a residual 20%.
+    # Pico direcional Oeste -> Leste: as três entradas de borda oeste injetam 80% da demanda
+    # ofertada (3d de 3d + 9d/12); as outras nove bordas injetam um residual de 20%.
     dominant = _level_rates(params.s2_dominant_rate)
     residual = _level_rates(params.s2_dominant_rate / S2_RESIDUAL_DIVISOR)
     entries = [
@@ -140,9 +140,9 @@ def s2_entries(params: DemandParameters) -> list[dict[str, Any]]:
 
 
 def s3_entries(params: DemandParameters) -> list[dict[str, Any]]:
-    # First half: S1-like balanced traffic. Second half: the S1 base continues and an abrupt
-    # one-border (west) directional shock is added on the three west entries; shock vehicles
-    # are routed through A5.
+    # Primeira metade: tráfego balanceado tipo S1. Segunda metade: a base do S1 continua e um
+    # choque direcional abrupto de uma borda (oeste) é somado nas três entradas oeste; os
+    # veículos do choque são roteados por A5.
     entries = [_entry(f"base_{edge}", edge, _level_rates(params.s1_rate)) for edge in ALL_ENTRIES]
     entries += [
         _entry(
@@ -161,8 +161,8 @@ def s3_entries(params: DemandParameters) -> list[dict[str, Any]]:
 
 
 def s4_entries(params: DemandParameters) -> list[dict[str, Any]]:
-    # Localized saturation: light S1-like background from every border plus hotspot demand from
-    # every border that is routed through the central intersection A5.
+    # Saturação localizada: fundo leve tipo S1 de toda borda mais demanda de hotspot de toda
+    # borda roteada pela interseção central A5.
     background = _level_rates(S4_BACKGROUND_RATE * params.s4_scale)
     hotspot = _level_rates(S4_HOTSPOT_RATE * params.s4_scale)
     entries = [_entry(f"base_{edge}", edge, background) for edge in ALL_ENTRIES]

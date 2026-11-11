@@ -1,11 +1,12 @@
-"""Official TCC visual evidence (Prompt 63): compose clips, cards and the summary video.
+"""Evidência visual oficial do TCC (Prompt 63): compõe clipes, cards e o vídeo-resumo.
 
-Reads raw SUMO screenshots captured by ``scripts/record_before_after.py --keep-frames`` (frozen replay
-pipeline, official seed 42, predeclared windows in artifacts/demos/final/summary/predeclared_plan.json)
-and re-composes them with NEUTRAL labels, the "10 seeds" disclaimer and result cards derived from the
-FINAL N=10 analysis tables. No simulation is run here and nothing scientific is modified.
+Lê capturas de tela brutas do SUMO feitas por ``scripts/record_before_after.py --keep-frames``
+(pipeline de replay congelado, seed oficial 42, janelas pré-declaradas em
+artifacts/demos/final/summary/predeclared_plan.json) e as recompõe com rótulos NEUTROS, o aviso
+de "10 seeds" e cards de resultado derivados das tabelas da análise FINAL N=10. Nenhuma simulação
+é executada aqui e nada científico é modificado.
 
-    python scripts/build_final_visuals.py compose <clip>      # e.g. s1_b0_vs_b2, reference_route/b2_vs_c1
+    python scripts/build_final_visuals.py compose <clip>      # ex.: s1_b0_vs_b2, reference_route/b2_vs_c1
     python scripts/build_final_visuals.py three-panel
     python scripts/build_final_visuals.py cards
     python scripts/build_final_visuals.py summary
@@ -63,7 +64,7 @@ ACCENT = (0, 105, 140)
 
 
 # ----------------------------------------------------------------------------------------------
-# Numbers from the FINAL N=10 analysis (never typed by hand)
+# Números da análise FINAL N=10 (nunca digitados à mão)
 # ----------------------------------------------------------------------------------------------
 def _rd(name: str) -> list[dict[str, str]]:
     with (ANALYSIS / name).open(encoding="utf-8") as fh:
@@ -114,7 +115,7 @@ TT, CMP = "reference_route_mean_travel_time_seconds", "reference_route_completio
 
 
 # ----------------------------------------------------------------------------------------------
-# Drawing helpers
+# Auxiliares de desenho
 # ----------------------------------------------------------------------------------------------
 def font(size: int, bold: bool = False):
     return overlay._font(size, bold=bold)
@@ -137,7 +138,7 @@ def wrap(draw: ImageDraw.ImageDraw, text: str, fnt, max_w: int) -> list[str]:
 
 def render_card(size: tuple[int, int], title: str, blocks: list[tuple[str, str]], footnote: str = "",
                 kicker: str = "") -> Image.Image:
-    """Academic card. blocks: (style, text) with style in {h, p, b, big, note}."""
+    """Card acadêmico. blocks: (estilo, texto) com estilo em {h, p, b, big, note}."""
 
     w, h = size
     s = h / 1080
@@ -173,7 +174,7 @@ def render_card(size: tuple[int, int], title: str, blocks: list[tuple[str, str]]
 
 
 # ----------------------------------------------------------------------------------------------
-# Result texts per clip (every number comes from the final analysis tables)
+# Textos de resultado por clipe (todo número vem das tabelas da análise final)
 # ----------------------------------------------------------------------------------------------
 def clip_card(clip: str, size: tuple[int, int]) -> Image.Image:
     base = clip.split("/")[-1]
@@ -357,7 +358,7 @@ def conclusion_card(size: tuple[int, int]) -> Image.Image:
 
 
 # ----------------------------------------------------------------------------------------------
-# Clip composition
+# Composição dos clipes
 # ----------------------------------------------------------------------------------------------
 def footer_image(width: int, scenario: str, t: float) -> Image.Image:
     f = Image.new("RGB", (width, overlay.FOOTER_HEIGHT), (33, 33, 33))
@@ -443,7 +444,7 @@ def compose_clip(clip: str, keep_frames: bool = False) -> None:
                 pipes[k].stdin.write(fr.tobytes())
             if i == thumb_idx:
                 frames["side_by_side"].save(clip_dir / "thumbnail.png")
-        # end card only on the comparison video
+        # card final apenas no vídeo de comparação
         card = clip_card(clip, (sbs_w, total_h))
         for _ in range(END_CARD_SECONDS * FPS):
             pipes["side_by_side"].stdin.write(card.tobytes())
@@ -453,7 +454,7 @@ def compose_clip(clip: str, keep_frames: bool = False) -> None:
             p.stdin.close()
         for p in pipes.values():
             p.wait()
-    # traceability
+    # rastreabilidade
     cmp.update({
         "official_seed": SEED, "seed": SEED, "official_demo_seed": True,
         "controllers": {"A_before_panel": spec["a"], "B_after_panel": spec["b"]},
@@ -515,7 +516,7 @@ def three_panel() -> None:
                     panes.append(small(overlay.compose_pane(raw, ctx, overlay.FrameState(
                         simulation_time_s=row.simulation_time_s, network_queue=row.network_queue, arrived_count=row.arrived_count),
                         shock_text=SHOCK_LABEL)))
-            # sync/identity check of the shared middle controller across the two recordings
+            # verificação de sincronia/identidade do controlador central compartilhado entre as duas gravações
             if i % 200 == 0:
                 with Image.open(frame_path(frames_dir_a, "after", i)) as x, Image.open(frame_path(frames_dir_b, "before", i)) as y:
                     sample_equal.append(x.tobytes() == y.tobytes())
@@ -527,7 +528,7 @@ def three_panel() -> None:
                 first = fr.size
             yield fr
 
-    # prime to learn the size
+    # primeira leitura para descobrir o tamanho
     gen_it = gen()
     f0 = next(gen_it)
 
@@ -572,7 +573,7 @@ def build_cards() -> None:
     s5_card(size).save(FINAL / "s5/s5_result_card.png")
     cost_card(size).save(FINAL / "s5/c1_c2_cost_card.png")
     conclusion_card(size).save(FINAL / "summary/conclusion_card.png")
-    # static videos for the S5 and cost cards (so each "video/card" also exists as mp4)
+    # vídeos estáticos para os cards de S5 e custo (assim cada "vídeo/card" também existe como mp4)
     ffmpeg = find_ffmpeg()
     for png, mp4 in (("s5/s5_result_card.png", "s5/s5_result_card.mp4"), ("s5/c1_c2_cost_card.png", "s5/c1_c2_cost_card.mp4")):
         img = Image.open(FINAL / png).convert("RGB")
@@ -652,7 +653,7 @@ def build_summary() -> None:
     add_clip("s2_b2_vs_c1", "05_s2_b2_vs_c1", 5)
     add_clip("s3_b2_vs_c1", "06_s3_b2_vs_c1", 5)
     add_clip("s4_b2_vs_c1", "07_s4_b2_vs_c1", 6)
-    # reference route: three-panel excerpt = same uniform rule
+    # rota de referência: trecho de três painéis = mesma regra uniforme
     ref_dir = FINAL / "reference_route"
     n_ref = PLAN["clips"]["reference_route/b0_vs_b2"]["end"] - PLAN["clips"]["reference_route/b0_vs_b2"]["start"]
     out = tmp / "08_reference_clip.mp4"

@@ -1,8 +1,8 @@
-"""Definitive TCC figure/table package (Prompt 64). Reads only artifacts/final-analysis/ (FINAL N=10).
+"""Pacote definitivo de figuras/tabelas do TCC (Prompt 64). Lê apenas artifacts/final-analysis/ (FINAL N=10).
 
     python scripts/build_tcc_figures.py
 
-Writes artifacts/tcc-visuals/final/. Runs no simulation; every plotted number is loaded programmatically.
+Grava artifacts/tcc-visuals/final/. Não executa simulação; todo número plotado é carregado programaticamente.
 """
 
 from __future__ import annotations
@@ -36,7 +36,7 @@ SRC_RR = ["artifacts/final-analysis/reference_route_results.parquet", "artifacts
 SRC_S5 = ["artifacts/final-analysis/s5_results.parquet", "artifacts/final-analysis/s5_pairwise.csv",
           "artifacts/final-analysis/s5_communication_summary.csv", "artifacts/final-analysis/s5_controller_summary.csv"]
 FOUR = ["throughput", "completion_ratio_offered", "mean_waiting_time", "mean_network_queue_vehicles"]
-KEEP: dict[str, str] = {}  # figure id -> png path (relative to ROOT), for subsets
+KEEP: dict[str, str] = {}  # id da figura -> caminho do png (relativo a ROOT), para subconjuntos
 SHORT_TITLE = {"throughput": "Vazão", "completion_ratio_offered": "Conclusão (oferecidos)", "mean_waiting_time": "Espera média",
                "mean_network_queue_vehicles": "Fila média da rede", "max_network_queue_vehicles": "Fila máxima da rede"}
 COND_NOTE = ("Espera, perda de tempo e tempo de viagem são condicionais às viagens concluídas; "
@@ -48,7 +48,7 @@ def spath(rel: str) -> str:
 
 
 # =============================================================================================
-# helpers
+# auxiliares
 # =============================================================================================
 def seed_dots(ax, x: float, vals: list[float], color: str, marker: str, rows: list[dict], meta: dict, *, size: float = 18) -> None:
     n = len(vals)
@@ -111,7 +111,7 @@ def forest(fid, folder, title, subtitle, pairs, metrics, base, treat, *, treat_l
 
 
 # =============================================================================================
-# FIG01 overview
+# FIG01 visão geral
 # =============================================================================================
 def fig01():
     nmain = len({k[4] if False else v["run_id"] for k, v in D.runs.items() if k[0] == "FINAL_MAIN"})
@@ -133,7 +133,7 @@ def fig01():
 
     ax.text(1, 64.5, "Estrutura do experimento final", fontsize=14, fontweight="bold", va="top")
     ax.text(1, 61.3, f"Simulação SUMO · rede 3×3 · {nseeds} seeds por condição · {nmain + ns5} execuções científicas finais", fontsize=10, color=MUTED, va="top")
-    # network 3x3
+    # rede 3x3
     for r in range(3):
         for c in range(3):
             x0, y0 = 4 + c * 9, 38 - r * 9 + 4
@@ -143,20 +143,20 @@ def fig01():
         ax.plot([2, 32], [38 - r * 9 + 6.5] * 2, color=MUTED, lw=0.8, zorder=0)
         ax.plot([6.5 + r * 9] * 2, [22.5, 53], color=MUTED, lw=0.8, zorder=0)
     ax.text(17, 20.6, "Rede 3×3 (9 interseções, um agente cada)", ha="center", fontsize=9.3)
-    # controllers
+    # controladores
     ax.text(40, 57, "5 controladores", fontsize=10.5, fontweight="bold")
     for i, c in enumerate(CTRLS):
         y = 52 - i * 4.6
         ax.add_patch(FancyBboxPatch((40, y), 22, 3.6, boxstyle="round,pad=0.2,rounding_size=0.6", fc="white", ec=CT_COLOR[c], lw=2.2))
         ax.scatter([42], [y + 1.8], marker=CT_MARKER[c], s=55, color=CT_COLOR[c], edgecolor=INK, linewidth=0.6, zorder=5)
         ax.text(43.6, y + 1.8, CT_LABEL[c], va="center", fontsize=8.8)
-    # scenarios
+    # cenários
     ax.text(68, 57, "Cenários de tráfego (S1–S4)", fontsize=10.5, fontweight="bold")
     descr = {"S1_BALANCED": "demanda balanceada", "S2_DIRECTIONAL_PEAK": "pico oeste→leste", "S3_DEMAND_SHIFT": "choque de demanda em 2100 s",
              "S4_LOCAL_SATURATION": "saturação localizada em A5"}
     for i, s in enumerate(SCENARIOS):
         box(68, 52 - i * 4.6, 30, 3.6, f"{SC_SHORT[s]} · {descr[s]}", fs=8.8)
-    # main matrix
+    # matriz principal
     box(40, 22.5, 58, 9, f"Experimento principal\n4 cenários × 5 controladores × {nseeds} seeds = {nmain} execuções\n"
                           "(pareamento por cenário + seed)", fc="#eef3fa", ec=CT_COLOR[B0], fs=9.2, bold=False)
     # S5
@@ -177,7 +177,7 @@ def fig01():
 
 
 # =============================================================================================
-# FIG02 main overview
+# FIG02 visão geral principal
 # =============================================================================================
 def fig02():
     fig, axes = plt.subplots(4, 4, figsize=(10.5, 10.2))
@@ -209,7 +209,7 @@ def fig02():
 
 
 # =============================================================================================
-# FIG03/FIG04 forest figures, FIG05 matrix
+# FIG03/FIG04 forest plots, FIG05 matriz
 # =============================================================================================
 def fig03():
     m = forest("FIG03_B0_VS_B2", "02_adaptation", "Efeito da adaptação local em relação ao tempo fixo calibrado",
@@ -292,7 +292,7 @@ def fig05():
 
 
 # =============================================================================================
-# FIG06 S2 trade-off
+# FIG06 trade-off do S2
 # =============================================================================================
 def paired_dots(fid, folder, title, subtitle, scenario, ctrls, metrics, caption, note, sources, *, pair_for=None, figsize=(10.5, 4.4), extra_rows=None):
     fig, axes = plt.subplots(1, len(metrics), figsize=figsize)
@@ -519,7 +519,7 @@ def fig10():
 
 
 # =============================================================================================
-# FIG11–FIG13 reference route
+# FIG11–FIG13 rota de referência
 # =============================================================================================
 RR3 = [B0, B2, C1]
 TT, CMP = "reference_route_mean_travel_time_seconds", "reference_route_completion_ratio_offered"
@@ -634,7 +634,7 @@ def fig13():
 
 
 # =============================================================================================
-# S5 figures
+# Figuras do S5
 # =============================================================================================
 LOSSES = [0.0, 0.2, 0.5, 1.0]
 
@@ -703,7 +703,7 @@ def fig15():
 
 
 # =============================================================================================
-# FIG16/17 communication cost
+# FIG16/17 custo de comunicação
 # =============================================================================================
 def comm_row(exp, scn, ctrl, loss):
     return next(r for r in D.comm if r["experiment"] == exp and r["scenario"] == scn and r["controller"] == ctrl and float(r["packet_loss"]) == loss)
@@ -782,7 +782,7 @@ def fig17():
 
 
 # =============================================================================================
-# FIG18 pilot vs final
+# FIG18 piloto vs final
 # =============================================================================================
 def fig18():
     mets = ["throughput", "completion_ratio_offered", "mean_waiting_time", "mean_network_queue_vehicles"]
@@ -873,14 +873,14 @@ def fig18b():
 
 
 # =============================================================================================
-# FIG19 / FIG20 summary matrices
+# FIG19 / FIG20 matrizes-resumo
 # =============================================================================================
 def key_rel(s, a, b, m):
     return pct(float(D.pair(s, a, b, m)["relative_difference_of_means"]))
 
 
 def fig19():
-    # qualitative text below is validated against the classification table (assertions)
+    # o texto qualitativo abaixo é validado contra a tabela de classificação (asserções)
     assert D.klass("S1_BALANCED", B0, B2) == f"{B2}_BETTER" and D.klass("S1_BALANCED", B2, C1) == f"{B2}_BETTER"
     assert D.klass("S2_DIRECTIONAL_PEAK", B0, B2) == f"{B0}_BETTER" and D.klass("S2_DIRECTIONAL_PEAK", B2, C1) == "TRADE_OFF"
     assert D.klass("S3_DEMAND_SHIFT", B0, B2) == f"{B0}_BETTER" and D.klass("S3_DEMAND_SHIFT", B2, C1) == f"{B2}_BETTER"

@@ -48,7 +48,7 @@ def _trip(
 def test_exact_edge_sequence_matching() -> None:
     assert rr.matches_reference_route(ROUTE)
     assert rr.matches_reference_route(list(ROUTE))
-    # prefixes, suffixes, longer routes and other O-D pairs through A5 do not match
+    # prefixos, sufixos, rotas mais longas e outros pares O-D por A5 não correspondem
     assert not rr.matches_reference_route(ROUTE[:3])
     assert not rr.matches_reference_route(ROUTE[1:])
     assert not rr.matches_reference_route((*ROUTE, "C1C0"))
@@ -63,14 +63,14 @@ def test_logical_mapping_of_the_reference_route() -> None:
 
 
 def test_cohort_selection_is_route_id_independent_and_deterministic() -> None:
-    # The same planned route under different SUMO route ids (r2 in S2, r12 in S1): the offered
-    # vehicle only carries the resolved edge sequence, never the route id.
+    # A mesma rota planejada sob ids de rota SUMO diferentes (r2 no S2, r12 no S1): o veículo
+    # ofertado só carrega a sequência resolvida de arestas, nunca o id da rota.
     vehicles = [
         _vehicle("b.1", 1000.0),
         _vehicle("a.0", 400.0),
         _vehicle("c.2", 400.0),
-        _vehicle("warmup.0", 120.0),  # scheduled in warmup: excluded
-        _vehicle("late.0", 3900.0),  # at the end of the window: excluded
+        _vehicle("warmup.0", 120.0),  # programado no warmup: excluído
+        _vehicle("late.0", 3900.0),  # no fim da janela: excluído
         _vehicle("other.0", 500.0, ("left0A0", "A0B0", "B0bottom1")),
         _vehicle("sub.0", 600.0, ("left1A1", "A1B1", "B1C1", "C1C0", "C0bottom2")),
     ]
@@ -85,7 +85,7 @@ def test_cohort_selection_is_route_id_independent_and_deterministic() -> None:
     )
 
     assert [v.vehicle_id for v in first] == ["a.0", "c.2", "b.1"]
-    assert first == second  # order of the input never matters
+    assert first == second  # a ordem da entrada nunca importa
 
 
 def test_unfinished_and_never_inserted_trips_get_no_duration() -> None:
@@ -102,7 +102,7 @@ def test_unfinished_and_never_inserted_trips_get_no_duration() -> None:
     assert by_id["done.0"].status == "COMPLETED"
     assert by_id["done.0"].travel_time == 80.0
     assert by_id["stuck.0"].status == "UNFINISHED"
-    assert by_id["stuck.0"].travel_time is None  # never a zero or a partial duration
+    assert by_id["stuck.0"].travel_time is None  # nunca uma duração zero ou parcial
     assert by_id["stuck.0"].waiting_time is None
     assert by_id["never.0"].status == "NEVER_INSERTED"
     assert by_id["never.0"].actual_depart_time is None
@@ -129,8 +129,8 @@ def test_run_without_completed_trips_has_no_means_instead_of_zero() -> None:
 def test_population_accounting_is_consistent() -> None:
     cohort = [_vehicle(f"v.{i}", 400.0 + i) for i in range(10)]
     trips = {}
-    for i in range(7):  # 7 inserted, 3 never inserted
-        completed = i < 4  # 4 completed, 3 unfinished
+    for i in range(7):  # 7 inseridos, 3 nunca inseridos
+        completed = i < 4  # 4 concluídos, 3 não finalizados
         trips[f"v.{i}"] = (
             _trip(f"v.{i}", 400.0 + i, arrival=500.0 + i, duration=100.0)
             if completed
@@ -250,7 +250,7 @@ def test_pairwise_comparison_sign_and_relative_difference() -> None:
     assert row["baseline_mean"] == pytest.approx(110.0)
     assert row["relative_diff"] == pytest.approx(-0.1)
     assert row["ci95_high"] < 0  # type: ignore[operator]
-    # deterministic: the CI does not change between calls
+    # determinístico: o IC não muda entre chamadas
     again = rr.pairwise_comparison(
         scenario="S1_BALANCED",
         baseline=rr.B2,
@@ -278,7 +278,7 @@ def test_pairwise_comparison_skips_seeds_without_data_and_never_forces_a_sign() 
     assert row["seeds"] == [1, 3]
     assert row["paired_diff_per_seed"] == [10.0, -10.0]
     text = rr.interpret(row, None)
-    assert "sem diferença distinguível" in text  # CI includes 0: no positive spin
+    assert "sem diferença distinguível" in text  # o IC inclui 0: sem viés positivo
 
 
 def test_interpretation_reports_completion_changes() -> None:

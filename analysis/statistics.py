@@ -25,8 +25,8 @@ CONTROLLER_ALIASES: Mapping[str, str] = {
     "C2": "C2_COOPERATIVE_EXPANDED",
 }
 
-# Frozen final comparisons (baseline, treatment): primary first, then the secondary ones.
-# Must equal ``traffic_agents.experiments.final_freeze.FINAL_CONTROLLER_PAIRS`` (tested).
+# Comparações finais congeladas (baseline, tratamento): primeiro a primária, depois as secundárias.
+# Deve ser igual a ``traffic_agents.experiments.final_freeze.FINAL_CONTROLLER_PAIRS`` (testado).
 DEFAULT_CONTROLLER_PAIRS: tuple[tuple[str, str], ...] = (
     ("B2_LOCAL_PRESSURE", "C1_COOPERATIVE_COMPACT"),
     ("B0_FIXED_CALIBRATED", "B2_LOCAL_PRESSURE"),
@@ -74,7 +74,7 @@ PAIRING_COLUMNS: tuple[str, ...] = (
 
 
 class AnalysisValidationError(ValueError):
-    """Raised when experiment metrics cannot be analyzed safely."""
+    """Lançada quando as métricas do experimento não podem ser analisadas com segurança."""
 
 
 @dataclass(frozen=True)

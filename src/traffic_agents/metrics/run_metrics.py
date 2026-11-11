@@ -1,19 +1,20 @@
-"""Canonical per-run metrics finalization.
+"""Finalização canônica das métricas por execução.
 
-``finalize_run_metrics`` turns the raw artifacts of one completed run (route file, SUMO
-``tripinfo.xml``/``statistics.xml``, canonical Parquet telemetry, manifest) into one
-machine-readable ``run_metrics.json``. Nothing in the scientific results depends on ad-hoc
-analysis scripts or on optional debug traces.
+``finalize_run_metrics`` transforma os artefatos brutos de uma execução concluída (arquivo de
+rotas, ``tripinfo.xml``/``statistics.xml`` do SUMO, telemetria Parquet canônica, manifesto) em
+um único ``run_metrics.json`` legível por máquina. Nada nos resultados científicos depende de
+scripts de análise ad hoc nem de rastros de depuração opcionais.
 
-Population policy (documented in ``docs/methodology/metrics.md``):
+Política de população (documentada em ``docs/methodology/metrics.md``):
 
-* The *measurement cohort* is the set of offered vehicles whose SCHEDULED departure time lies
-  in the measurement window ``[warmup, warmup + measurement_duration)``. Counts
-  (offered, departed, arrived, never inserted, unfinished) and all completed-trip metrics use
-  this cohort, so warmup demand never contaminates measurement populations.
-* ``throughput`` is a flow count: vehicles that ARRIVE inside the measurement window.
-* Queue metrics use unique incoming lanes only and measurement-window steps only.
-* ``full_run_*`` counts cover every offered vehicle of the whole run.
+* A *coorte de medição* é o conjunto de veículos ofertados cujo tempo de partida PROGRAMADO está
+  na janela de medição ``[warmup, warmup + measurement_duration)``. As contagens (ofertados,
+  partiram, chegaram, nunca inseridos, não finalizados) e todas as métricas de viagens
+  concluídas usam essa coorte, de modo que a demanda de warmup nunca contamina as populações de
+  medição.
+* ``throughput`` é uma contagem de fluxo: veículos que CHEGAM dentro da janela de medição.
+* As métricas de fila usam apenas lanes de entrada únicas e apenas passos da janela de medição.
+* As contagens ``full_run_*`` cobrem todo veículo ofertado da execução inteira.
 """
 
 from __future__ import annotations
@@ -52,7 +53,7 @@ CORRIDOR_EDGES = ("A1B1", "B1C1")
 
 
 class MetricsFinalizationError(RuntimeError):
-    """Raised when a run cannot be scientifically finalized."""
+    """Lançada quando uma execução não pode ser finalizada cientificamente."""
 
 
 @dataclass(frozen=True)
@@ -81,11 +82,11 @@ class TripRecord:
 
 
 def load_offered_vehicles(route_path: Path) -> tuple[OfferedVehicle, ...]:
-    """Every vehicle the route file offers, with its scheduled departure time.
+    """Todo veículo que o arquivo de rotas oferece, com seu tempo de partida programado.
 
-    Handles explicit ``<vehicle>`` elements (turning-ratio demand, optional shared
-    ``<route id>``) and ``<flow>`` elements (legacy ``duarouter`` demand, expanded with the
-    flow rate).
+    Trata elementos ``<vehicle>`` explícitos (demanda por razões de conversão, ``<route id>``
+    compartilhado opcional) e elementos ``<flow>`` (demanda legada do ``duarouter``, expandida
+    com a taxa do fluxo).
     """
 
     try:
@@ -153,7 +154,7 @@ def _vehicle_route(
 
 
 def parse_tripinfo_records(tripinfo_path: Path) -> dict[str, TripRecord]:
-    """All tripinfo records; inserted-but-unfinished vehicles have ``arrival < 0``."""
+    """Todos os registros de tripinfo; veículos inseridos e não finalizados têm ``arrival < 0``."""
 
     if not tripinfo_path.exists():
         msg = f"SUMO tripinfo file not found: {tripinfo_path}"
@@ -213,7 +214,7 @@ def finalize_run_metrics(
     steps_executed: int,
     performance: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Compute the canonical metrics of one run and return the ``run_metrics.json`` payload."""
+    """Calcula as métricas canônicas de uma execução e retorna o payload de ``run_metrics.json``."""
 
     step_length = float(scenario_config.step_length)
     measurement_start_step = int(scenario_config.measurement_start_step)
@@ -258,7 +259,7 @@ def finalize_run_metrics(
         full_run["arrived"], full_run["departed"]
     )
 
-    # Throughput: arrivals inside the measurement window (flow count).
+    # Throughput: chegadas dentro da janela de medição (contagem de fluxo).
     arrivals_in_window = [
         trip
         for trip in trips.values()
@@ -269,7 +270,7 @@ def finalize_run_metrics(
         sum(1 for trip in arrivals_in_window if _scheduled_depart(trip) < window_start_seconds)
     )
 
-    # Insertion delay of the cohort vehicles that actually departed.
+    # Atraso de inserção dos veículos da coorte que de fato partiram.
     cohort_ids = {vehicle.vehicle_id for vehicle in cohort_vehicles}
     cohort_trips = [trips[vehicle_id] for vehicle_id in sorted(cohort_ids) if vehicle_id in trips]
     delays = [trip.depart_delay for trip in cohort_trips]
@@ -286,7 +287,7 @@ def finalize_run_metrics(
             backlog_lower_bound / len(never_inserted)
         )
 
-    # Completed-trip metrics (conditional on completion) over the measurement cohort.
+    # Métricas de viagens concluídas (condicionais à conclusão) sobre a coorte de medição.
     completed = [trip for trip in cohort_trips if trip.arrived]
     metrics["completed_trip_count"] = float(len(completed))
     if completed:
@@ -298,7 +299,7 @@ def finalize_run_metrics(
             trip.duration + trip.depart_delay for trip in completed
         )
 
-    # Corridor (S2) metrics: vehicles traversing the middle row eastbound.
+    # Métricas do corredor (S2): veículos que atravessam a linha central no sentido leste.
     offered_by_id = {vehicle.vehicle_id: vehicle for vehicle in offered_vehicles}
     corridor_ids = {
         vehicle.vehicle_id for vehicle in offered_vehicles if _uses_corridor(vehicle.route)
@@ -311,7 +312,7 @@ def finalize_run_metrics(
         metrics["corridor_mean_travel_time"] = _mean(trip.duration for trip in corridor_completed)
         metrics["corridor_mean_stops"] = _mean(trip.waiting_count for trip in corridor_completed)
 
-    # Post-shock time loss (S3): cohort vehicles SCHEDULED at or after the shock.
+    # Perda de tempo pós-choque (S3): veículos da coorte PROGRAMADOS no choque ou depois dele.
     shock_start_seconds = scenario_config.traffic.shock_start_seconds
     if shock_start_seconds is not None:
         post_shock_completed = [
@@ -330,7 +331,7 @@ def finalize_run_metrics(
         if pre_shock_completed:
             metrics["pre_shock_time_loss"] = _mean(trip.time_loss for trip in pre_shock_completed)
 
-    # Entry / group accounting.
+    # Contabilização por entrada / grupo.
     by_entry = _entry_accounting(cohort_vehicles, trips, key=lambda vehicle: vehicle.entry_edge_id)
     by_group = _entry_accounting(
         cohort_vehicles,
@@ -352,7 +353,7 @@ def finalize_run_metrics(
         )
         metrics[f"group_{group}_departure_ratio"] = row["entry_departure_ratio"]
 
-    # Canonical queue and junction metrics from the unified telemetry.
+    # Métricas canônicas de fila e de junção a partir da telemetria unificada.
     _add_telemetry_metrics(
         metrics,
         run_dir=run_dir,
@@ -605,7 +606,7 @@ def _mean(values: Any) -> float:
 
 
 def _ratio(numerator: float, denominator: float) -> float:
-    """Ratio with safe zero-denominator handling: 0.0 when the denominator is 0."""
+    """Razão com tratamento seguro de denominador zero: 0.0 quando o denominador é 0."""
 
     return float(numerator / denominator) if denominator > 0 else 0.0
 

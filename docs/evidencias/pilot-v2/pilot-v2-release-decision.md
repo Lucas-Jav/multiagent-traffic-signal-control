@@ -53,4 +53,4 @@ Escopo da liberação: a comparação pareada (mesma cenário + seed) B2 vs C1, 
 
 Executar a análise pareada B2 vs C1 sobre o `combined_metrics.parquet` do Pilot V2 (o bootstrap pareado com semente 20260930 e 10.000 reamostragens está em `analysis/pilot_v2_analysis.py`; atenção: esse script ainda aplica o critério antigo de 360 s no S3 e reteria a comparação, então a execução deve usar o gate composto do Prompt 47 sem alterar os resultados já registrados) e registrar os resultados com as ressalvas acima. Esse passo precisa de pedido explícito.
 
-> **Status update (final audit, Prompt 52).** The next step in section 5 was executed in Prompt 50 with the composite gate (`analysis/b2_vs_c1.py`, not the old 360 s script). Result: MIXED, confidence MEDIUM (`b2-vs-c1-final-comparison.md`).
+> **Atualização de status (auditoria final, Prompt 52).** O próximo passo da seção 5 foi executado no Prompt 50 com o gate composto (`analysis/b2_vs_c1.py`, não o antigo script de 360 s). Resultado: MISTO, confiança MÉDIA (`b2-vs-c1-final-comparison.md`).

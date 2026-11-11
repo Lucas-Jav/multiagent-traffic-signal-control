@@ -20,8 +20,8 @@ SCENARIO = Path("scenarios/grid_3x3/scenario_s1_balanced_seed_42.yaml")
 
 @pytest.mark.sumo
 def test_unified_pipeline_finalizes_every_controller_and_aggregates_combined_metrics() -> None:
-    # Short artifact root: run directories embed long run ids and would exceed the Windows
-    # MAX_PATH limit under pytest's deeply nested tmp_path.
+    # Raiz de artefatos curta: os diretórios de execução embutem ids longos e excederiam o limite
+    # MAX_PATH do Windows sob o tmp_path profundamente aninhado do pytest.
     Path("artifacts").mkdir(exist_ok=True)
     root = Path(tempfile.mkdtemp(dir="artifacts", prefix="ps_"))
     try:
@@ -62,7 +62,7 @@ def _assert_pipeline(root: Path) -> None:
         by_controller.setdefault(row["controller"], set()).add(row["metric"])
     assert set(by_controller) == set(controllers)
     for controller, metric_names in by_controller.items():
-        # queue metrics exist for EVERY controller, including the fixed-time baseline (B0)
+        # métricas de fila existem para TODO controlador, inclusive o baseline de tempo fixo (B0)
         assert {
             "mean_network_queue_vehicles",
             "max_network_queue_vehicles",
@@ -80,7 +80,7 @@ def _assert_pipeline(root: Path) -> None:
         assert (run_dir / "run_metrics.json").exists()
         assert (run_dir / "lane_telemetry.parquet").exists()
         assert not (run_dir / "intersection_trace.csv").exists()
-    # unique lane telemetry: 36 incoming lanes per step for the 3x3 grid
+    # telemetria de lanes únicas: 36 lanes de entrada por passo na grade 3x3
     any_lane_table = next(experiment_dir.glob("runs/*/*/lane_telemetry.parquet"))
     lanes = pq.read_table(any_lane_table, columns=["step_index", "lane_id"]).to_pydict()
     assert len(lanes["step_index"]) == 330 * 36

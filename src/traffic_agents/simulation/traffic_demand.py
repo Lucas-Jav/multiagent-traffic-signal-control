@@ -541,10 +541,10 @@ def _file_sha256(path: Path) -> str:
 
 
 def _artifact_hash_fields(route_path: Path, network_path: Path) -> dict[str, str]:
-    """Raw (line-ending dependent) and canonical (CANONICAL_TEXT_LF_V1) artifact hashes.
+    """Hashes de artefatos brutos (dependem de quebra de linha) e canônicos (CANONICAL_TEXT_LF_V1).
 
-    The legacy ``route_hash`` / ``network_hash`` fields are kept; the canonical ones let the
-    validation accept a scientifically identical checkout with different line endings.
+    Os campos legados ``route_hash`` / ``network_hash`` são mantidos; os canônicos permitem que a
+    validação aceite um checkout cientificamente idêntico com quebras de linha diferentes.
     """
 
     route_bytes = route_path.read_bytes()

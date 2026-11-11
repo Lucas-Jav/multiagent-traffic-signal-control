@@ -1,4 +1,4 @@
-"""Experiment metrics."""
+"""Métricas de experimentos."""
 
 from traffic_agents.metrics.agent_trace import (
     AGENT_TRACE_FILE,

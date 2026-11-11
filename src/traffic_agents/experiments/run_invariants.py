@@ -34,7 +34,7 @@ COMPARISON_INVARIANT_FIELDS: tuple[str, ...] = (
 
 
 class RunInvariantValidationError(ValueError):
-    """Raised when a scenario run is not scientifically comparable or valid."""
+    """Lançada quando uma execução de cenário não é cientificamente comparável ou válida."""
 
 
 @dataclass(frozen=True)
@@ -70,7 +70,7 @@ def validate_run_inputs(
     scenario_config: ScenarioConfig,
     scenario_dir: Path,
 ) -> RunInvariantFingerprint:
-    """Validate invariant inputs before starting a SUMO run."""
+    """Valida as entradas invariantes antes de iniciar uma execução do SUMO."""
 
     from traffic_agents.experiments.route_artifacts import validate_route_artifacts
 
@@ -304,10 +304,10 @@ def turning_config_sha256(turning_ratios: Mapping[str, float]) -> str:
 
 
 def scenario_turning_config_sha256(scenario_config: ScenarioConfig) -> str:
-    """Hash of the scenario turning configuration, including per-entry overrides.
+    """Hash da configuração de conversões do cenário, incluindo substituições por entrada.
 
-    Without per-entry overrides this equals ``turning_config_sha256`` of the scenario-level
-    ratios, so scenarios that do not override ratios keep their historical hash.
+    Sem substituições por entrada, isto é igual ao ``turning_config_sha256`` das razões do nível
+    do cenário, de modo que cenários que não substituem razões mantêm seu hash histórico.
     """
 
     base = _turning_ratios_payload(scenario_config)

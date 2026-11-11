@@ -1,4 +1,6 @@
-"""Experiment-freeze file verification is LF/CRLF independent and never accepts real changes."""
+"""A verificação de arquivos do freeze de experimentos independe de LF/CRLF e nunca aceita mudanças
+reais.
+"""
 
 from __future__ import annotations
 
@@ -30,7 +32,7 @@ def _crlf(data: bytes) -> bytes:
 
 
 def _frozen(entry: dict[str, str], root: Path) -> FrozenExperimentConfig:
-    """Portable (schema 3) freeze verified against ``root``."""
+    """Freeze portável (schema 3) verificado contra ``root``."""
 
     return FrozenExperimentConfig(
         experiment_id="t",
@@ -42,7 +44,7 @@ def _frozen(entry: dict[str, str], root: Path) -> FrozenExperimentConfig:
 
 
 def _frozen_legacy(entry: dict[str, str]) -> FrozenExperimentConfig:
-    """Historical schema-1 record (absolute path, raw hash)."""
+    """Registro histórico schema 1 (caminho absoluto, hash bruto)."""
 
     return FrozenExperimentConfig(
         experiment_id="t",
@@ -101,7 +103,7 @@ def test_binary_file_raw_mismatch_is_rejected(tmp_path: Path) -> None:
     entry = _entry_for(blob, b"\x00\x01\r\n\x02", tmp_path)
     assert "canonical_sha256" not in entry
     _frozen(entry, tmp_path).validate()
-    blob.write_bytes(b"\x00\x01\n\x02")  # only a line ending differs: still a different binary
+    blob.write_bytes(b"\x00\x01\n\x02")  # só a quebra de linha difere: ainda é um binário diferente
     with pytest.raises(ExperimentFreezeError):
         _frozen(entry, tmp_path).validate()
 
@@ -114,7 +116,7 @@ def test_invalid_utf8_text_is_rejected_not_crashing(tmp_path: Path) -> None:
         _frozen(entry, tmp_path).validate()
 
 
-# --- legacy (schema 1, raw hash only) records -----------------------------------------------------
+# --- registros legados (schema 1, apenas hash bruto) ----------------------------------------------
 def _legacy_entry(path: Path, label: str = "route_file") -> dict[str, str]:
     return {"label": label, "path": str(path), "sha256": raw_byte_sha256(path.read_bytes())}
 
@@ -126,7 +128,7 @@ def test_legacy_record_with_matching_raw_hash_is_accepted(tmp_path: Path) -> Non
 
 
 def test_legacy_record_cross_eol_without_a_trusted_identity_is_rejected(tmp_path: Path) -> None:
-    """No unconditional canonical acceptance: an unknown raw hash cannot be laundered."""
+    """Sem aceitação canônica incondicional: um hash bruto desconhecido não pode ser "lavado"."""
 
     copy = tmp_path / "final_main.yaml"
     copy.write_bytes(_lf(FINAL_CONFIGS[0].read_bytes()))
@@ -158,7 +160,7 @@ def test_legacy_trusted_identity_still_rejects_changed_content(tmp_path: Path) -
         _frozen_legacy(entry).validate()
 
 
-# --- one canonical standard for freeze and route validation ---------------------------------------
+# --- um único padrão canônico para freeze e validação de rotas ------------------------------------
 def test_freeze_and_route_validation_share_the_single_implementation() -> None:
     from traffic_agents.experiments import freeze_hashing, route_artifacts
 

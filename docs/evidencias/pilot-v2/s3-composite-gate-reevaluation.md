@@ -1,54 +1,54 @@
 > **Proveniencia (copia versionada).**
 > Fonte: `artifacts/experiments/pilot_v2/s3-composite-gate-reevaluation.md` (git-ignorado) | Experimento: `pilot_v2` |
 > Git SHA do codigo que gerou as runs: `7fffb4efff9ad98498c81cc0d829911ad44baa46` | Git SHA no empacotamento: `0215e852603cb56a2c1ebd2ddd615b94c50b95ad` |
-> Data de empacotamento: 2026-10-13 | Tipo: **derived** | Conteudo copiado sem alteracao abaixo.
+> Data de empacotamento: 2026-10-13 | Tipo: **derived** | Conteudo copiado abaixo (texto traduzido para português, sem alteração de números ou conclusões).
 
-# S3 composite-gate re-evaluation (Prompt 48)
+# Reavaliação do gate composto do S3 (Prompt 48)
 
-`campaign_role: PILOT` (Pilot V2). Existing telemetry only: no simulation, no repository file changed, no threshold changed, no B2-vs-C1 comparison.
-Gate defined in `pilot-v2-methodological-decision.md` (Prompt 47). Evaluated on the `B0_FIXED` S3 runs (5 pilot seeds), pre-shock phase (scheduled 300..2100 s; steps 300..2099). Script: `analysis/s3_composite_gate.py`; per-seed data: `s3-composite-gate-table.csv`.
+`campaign_role: PILOT` (Pilot V2). Apenas telemetria existente: nenhuma simulação, nenhum arquivo do repositório alterado, nenhum limiar alterado, nenhuma comparação B2-vs-C1.
+Gate definido em `pilot-v2-methodological-decision.md` (Prompt 47). Avaliado nas execuções S3 do `B0_FIXED` (5 seeds do piloto), fase pré-choque (programada 300..2100 s; passos 300..2099). Script: `analysis/s3_composite_gate.py`; dados por seed: `s3-composite-gate-table.csv`.
 
 ## Gate
 
-1. No structural backlog: pre-shock `departure_ratio` >= 0.98 and mean insertion delay <= 5 s.
-2. No relevant never-inserted vehicles: fraction <= 0.02.
-3. No structural lane saturation: fraction of lane-steps with queue >= 0.8 x lane capacity <= 0.02.
-4. Aggregate 1800 s pre-shock window (steps 300..2099) passes the frozen rule: projected OLS change <= 0.10 x max(window mean, 5).
-5. At least 4 of 5 seeds valid on criteria 1-4.
-Retained unchanged on every seed (taken from the Prompt 46.8 S3 table, only the superseded `pre_shock_stable` 360 s check removed): base == S1, first half == S1, shock at 2100 s, west-border origin, shock through A5, visible response (ratio >= 1.25, latency <= 600 s), no multi-thousand-second insertion backlog, frozen-definition AUC.
-Diagnostic only (cannot fail a seed): the 360 s rule (last 20% of the pre-shock measurement) and the 720 s rule.
+1. Sem backlog estrutural: `departure_ratio` pré-choque >= 0,98 e atraso médio de inserção <= 5 s.
+2. Sem veículos nunca inseridos relevantes: fração <= 0,02.
+3. Sem saturação estrutural de lane: fração de lane-passos com fila >= 0,8 x capacidade da lane <= 0,02.
+4. A janela agregada pré-choque de 1800 s (passos 300..2099) passa na regra congelada: variação OLS projetada <= 0,10 x max(média da janela, 5).
+5. Pelo menos 4 de 5 seeds válidas nos critérios 1-4.
+Mantidas sem alteração em toda seed (tomadas da tabela S3 do Prompt 46.8, removendo apenas a verificação `pre_shock_stable` de 360 s substituída): base == S1, primeira metade == S1, choque em 2100 s, origem na borda oeste, choque via A5, resposta visível (razão >= 1,25, latência <= 600 s), sem backlog de inserção de vários milhares de segundos, AUC de definição congelada.
+Apenas diagnósticas (não podem reprovar uma seed): a regra de 360 s (últimos 20% da medição pré-choque) e a regra de 720 s.
 
-## Result per seed
+## Resultado por seed
 
-| seed | class | offered | departed | never inserted | max insertion delay (s) | lane saturation | 1800 s normalized (limit 0.10) | 1800 s margin (veh) | retained checks failed | 360 s diagnostic |
+| seed | classe | ofertados | partiram | nunca inseridos | atraso máx de inserção (s) | saturação de lane | 1800 s normalizado (limite 0,10) | margem 1800 s (veíc) | verificações mantidas que falharam | diagnóstico de 360 s |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 42 | **VALID** | 900 | 900 | 0 (0.0000) | 1 | 0.00000 | 0.024 | 3.67 | - | pass (0.052, margin 2.23) |
-| 2027 | **VALID** | 900 | 900 | 0 (0.0000) | 1 | 0.00000 | -0.042 | 6.64 | - | pass (0.021, margin 3.63) |
-| 3253 | **VALID** | 900 | 900 | 0 (0.0000) | 1 | 0.00000 | -0.092 | 8.95 | - | pass (-0.099, margin 8.89) |
-| 4517 | **VALID_WITH_DIAGNOSTIC_WARNING** | 900 | 900 | 0 (0.0000) | 1 | 0.00000 | 0.031 | 3.22 | - | FAIL (0.130, margin -1.51) |
-| 5791 | **VALID** | 900 | 900 | 0 (0.0000) | 1 | 0.00000 | -0.085 | 8.97 | - | pass (-0.044, margin 6.89) |
+| 42 | **VALID** | 900 | 900 | 0 (0.0000) | 1 | 0.00000 | 0.024 | 3.67 | - | passa (0.052, margem 2.23) |
+| 2027 | **VALID** | 900 | 900 | 0 (0.0000) | 1 | 0.00000 | -0.042 | 6.64 | - | passa (0.021, margem 3.63) |
+| 3253 | **VALID** | 900 | 900 | 0 (0.0000) | 1 | 0.00000 | -0.092 | 8.95 | - | passa (-0.099, margem 8.89) |
+| 4517 | **VALID_WITH_DIAGNOSTIC_WARNING** | 900 | 900 | 0 (0.0000) | 1 | 0.00000 | 0.031 | 3.22 | - | FALHA (0.130, margem -1.51) |
+| 5791 | **VALID** | 900 | 900 | 0 (0.0000) | 1 | 0.00000 | -0.085 | 8.97 | - | passa (-0.044, margem 6.89) |
 
-Criteria flags per seed (1 backlog, 2 never inserted, 3 saturation, 4 window 1800 s): 42: 1111; 2027: 1111; 3253: 1111; 4517: 1111; 5791: 1111 (1 = pass).
+Flags dos critérios por seed (1 backlog, 2 nunca inseridos, 3 saturação, 4 janela de 1800 s): 42: 1111; 2027: 1111; 3253: 1111; 4517: 1111; 5791: 1111 (1 = passa).
 
-## Aggregate
+## Agregado
 
-- Valid seeds (VALID or VALID_WITH_DIAGNOSTIC_WARNING): **5/5**; rule requires >= 4/5.
+- Seeds válidas (VALID ou VALID_WITH_DIAGNOSTIC_WARNING): **5/5**; a regra exige >= 4/5.
 - Classes: 42 VALID, 2027 VALID, 3253 VALID, 4517 VALID_WITH_DIAGNOSTIC_WARNING, 5791 VALID.
-- **S3 PASSES under the composite gate.**
+- **O S3 PASSA no gate composto.**
 
-## Effect of seed 4517
+## Efeito da seed 4517
 
-- The 360 s diagnostic still FAILS for seed 4517 (projected change 6.51 veh vs threshold 5.00, margin -1.51, normalized 0.130 vs 0.100). This failure is reported here, not hidden, and it is not removed from `s3-stability-table.csv` or the Pilot V2 assessment.
-- Under the composite gate seed 4517 is **VALID_WITH_DIAGNOSTIC_WARNING**: departure ratio 1.000, 0 never inserted, max insertion delay 1 s, lane saturation 0.00000, and the 1800 s window is stable (normalized 0.031, margin 3.22 veh).
-- Seeds with a diagnostic warning: [4517]. The 720 s diagnostic for 4517 is FAIL (normalized 0.238).
-- Because the aggregate rule tolerates one seed in five, the outcome would be the same even if seed 4517 were classified INVALID, as long as the other four are valid: yes, the other four seeds are valid.
+- O diagnóstico de 360 s ainda FALHA para a seed 4517 (variação projetada 6,51 veíc vs limiar 5,00, margem -1,51, normalizado 0,130 vs 0,100). Esta falha é reportada aqui, não escondida, e não é removida de `s3-stability-table.csv` nem da avaliação do Pilot V2.
+- No gate composto, a seed 4517 é **VALID_WITH_DIAGNOSTIC_WARNING**: razão de partida 1,000, 0 nunca inseridos, atraso máx de inserção 1 s, saturação de lane 0,00000, e a janela de 1800 s é estável (normalizado 0,031, margem 3,22 veíc).
+- Seeds com aviso diagnóstico: [4517]. O diagnóstico de 720 s para a 4517 é FALHA (normalizado 0,238).
+- Como a regra agregada tolera uma seed em cinco, o resultado seria o mesmo mesmo que a seed 4517 fosse classificada INVALID, desde que as outras quatro sejam válidas: sim, as outras quatro seeds são válidas.
 
-## Methodological justification
+## Justificativa metodológica
 
-- The 360 s rule had a measured false-fail rate of about 22% per seed on stable, backlog-free B0 traffic (4 of 18 independent observations) and about 14-17% per sliding window (Prompt 46.9); the S3 first half is identical to S1 for seed 4517, so the failure reflects queue fluctuation, not the scenario.
-- The composite gate tests the properties that define a stable base regime (no backlog, no non-insertion, no saturation, no 1800 s trend) on the whole pre-shock phase. No threshold changed; only the decisive window of the slope rule moved from 360 s to 1800 s, as approved in Prompt 47.
-- Limitation inherited from Prompt 47: the 1800 s window was chosen after observing the 46.9 diagnostics; the rule is inclusive of the original 0.10 limit and the floor of 5 veh. With 5 seeds, 4 of 5 is coarse.
+- A regra de 360 s tinha uma taxa de falsa falha medida de cerca de 22% por seed em tráfego B0 estável e sem backlog (4 de 18 observações independentes) e cerca de 14-17% por janela deslizante (Prompt 46.9); a primeira metade do S3 é idêntica à do S1 para a seed 4517, então a falha reflete flutuação de fila, não o cenário.
+- O gate composto testa as propriedades que definem um regime base estável (sem backlog, sem não inserção, sem saturação, sem tendência de 1800 s) em toda a fase pré-choque. Nenhum limiar mudou; apenas a janela decisiva da regra de inclinação passou de 360 s para 1800 s, conforme aprovado no Prompt 47.
+- Limitação herdada do Prompt 47: a janela de 1800 s foi escolhida após observar os diagnósticos do 46.9; a regra inclui o limite original de 0,10 e o piso de 5 veíc. Com 5 seeds, 4 de 5 é grosseiro.
 
-## Conclusion
+## Conclusão
 
-S3 passes the composite gate. The scenario validity gates S1, S2, S3 and S4 are then all satisfied, so the S3 block on the B2 vs C1 comparison is lifted. The comparison was NOT computed in this task.
+O S3 passa no gate composto. Os gates de validade de cenário S1, S2, S3 e S4 estão então todos satisfeitos, portanto o bloqueio do S3 sobre a comparação B2 vs C1 é suspenso. A comparação NÃO foi calculada nesta tarefa.

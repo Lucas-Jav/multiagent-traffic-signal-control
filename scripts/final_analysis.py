@@ -1,14 +1,15 @@
-"""Definitive final analysis of FINAL_MAIN (200 runs) + FINAL_S5 (90 runs). No simulation is run.
+"""Análise final definitiva de FINAL_MAIN (200 execuções) + FINAL_S5 (90 execuções). Nenhuma simulação é executada.
 
-Read-only on every raw artifact. Reuses the frozen statistics (analysis/statistics.py: percentile
-bootstrap of paired differences, 10 000 resamples, RNG seed 20260910; reference route:
-traffic_agents.experiments.reference_route). Writes only artifacts/final-analysis/ and
+Somente leitura sobre todo artefato bruto. Reutiliza a estatística congelada (analysis/statistics.py:
+bootstrap por percentil de diferenças pareadas, 10 000 reamostragens, seed de RNG 20260910; rota de
+referência: traffic_agents.experiments.reference_route). Grava apenas em artifacts/final-analysis/ e
 docs/evidencias/final-analysis/.
 
     python scripts/final_analysis.py
 
-Long-path safety: some S5 C2 run directories reach the Windows 260-character limit. Every raw file
-is opened through the extended-length prefix (``\\\\?\\``); nothing is renamed, moved or rewritten.
+Segurança de caminhos longos: alguns diretórios de execução S5 C2 atingem o limite de 260 caracteres
+do Windows. Todo arquivo bruto é aberto pelo prefixo de caminho estendido (``\\\\?\\``); nada é
+renomeado, movido ou reescrito.
 """
 
 from __future__ import annotations
@@ -91,8 +92,8 @@ COMM = [
 MAIN_METRICS = CORE + CONTEXT + S3_EXTRA
 S5_METRICS = CORE + CONTEXT + COMM
 CONDITIONAL = ("mean_waiting_time", "mean_time_loss", "mean_travel_time")
-# Scenario/pair classification (declared in the analysis prompt before any result was inspected):
-# service group and delay group; mean_travel_time stays out of the vote because it is conditional.
+# Classificação de cenário/par (declarada no prompt da análise antes de qualquer resultado ser inspecionado):
+# grupo de serviço e grupo de atraso; mean_travel_time fica fora da votação por ser condicional.
 SERVICE_KEYS = ("throughput", "completion_ratio_offered", "departure_ratio")
 DELAY_KEYS = ("mean_waiting_time", "mean_time_loss", "mean_network_queue_vehicles")
 KEY_METRICS = SERVICE_KEYS + DELAY_KEYS
@@ -105,7 +106,7 @@ def direction(metric: str) -> str:
 
 
 def xp(path: Path | str) -> Path:
-    """Extended-length path (read-only access to >260-character Windows paths)."""
+    """Caminho estendido (acesso somente leitura a caminhos do Windows com mais de 260 caracteres)."""
 
     return Path(chr(92) * 2 + "?" + chr(92) + str(Path(path).resolve()))
 
@@ -119,7 +120,7 @@ def git(*args: str) -> str:
 
 
 # ---------------------------------------------------------------------------------------------
-# 1. Load runs (latest COMPLETED attempt per run_key only)
+# 1. Carregar execuções (apenas a última tentativa CONCLUÍDA por run_key)
 # ---------------------------------------------------------------------------------------------
 def load_runs(exp_dir: Path, experiment: str) -> list[dict[str, Any]]:
     log = [json.loads(x) for x in (exp_dir / "run_status.jsonl").read_text().splitlines()]
@@ -181,7 +182,7 @@ def readable(run: dict[str, Any]) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------------------------
-# 2. Record building
+# 2. Construção de registros
 # ---------------------------------------------------------------------------------------------
 def make_rows(runs: list[dict], metrics: list[str], label_fn, scenario_fn) -> list[dict[str, Any]]:
     rows = []
@@ -320,7 +321,7 @@ def main() -> int:
     EVID.mkdir(parents=True, exist_ok=True)
     problems: list[str] = []
 
-    # ---- pre-flight ----
+    # ---- verificações prévias ----
     status = git("status", "--short")
     ver = subprocess.run([str(REPO / ".venv/Scripts/python.exe"), "scripts/build_final_freeze.py", "--verify",
                           "--scientific-source-sha", SRC_SHA], cwd=REPO, capture_output=True, text=True)
@@ -340,7 +341,7 @@ def main() -> int:
         print(json.dumps(preflight, indent=2))
         raise SystemExit("PRE-FLIGHT FAILED")
 
-    # ---- load ----
+    # ---- carga ----
     main_runs = load_runs(MAIN_DIR, "FINAL_MAIN")
     s5_runs = load_runs(S5_DIR, "FINAL_S5")
     all_runs = main_runs + s5_runs
@@ -348,7 +349,7 @@ def main() -> int:
     long_path_runs = [x for x in read if x["needs_extended_path"]]
     long_readable = all(x["readable"] for x in read)
 
-    # ---- validation of population ----
+    # ---- validação da população ----
     id_main = Counter((r["scenario"], r["controller"], r["seed"]) for r in main_runs)
     id_s5 = Counter((r["controller"], r["seed"], r["loss"]) for r in s5_runs)
     dup_main = [k for k, v in id_main.items() if v > 1]
@@ -376,7 +377,7 @@ def main() -> int:
     retried_unique = len({(r["controller"], r["seed"], r["loss"]) for r in retried})
     main_retried = [r for r in main_runs if r["attempts"] > 1]
 
-    # ---- final_metrics (long, traceable) ----
+    # ---- final_metrics (formato longo, rastreável) ----
     prov = {"scientific_source_git_sha": SRC_SHA, "freeze_manifest_sha256": MANIFEST_SHA}
     fm_rows = []
     for r in all_runs:
@@ -400,7 +401,7 @@ def main() -> int:
             })
     write_parquet(OUT / "final_metrics.parquet", fm_rows)
 
-    # cross-check vs the frozen aggregate (combined_metrics.parquet written by the runner)
+    # checagem cruzada contra o agregado congelado (combined_metrics.parquet gravado pelo executor)
     cm = pq.read_table(MAIN_DIR / "combined_metrics.parquet").to_pylist()
     cm_idx = {(x["run_id"], x["metric"]): x["value"] for x in cm}
     cm_mismatch = 0
@@ -412,7 +413,7 @@ def main() -> int:
                 cm_mismatch += 1
 
     # ---------------------------------------------------------------------------------------
-    # MAIN descriptive + paired
+    # MAIN descritivo + pareado
     # ---------------------------------------------------------------------------------------
     main_rows = make_rows(main_runs, MAIN_METRICS, lambda r: r["controller"], lambda r: r["scenario"])
     desc = fstats._descriptive_statistics(main_rows)
@@ -456,7 +457,7 @@ def main() -> int:
               [{**c, "treatment_favourable_key_metrics": ";".join(c["treatment_favourable_key_metrics"]),
                 "baseline_favourable_key_metrics": ";".join(c["baseline_favourable_key_metrics"])} for c in classes])
 
-    # S4 teleports
+    # teletransportes do S4
     tele_rows = []
     for r in main_runs:
         if r["scenario"] == "S4_LOCAL_SATURATION":
@@ -475,7 +476,7 @@ def main() -> int:
                       for s in SCENARIOS}
 
     # ---------------------------------------------------------------------------------------
-    # Reference route (frozen cohort selection + frozen pairwise statistics), N=10
+    # Rota de referência (seleção de coorte congelada + estatística pareada congelada), N=10
     # ---------------------------------------------------------------------------------------
     rr_rows = []
     rr_vals: dict[tuple[str, str], dict[str, dict[int, float | None]]] = defaultdict(lambda: defaultdict(dict))
@@ -515,7 +516,7 @@ def main() -> int:
                 row = rr.pairwise_comparison(scenario=scenario, baseline=base, treatment=treat,
                                              metric=metric, values_by_controller=vbc, seeds=SEEDS)
                 rr_pw.append(row)
-    # interpretation flag (frozen `interpret`)
+    # flag de interpretação (`interpret` congelado)
     idx_rr = {(r["scenario"], r["baseline"], r["treatment"], r["metric"]): r for r in rr_pw}
     for r in rr_pw:
         r["interpretation"] = (rr.interpret(
@@ -534,7 +535,7 @@ def main() -> int:
                 **{f"{k}_per_seed": json.dumps([x[k] for x in cs]) for k in ("reference_route_offered",)},
             })
     write_csv(OUT / "reference_route_cohort_summary.csv", rr_cohort_summary)
-    # reference-route descriptive per scenario/controller/metric
+    # descritivo da rota de referência por cenário/controlador/métrica
     rr_desc = []
     for scenario in SCENARIOS:
         for metric in rr.METRICS:
@@ -549,7 +550,7 @@ def main() -> int:
                                     "iqr": q3 - q1, "min": sv[0], "max": sv[-1]})
     write_csv(OUT / "reference_route_summary.csv", rr_desc)
 
-    # network-vs-route direction table (B0->B2 and B2->C1)
+    # tabela de direção rede-vs-rota (B0->B2 e B2->C1)
     net_vs_route = []
     for scenario in SCENARIOS:
         for base, treat in ((B0, B2), (B2, C1)):
@@ -616,7 +617,7 @@ def main() -> int:
               [{**c, "treatment_favourable_key_metrics": ";".join(c["treatment_favourable_key_metrics"]),
                 "baseline_favourable_key_metrics": ";".join(c["baseline_favourable_key_metrics"])} for c in s5_classes])
 
-    # communication summary (S5 + MAIN), overhead ratios
+    # resumo de comunicação (S5 + MAIN), razões de overhead
     comm_rows = []
     for r in all_runs:
         if r["controller"] in (C1, C2):
@@ -647,7 +648,7 @@ def main() -> int:
             "observed_drop_ratio_max": max(x["observed_drop_ratio"] for x in xs),
             "mean_bytes_per_message_sent": mean("bytes_sent") / mean("messages_sent"),
         })
-    # C2/C1 overhead ratio per scenario/loss
+    # razão de overhead C2/C1 por cenário/perda
     key_c = {(s["experiment"], s["scenario"], s["controller"], s["packet_loss"]): s for s in comm_sum}
     overhead = []
     for (exp, scen, ctrl, p), s in sorted(key_c.items()):
@@ -669,7 +670,7 @@ def main() -> int:
                  "dropped": sum(x["messages_dropped"] for x in comm_rows if x["experiment"] == "FINAL_S5" and x["packet_loss"] == 1.0),
                  "bytes_delivered": sum(x["bytes_delivered"] for x in comm_rows if x["experiment"] == "FINAL_S5" and x["packet_loss"] == 1.0)}
 
-    # determinism cross-check: S5 @0% / B2 reference vs FINAL_MAIN S2 (same inputs, separate experiments)
+    # checagem cruzada de determinismo: S5 @0% / referência B2 vs FINAL_MAIN S2 (mesmas entradas, experimentos separados)
     main_idx = {(r["controller"], r["seed"]): r for r in main_runs if r["scenario"] == S5_SCENARIO}
     det = {"compared_runs": 0, "max_abs_diff": 0.0, "identical_runs": 0}
     for r in s5_runs:
@@ -684,7 +685,7 @@ def main() -> int:
             det["identical_runs"] += int(max(diffs) == 0)
 
     # ---------------------------------------------------------------------------------------
-    # Pilot vs final (never pooled)
+    # Piloto vs final (nunca agrupados)
     # ---------------------------------------------------------------------------------------
     pilot = [x for x in pq.read_table(PILOT_PARQUET).to_pylist() if x["controller"] in (B2, C1)]
     pilot_rows = []
@@ -743,7 +744,7 @@ def main() -> int:
                 "verdict_changed": lab5 != lab10,
             })
     write_csv(OUT / "pilot_vs_final.csv", pvf)
-    # N=10 value: ci widths + S4 between-seed variability
+    # valor N=10: larguras de IC + variabilidade entre seeds do S4
     n10 = []
     for scenario in SCENARIOS:
         for c in (B2, C1):
@@ -757,7 +758,7 @@ def main() -> int:
     write_csv(OUT / "n10_variability.csv", n10)
 
     # ---------------------------------------------------------------------------------------
-    # Validation
+    # Validação
     # ---------------------------------------------------------------------------------------
     s5_in_final_metrics = {(x["controller"], x["seed"], x["packet_loss"]) for x in fm_rows if x["experiment"] == "FINAL_S5"}
     retried_ids = {(r["controller"], r["seed"], r["loss"]) for r in retried}

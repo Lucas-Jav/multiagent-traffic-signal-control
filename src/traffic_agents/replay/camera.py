@@ -1,4 +1,4 @@
-"""Camera presets for the visual replay and the world -> pixel mapping used by overlays."""
+"""Presets de câmera do replay visual e o mapeamento mundo -> pixel usado pelos overlays."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ SUPPORTED_PRESET_FILE_VERSION = 1
 
 
 class CameraPresetError(ValueError):
-    """Raised for malformed preset files or unknown / unresolvable cameras."""
+    """Lançada para arquivos de preset malformados ou câmeras desconhecidas / não resolvíveis."""
 
 
 class _Model(BaseModel):
@@ -103,7 +103,7 @@ def load_camera_presets(path: Path) -> CameraPresetFile:
 
 @dataclass(frozen=True)
 class ViewWindow:
-    """World rectangle shown by one pane; its aspect ratio equals the pane's."""
+    """Retângulo do mundo exibido por um painel; sua proporção é igual à do painel."""
 
     min_x: float
     min_y: float
@@ -130,7 +130,7 @@ class ViewWindow:
         width_px: int,
         height_px: int,
     ) -> tuple[float, float]:
-        """Pixel of a world point. Image y grows downwards, world y grows upwards."""
+        """Pixel de um ponto do mundo. O y da imagem cresce para baixo; o y do mundo, para cima."""
 
         scale = width_px / self.width_m
         cx, cy = self.center
@@ -170,7 +170,7 @@ def resolve_view(
     width_px: int,
     height_px: int,
 ) -> ViewWindow:
-    """Bounding box of the focus plus margin, grown to the pane aspect ratio (never cropped)."""
+    """Caixa delimitadora do foco mais margem, expandida à proporção do painel (nunca cortada)."""
 
     points = focus_points(preset, geometry, intersection_to_junction)
     min_x = min(x for x, _ in points) - preset.margin_m

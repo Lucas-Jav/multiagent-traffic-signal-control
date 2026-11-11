@@ -1,8 +1,8 @@
-"""Frame composition: pane header, intersection labels, corridor highlight, footer, banners.
+"""Composição de frames: cabeçalho, rótulos de interseção, corredor, rodapé e banners.
 
-Overlays are drawn with Pillow on top of the raw SUMO screenshots. The SUMO network and its
-geometry are never modified. The fonts shipped with matplotlib (DejaVu) are used so the output
-does not depend on the fonts installed on the machine.
+Os overlays são desenhados com Pillow sobre as capturas de tela brutas do SUMO. A rede SUMO e sua
+geometria nunca são modificadas. São usadas as fontes distribuídas com o matplotlib (DejaVu) para
+que a saída não dependa das fontes instaladas na máquina.
 """
 
 from __future__ import annotations
@@ -47,7 +47,7 @@ def format_clock(seconds: float) -> str:
 
 @dataclass(frozen=True)
 class PaneContext:
-    """Static (per recording) information every pane needs."""
+    """Informação estática (por gravação) de que todo painel precisa."""
 
     title: str
     controller_id: str
@@ -60,7 +60,7 @@ class PaneContext:
 
 @dataclass(frozen=True)
 class FrameState:
-    """Dynamic (per frame) information: all of it is annotation-only."""
+    """Informação dinâmica (por frame): toda ela serve apenas para anotação."""
 
     simulation_time_s: float
     network_queue: int | None = None
@@ -97,7 +97,7 @@ def _draw_labels(image: Image.Image, context: PaneContext) -> Image.Image:
         px, py = context.view.world_to_pixel(x, y, width_px=context.width, height_px=context.height)
         left, top, right, bottom = draw.textbbox((0, 0), label, font=font)
         text_w, text_h = right - left, bottom - top
-        # Offset up-right of the junction so the label does not cover the stop lines.
+        # Deslocamento para cima e à direita da junção para o rótulo não cobrir as linhas de parada.
         x0, y0 = px + 14, py - 14 - text_h - 8
         draw.rounded_rectangle(
             (x0, y0, x0 + text_w + 12, y0 + text_h + 8), radius=5, fill=_LABEL_BOX_RGBA
@@ -128,7 +128,9 @@ def compose_pane(
     *,
     shock_text: str,
 ) -> Image.Image:
-    """Raw SUMO frame + labels/corridor/shock banner + header strip. Size: W x (H + header)."""
+    """Frame bruto do SUMO + rótulos/corredor/banner de choque + faixa de cabeçalho. Tamanho: W x (H
+    + cabeçalho).
+    """
 
     if raw.size != (context.width, context.height):
         msg = f"raw frame is {raw.size}, expected {(context.width, context.height)}"

@@ -1,10 +1,11 @@
-"""Controller-produced per-movement debug telemetry.
+"""Telemetria de depuração por movimento produzida pelo controlador.
 
-DEPRECATED FOR SCIENTIFIC METRICS: traffic measurements (queues, junction flows, phases) are
-produced for every controller by ``NetworkTelemetryCollector`` (``network_telemetry.py``),
-which stores unique incoming lanes only. The per-movement records built here repeat one lane
-queue once per movement and exist only for optional debugging (``tracing.intersection_trace``)
-and the demo view; sums over them must never be used as network or intersection queues.
+OBSOLETA PARA MÉTRICAS CIENTÍFICAS: as medições de tráfego (filas, fluxos de junção, fases) são
+produzidas para todo controlador pelo ``NetworkTelemetryCollector`` (``network_telemetry.py``),
+que armazena apenas lanes de entrada únicas. Os registros por movimento construídos aqui repetem
+a fila de uma lane uma vez por movimento e existem apenas para depuração opcional
+(``tracing.intersection_trace``) e para a visualização da demo; somas sobre eles nunca devem ser
+usadas como filas de rede ou de interseção.
 """
 
 from __future__ import annotations

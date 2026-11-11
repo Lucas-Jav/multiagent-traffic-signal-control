@@ -1,9 +1,9 @@
-"""Deterministic local H.264 encoding with FFmpeg (an external requirement).
+"""Codificação H.264 local determinística com FFmpeg (um requisito externo).
 
-FFmpeg is looked up in this order: ``FFMPEG_BINARY`` environment variable, ``ffmpeg`` on ``PATH``,
-and finally the binary bundled with the optional ``imageio-ffmpeg`` package
-(``uv pip install imageio-ffmpeg``). Frames are streamed to FFmpeg as raw RGB, so no intermediate
-image files are needed.
+O FFmpeg é procurado nesta ordem: variável de ambiente ``FFMPEG_BINARY``, ``ffmpeg`` no ``PATH``
+e, por fim, o binário incluído no pacote opcional ``imageio-ffmpeg``
+(``uv pip install imageio-ffmpeg``). Os frames são enviados ao FFmpeg como RGB bruto, portanto
+nenhum arquivo de imagem intermediário é necessário.
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ from PIL import Image
 
 
 class FFmpegError(RuntimeError):
-    """Raised when FFmpeg is missing or fails."""
+    """Lançada quando o FFmpeg está ausente ou falha."""
 
 
 def find_ffmpeg() -> str:
@@ -101,7 +101,7 @@ def encode_frames(
     output: Path,
     ffmpeg: str,
 ) -> int:
-    """Encode frames (all ``width`` x ``height``) into ``output``; returns the frame count."""
+    """Codifica frames (todos ``width`` x ``height``) em ``output``; retorna o nº de frames."""
 
     output.parent.mkdir(parents=True, exist_ok=True)
     process = subprocess.Popen(

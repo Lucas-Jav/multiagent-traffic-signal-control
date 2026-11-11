@@ -1,13 +1,13 @@
-"""Line-ending-independent hashing of scientific TEXT artifacts (``CANONICAL_TEXT_LF_V1``).
+"""Hashing de artefatos de TEXTO científicos independente de quebras de linha.
 
-Git may check text files out with LF or CRLF; the bytes (and so the raw SHA-256) then differ while
-the scientific content does not. This is the single implementation of the canonical text hash. It
-is used both by the route-artifact validation (execution path) and by the freeze tooling, which
-re-exports it from ``traffic_agents.experiments.freeze_hashing``.
+O Git pode obter arquivos de texto com LF ou CRLF; os bytes (e portanto o SHA-256 bruto) então
+diferem enquanto o conteúdo científico não. Esta é a implementação única do hash de texto
+canônico. É usada tanto pela validação de artefatos de rota (caminho de execução) quanto pelas
+ferramentas de freeze, que a reexportam de ``traffic_agents.experiments.freeze_hashing``.
 
-``CANONICAL_TEXT_LF_V1``: decode UTF-8 (a leading BOM is dropped), turn every ``CRLF`` into ``LF``
-and every remaining lone ``CR`` into ``LF``, encode UTF-8, SHA-256. Nothing else is normalised: no
-whitespace stripping, no re-serialisation, no final-newline changes.
+``CANONICAL_TEXT_LF_V1``: decodifica UTF-8 (um BOM inicial é removido), transforma todo ``CRLF``
+em ``LF`` e todo ``CR`` isolado restante em ``LF``, codifica UTF-8, SHA-256. Nada mais é
+normalizado: sem remoção de espaços, sem re-serialização, sem alteração de nova linha final.
 """
 
 from __future__ import annotations
@@ -17,8 +17,8 @@ from pathlib import PurePosixPath
 
 CANONICAL_TEXT_SCHEMA = "CANONICAL_TEXT_LF_V1"
 
-# Explicit text policy. Compound names (``.net.xml``, ``.rou.xml``, ``.metadata.json``) are
-# covered by their final suffix; anything not listed is binary (raw bytes only).
+# Política de texto explícita. Nomes compostos (``.net.xml``, ``.rou.xml``, ``.metadata.json``)
+# são cobertos pelo sufixo final; o que não está listado é binário (apenas bytes brutos).
 TEXT_SUFFIXES: tuple[str, ...] = (
     ".py",
     ".yaml",
@@ -37,7 +37,9 @@ TEXT_SUFFIXES: tuple[str, ...] = (
 
 
 class HashingError(ValueError):
-    """Raised for undecodable text, invalid metadata or an inconsistent scientific file set."""
+    """Lançada para texto não decodificável, metadados inválidos ou um conjunto de arquivos
+    científicos inconsistente.
+    """
 
 
 def is_text_path(path: str) -> bool:
@@ -50,7 +52,7 @@ def raw_byte_sha256(data: bytes) -> str:
 
 
 def canonical_text_bytes(data: bytes) -> bytes:
-    """Bytes hashed by ``CANONICAL_TEXT_LF_V1`` (BOM dropped, CRLF/CR -> LF, UTF-8)."""
+    """Bytes submetidos a hash por ``CANONICAL_TEXT_LF_V1`` (BOM removido, CRLF/CR -> LF, UTF-8)."""
 
     try:
         text = data.decode("utf-8-sig")

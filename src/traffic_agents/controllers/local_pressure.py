@@ -53,9 +53,9 @@ FULL_OCCUPANCY = 1.0
 
 @dataclass(frozen=True)
 class LocalPressureConfig:
-    """Configuration for the local pressure baseline.
+    """Configuração do baseline de pressão local.
 
-    For each movement, pressure is:
+    Para cada movimento, a pressão é:
 
         queue_weight * upstream_halting_vehicles
         + arrival_rate_weight * upstream_vehicle_arrival_rate
@@ -64,9 +64,9 @@ class LocalPressureConfig:
             1.0,
         )
 
-    All inputs come from the local IntersectionState. Queue and arrival rate model
-    upstream demand; normalized occupancy of the movement destination models
-    downstream congestion.
+    Todas as entradas vêm do IntersectionState local. Fila e taxa de chegada modelam a
+    demanda a montante; a ocupação normalizada do destino do movimento modela a
+    congestão a jusante.
     """
 
     min_green_seconds: float = 10.0

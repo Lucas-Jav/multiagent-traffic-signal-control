@@ -25,7 +25,7 @@ type CommunicationMessage = NeighborMessage | CompactNeighborMessage | ExpandedN
 
 
 class MessageBusError(ValueError):
-    """Raised when a logical message cannot be accepted by the in-memory bus."""
+    """Lançada quando uma mensagem lógica não pode ser aceita pelo barramento em memória."""
 
 
 class MessageBusRng(Protocol):
@@ -88,15 +88,15 @@ class _QueuedMessage:
 
 @dataclass
 class MessageBus:
-    """Deterministic in-memory bus driven by simulation steps.
+    """Barramento determinístico em memória, conduzido pelos passos de simulação.
 
-    Messages created at step t are first counted as sent. The drop decision is
-    made immediately during publish with the bus' dedicated RNG; dropped
-    messages never enter the delivery schedule. Messages that are not dropped
-    are scheduled for t + delay_steps. A call to receive(destination=...,
-    current_step=s) happens before that destination's controller decision for
-    simulation step s, so a message scheduled for s can influence the decision
-    taken in the same step.
+    Mensagens criadas no passo t são primeiro contadas como enviadas. A decisão de
+    descarte é tomada imediatamente durante o publish, com o RNG dedicado do
+    barramento; mensagens descartadas nunca entram no cronograma de entrega.
+    Mensagens não descartadas são agendadas para t + delay_steps. Uma chamada a
+    receive(destination=..., current_step=s) ocorre antes da decisão do controlador
+    daquele destino no passo de simulação s, de modo que uma mensagem agendada para s
+    pode influenciar a decisão tomada no mesmo passo.
     """
 
     destinations: Iterable[IntersectionId]

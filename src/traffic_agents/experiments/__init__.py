@@ -1,4 +1,4 @@
-"""Experiment orchestration."""
+"""Orquestração de experimentos."""
 
 from typing import TYPE_CHECKING, Any
 

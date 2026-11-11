@@ -1,11 +1,11 @@
-"""TCC package assembly (Prompt 64): tables, presentation/document subsets, manifest and validation.
+"""Montagem do pacote do TCC (Prompt 64): tabelas, subconjuntos de apresentação/documento, manifesto e validação.
 
-Run AFTER scripts/build_tcc_figures.py:
+Execute DEPOIS de scripts/build_tcc_figures.py:
 
     python scripts/build_tcc_figures.py
     python scripts/build_tcc_package.py
 
-Every number comes from artifacts/final-analysis/ (validated FINAL N=10 analysis).
+Todo número vem de artifacts/final-analysis/ (análise FINAL N=10 validada).
 """
 
 from __future__ import annotations
@@ -37,7 +37,7 @@ SRC_PW = ["artifacts/final-analysis/final_pairwise_summary.csv"]
 
 
 # ----------------------------------------------------------------------------------------------
-# table export
+# exportação de tabelas
 # ----------------------------------------------------------------------------------------------
 def md_escape(x: str) -> str:
     return str(x).replace("|", "/").replace("\n", " ")
@@ -55,7 +55,7 @@ def table(tid: str, title: str, caption: str, header: list[str], rows: list[list
           *, col_w: list[float] | None = None, fs: float = 8.6, figsize: tuple[float, float] | None = None, scenarios=None, controllers=None,
           metrics=None, n="10 seeds por controlador/cenário"):
     out = ROOT / "tables"
-    # csv (display) + md + tex
+    # csv (exibição) + md + tex
     with (out / f"{tid}.csv").open("w", newline="", encoding="utf-8") as fh:
         w = csv.writer(fh)
         w.writerow(header)
@@ -69,7 +69,7 @@ def table(tid: str, title: str, caption: str, header: list[str], rows: list[list
            + "\n\\bottomrule\n\\end{tabular}\n\\end{table}\n")
     (out / f"{tid}.tex").write_text(tex, encoding="utf-8")
     C.write_csv(out / f"{tid}_source.csv", source_rows)
-    # rendered figure (png/svg/pdf) with automatic text wrapping
+    # figura renderizada (png/svg/pdf) com quebra automática de texto
     import textwrap
     widths = col_w or [1.0] * len(header)
     tot = sum(widths)
@@ -120,7 +120,7 @@ def table(tid: str, title: str, caption: str, header: list[str], rows: list[list
 
 
 # ----------------------------------------------------------------------------------------------
-# TABLE 1 / 2 (definitions)
+# TABELA 1 / 2 (definições)
 # ----------------------------------------------------------------------------------------------
 def table1():
     c1_b = float(C.rd("s5_communication_summary.csv")[0]["mean_bytes_per_message_sent"])
@@ -164,7 +164,7 @@ def table2():
 
 
 # ----------------------------------------------------------------------------------------------
-# TABLE 3..6 (data)
+# TABELA 3..6 (dados)
 # ----------------------------------------------------------------------------------------------
 def table3():
     mets = ["throughput", "completion_ratio_offered", "mean_waiting_time", "mean_network_queue_vehicles", "max_network_queue_vehicles"]
@@ -252,7 +252,7 @@ def table6():
 
 
 # ----------------------------------------------------------------------------------------------
-# subsets
+# subconjuntos
 # ----------------------------------------------------------------------------------------------
 PRESENTATION = ["01_overview/FIG01_FINAL_OVERVIEW", "02_adaptation/FIG03_B0_VS_B2", "03_cooperation/FIG04_B2_VS_C1", "03_cooperation/FIG06_S2_TRADEOFF",
                 "05_s3_shock/FIG07_S3_SHOCK", "06_s4_saturation/FIG09_S4_B2_VS_C1", "04_reference_route/FIG11_REFERENCE_ROUTE",
@@ -289,7 +289,7 @@ def subsets():
         for ext in ("pdf", "svg"):
             shutil.copy2(ROOT / f"{rel}.{ext}", doc / f"{Path(rel).name}.{ext}")
         im = Image.open(ROOT / f"{rel}.png")
-        scale = 1950 / im.width  # 6.5 in at 300 dpi (A4 text width)
+        scale = 1950 / im.width  # 6,5 pol a 300 dpi (largura de texto A4)
         im.convert("RGB").resize((1950, round(im.height * scale)), Image.LANCZOS).save(doc / f"{Path(rel).name}_A4w_300dpi.png", dpi=(300, 300))
         doc_files.append(Path(rel).name)
     for t in TABLES:
@@ -312,7 +312,7 @@ def subsets():
 
 
 # ----------------------------------------------------------------------------------------------
-# manifest + validation
+# manifesto + validação
 # ----------------------------------------------------------------------------------------------
 def build_manifest():
     entries = []
@@ -346,7 +346,7 @@ def validate(manifest: dict, pres_files, doc_files):
                 missing_files.append(rel)
     if missing_files:
         problems.append(f"missing files {missing_files[:6]} (+{len(missing_files)})")
-    # N / pilot / historical B0
+    # N / piloto / B0 histórico
     n_problems = []
     pilot_ok = True
     hist_b0 = False
@@ -358,7 +358,7 @@ def validate(manifest: dict, pres_files, doc_files):
         if e["final_only"]:
             if "pilot" in txt.lower() and e["figure_id"] not in ("FIG18_PILOT_VS_FINAL", "FIG18B_N10_VALUE"):
                 pilot_ok = False
-    # N checks on per-seed sources (every dot-plot source row must have N == 10; S5 rows N == 10)
+    # verificações de N nas fontes por seed (toda linha-fonte de dot-plot deve ter N == 10; linhas S5 N == 10)
     for fid in ("FIG02_MAIN_CONTROLLER_OVERVIEW", "FIG06_S2_TRADEOFF", "FIG08_S3_POST_SHOCK_AUC", "FIG11_REFERENCE_ROUTE", "FIG14_S5_PACKET_LOSS", "FIG14B_S5_COMPLETION", "FIG15_S5_QUEUE_DELAY"):
         rows = list(csv.DictReader((ROOT / have[fid]["files"]["source_csv"]).open(encoding="utf-8")))
         bad = [r for r in rows if r.get("N") not in ("", None) and int(float(r["N"])) != 10]
@@ -366,7 +366,7 @@ def validate(manifest: dict, pres_files, doc_files):
             n_problems.append((fid, len(bad)))
     if n_problems:
         problems.append(f"N != 10: {n_problems}")
-    # S5 B2 not duplicated: exactly one B2 condition per S5 source, with N == 10
+    # B2 do S5 não duplicado: exatamente uma condição B2 por fonte S5, com N == 10
     s5_b2_ok = True
     for fid in ("FIG14_S5_PACKET_LOSS", "FIG14B_S5_COMPLETION", "FIG15_S5_QUEUE_DELAY"):
         rows = [r for r in csv.DictReader((ROOT / have[fid]["files"]["source_csv"]).open(encoding="utf-8")) if r["controller"] == B2]
@@ -377,14 +377,14 @@ def validate(manifest: dict, pres_files, doc_files):
             s5_b2_ok = False
     run_index = {(k[0], k[2], k[3]) for k in D.runs if k[0] == "FINAL_S5" and k[2] == B2}
     s5_b2_ok = s5_b2_ok and len({k for k in D.runs if k[0] == "FINAL_S5" and k[2] == B2}) == 10
-    # S3 time series: 10 seeds x 3 controllers, mean validated vs frozen metric at build time
+    # séries temporais do S3: 10 seeds x 3 controladores, média validada contra a métrica congelada na geração
     ts = list(csv.DictReader((ROOT / have["FIG07_S3_SHOCK"]["files"]["source_csv"]).open(encoding="utf-8")))
     ts_ok = all(int(r["n_seeds"]) == 10 for r in ts)
-    # encoding sanity (mojibake) in titles/captions
+    # sanidade de codificação (mojibake) em títulos/legendas
     moj = [e["figure_id"] for e in manifest["entries"] if re.search("Ã|Â|�", e["title"] + e["caption"])]
-    # figure sizes (not tiny/empty)
+    # tamanhos das figuras (não minúsculas/vazias)
     small = [e["figure_id"] for e in manifest["entries"] if Image.open(ROOT / e["files"]["png"]).size[0] < 1200]
-    # scientific consistency vs final_analysis.md / classification
+    # consistência científica vs final_analysis.md / classificação
     md = D.analysis_md.replace("−", "-").replace(",", ".")
     checks = {}
     s2 = lambda m: float(D.pair("S2_DIRECTIONAL_PEAK", B2, C1, m)["relative_difference_of_means"])  # noqa: E731

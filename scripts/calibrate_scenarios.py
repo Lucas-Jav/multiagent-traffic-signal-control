@@ -1,11 +1,12 @@
-"""Objective pre-Pilot-V2 scenario calibration (Prompt 46.7). Controller: B0_FIXED only.
+"""Calibração objetiva de cenários pré-Pilot-V2 (Prompt 46.7). Controlador: apenas B0_FIXED.
 
     uv run python scripts/calibrate_scenarios.py run
 
-The candidate grids, the calibration seeds and every acceptance criterion are declared in
-``artifacts/calibration/pilot_v2-scenario-calibration/calibration-plan.md`` and mirrored by the
-constants below. Criteria never look at controller performance: B0 is only the stable reference
-signal plan used to observe the demand. All artifacts carry ``campaign_role: CALIBRATION``.
+As grades de candidatos, as seeds de calibração e todo critério de aceitação são declarados em
+``artifacts/calibration/pilot_v2-scenario-calibration/calibration-plan.md`` e espelhados pelas
+constantes abaixo. Os critérios nunca olham o desempenho do controlador: o B0 é apenas o plano
+semafórico de referência estável usado para observar a demanda. Todos os artefatos carregam
+``campaign_role: CALIBRATION``.
 """
 
 from __future__ import annotations
@@ -88,7 +89,7 @@ def _movement_dirs(network_path: Path) -> dict[tuple[str, str], str]:
 
 
 def _slope_change(series: np.ndarray) -> tuple[float, float, bool]:
-    """Projected linear change over the interval, its mean, and the normalized stability verdict."""
+    """Variação linear projetada no intervalo, sua média e o veredito de estabilidade normalizado."""
 
     steps = np.arange(series.size, dtype=float)
     slope = float(np.polyfit(steps, series.astype(float), 1)[0])
@@ -110,7 +111,7 @@ def _group_of(vehicle: Any) -> str:
 
 
 def analyze_run(run_dir: Path, scenario_dir: Path, route_file: str) -> dict[str, Any]:
-    """Raw controller-independent metrics of one calibration run."""
+    """Métricas brutas, independentes do controlador, de uma execução de calibração."""
 
     route_path = scenario_dir / route_file
     metadata = json.loads(route_path.with_suffix("").with_suffix(".metadata.json").read_text())
@@ -213,7 +214,7 @@ def analyze_run(run_dir: Path, scenario_dir: Path, route_file: str) -> dict[str,
     row["a5_shock_queue_ratio"] = _ratio(
         row["a5_post_shock_mean_queue_600s"], row["a5_pre_shock_mean_queue"]
     )
-    rolling = np.convolve(q_net, np.ones(60) / 60.0, mode="valid")  # index j: mean of j..j+59
+    rolling = np.convolve(q_net, np.ones(60) / 60.0, mode="valid")  # índice j: média de j..j+59
     threshold = 1.25 * row["pre_shock_mean_queue"]
     latency = float("inf")
     for j in range(SHOCK, rolling.size):
@@ -296,7 +297,7 @@ def run_job(job: dict[str, Any]) -> dict[str, Any]:
 
 
 def evaluate(row: dict[str, Any], *, s1_rate: float | None) -> dict[str, bool]:
-    """Predeclared criteria (see calibration-plan.md)."""
+    """Critérios pré-declarados (ver calibration-plan.md)."""
 
     scenario = row["scenario"]
     c: dict[str, bool] = {}

@@ -1,8 +1,9 @@
-"""Shared data loading, style and export helpers for the TCC figure package (Prompt 64).
+"""Carga de dados, estilo e exportação compartilhados do pacote de figuras do TCC (Prompt 64).
 
-Every plotted scientific value is loaded from artifacts/final-analysis/ (validated FINAL N=10 analysis).
-Nothing here runs a simulation or touches a raw experiment output (the S3 time series is a read-only
-re-aggregation of the frozen lane telemetry, using the frozen network_total_queue definition).
+Todo valor científico plotado é carregado de artifacts/final-analysis/ (análise FINAL N=10 validada).
+Nada aqui executa simulação nem toca uma saída bruta de experimento (a série temporal do S3 é uma
+reagregação somente leitura da telemetria de lanes congelada, usando a definição congelada de
+network_total_queue).
 """
 
 from __future__ import annotations
@@ -48,8 +49,9 @@ CTRLS = [B0, B1, B2, C1, C2]
 CT_SHORT = {B0: "B0", B1: "B1", B2: "B2", C1: "C1", C2: "C2"}
 CT_LABEL = {B0: "B0 — Tempo fixo calibrado", B1: "B1 — Adaptativo local", B2: "B2 — Pressão local",
             C1: "C1 — Cooperativo compacto", C2: "C2 — Cooperativo expandido"}
-# categorical slots 1-5 of the validated reference palette, in adjacency-safe order (validated: CVD ΔE >= 9.2,
-# normal-vision ΔE >= 27 on adjacent pairs); secondary encoding = marker shape + hatch + direct labels
+# slots categóricos 1-5 da paleta de referência validada, em ordem segura quanto à adjacência
+# (validado: CVD ΔE >= 9,2, visão normal ΔE >= 27 em pares adjacentes); codificação secundária =
+# forma do marcador + hachura + rótulos diretos
 CT_COLOR = {B0: "#2a78d6", B1: "#eb6834", B2: "#1baf7a", C1: "#6250d6", C2: "#e87ba4"}
 CT_MARKER = {B0: "s", B1: "^", B2: "o", C1: "D", C2: "P"}
 CT_HATCH = {B0: "", B1: "//", B2: "..", C1: "xx", C2: "\\\\"}
@@ -109,7 +111,7 @@ def comma_axis(ax, which: str = "both", d: int | None = None) -> None:
 
 
 # ----------------------------------------------------------------------------------------------
-# Data
+# Dados
 # ----------------------------------------------------------------------------------------------
 def rd(name: str) -> list[dict[str, str]]:
     with (A / name).open(encoding="utf-8") as fh:
@@ -139,7 +141,7 @@ class Data:
         self.analysis_md = (A / "final_analysis.md").read_text(encoding="utf-8")
         fm = pq.read_table(A / "final_metrics.parquet").to_pylist()
         self.fm = fm
-        # (experiment, scenario, controller, loss, metric) -> {seed: value}
+        # (experimento, cenário, controlador, perda, métrica) -> {seed: valor}
         self.vals: dict[tuple, dict[int, float]] = defaultdict(dict)
         self.runs: dict[tuple, dict] = {}
         for r in fm:
@@ -152,7 +154,7 @@ class Data:
             if r["value"] is not None:
                 self.rr_vals[(r["scenario"], r["controller"], r["metric"])][int(r["seed"])] = r["value"]
 
-    # main experiment per-seed values
+    # valores por seed do experimento principal
     def seeds_vals(self, scenario: str, controller: str, metric: str) -> dict[int, float]:
         return self.vals[("FINAL_MAIN", scenario, controller, 0.0, metric)]
 
@@ -180,7 +182,7 @@ class Data:
 
 
 # ----------------------------------------------------------------------------------------------
-# Export registry
+# Registro de exportação
 # ----------------------------------------------------------------------------------------------
 MANIFEST: list[dict[str, Any]] = []
 

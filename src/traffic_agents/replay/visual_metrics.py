@@ -1,11 +1,12 @@
-"""Per-step live numbers shown in the video overlay (annotation only).
+"""Números ao vivo por passo exibidos no overlay do vídeo (apenas anotação).
 
-These values are NOT scientific metrics and never feed any analysis: the official metric pipeline
-(``traffic_agents.metrics``) is untouched. They are read-only TraCI queries issued after each
-step, so they cannot influence the simulation.
+Esses valores NÃO são métricas científicas e nunca alimentam nenhuma análise: o pipeline oficial
+de métricas (``traffic_agents.metrics``) permanece intocado. São consultas TraCI somente leitura
+emitidas após cada passo, portanto não podem influenciar a simulação.
 
-* ``network_queue``: vehicles halting (speed below 0.1 m/s) on all non-internal edges.
-* ``arrived_count`` / ``departed_count``: cumulative counts since simulation step 0.
+* ``network_queue``: veículos parados (velocidade abaixo de 0,1 m/s) em todas as arestas não
+  internas.
+* ``arrived_count`` / ``departed_count``: contagens acumuladas desde o passo de simulação 0.
 """
 
 from __future__ import annotations
@@ -35,7 +36,7 @@ class VisualMetricsRow:
 
 
 class VisualMetricsCollector:
-    """Accumulates arrived/departed counts and samples the halting-vehicle total."""
+    """Acumula contagens de chegados/partidos e amostra o total de veículos parados."""
 
     def __init__(self, edge_ids: Sequence[str]) -> None:
         self._edge_ids = tuple(edge_ids)
@@ -43,7 +44,9 @@ class VisualMetricsCollector:
         self._departed = 0
 
     def update_counts(self, connection: Any) -> None:
-        """Call once after EVERY simulation step so cumulative counts stay complete."""
+        """Chame uma vez após TODO passo de simulação para que as contagens acumuladas fiquem
+        completas.
+        """
 
         simulation = connection.simulation
         self._arrived += int(simulation.getArrivedNumber())

@@ -1,9 +1,10 @@
-"""Canonical experiment aggregation: ``run_metrics.json`` files -> ``combined_metrics.parquet``.
+"""Agregação canônica: arquivos ``run_metrics.json`` -> ``combined_metrics.parquet``.
 
-``combined_metrics.parquet`` is the single input of report generation and paired statistical
-analysis. It has one row per (completed run, metric) in long format and carries the
-scientific invariants needed for pairing. Failed or scientifically incomplete runs are never
-exported as zeros: a run whose metrics are not finalized aborts the aggregation.
+``combined_metrics.parquet`` é a entrada única da geração de relatórios e da análise estatística
+pareada. Tem uma linha por (execução concluída, métrica) em formato longo e carrega os
+invariantes científicos necessários para o pareamento. Execuções falhas ou cientificamente
+incompletas nunca são exportadas como zeros: uma execução cujas métricas não foram finalizadas
+aborta a agregação.
 """
 
 from __future__ import annotations
@@ -21,11 +22,11 @@ RUN_STATUS_FILE = "run_status.jsonl"
 
 
 class ExperimentAggregationError(RuntimeError):
-    """Raised when run metrics cannot be aggregated into combined metrics."""
+    """Lançada quando as métricas das execuções não podem ser agregadas em métricas combinadas."""
 
 
 def build_combined_metrics(experiment_dir: Path, *, output_path: Path | None = None) -> Path:
-    """Aggregate the finalized metrics of every COMPLETED run of an experiment."""
+    """Agrega as métricas finalizadas de toda execução CONCLUÍDA de um experimento."""
 
     status_path = experiment_dir / RUN_STATUS_FILE
     if not status_path.exists():

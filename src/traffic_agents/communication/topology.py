@@ -38,7 +38,7 @@ GRID_3X3_COMMUNICATION_NEIGHBORS: Mapping[IntersectionId, tuple[IntersectionId, 
 
 
 class CommunicationTopologyError(ValueError):
-    """Raised when an agent communication query violates the topology."""
+    """Lançada quando uma consulta de comunicação de agente viola a topologia."""
 
 
 @dataclass(frozen=True, init=False)

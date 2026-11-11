@@ -16,11 +16,11 @@ _VERSION_PATTERN = re.compile(
 
 
 class SumoNotFoundError(RuntimeError):
-    """Raised when SUMO binaries cannot be found or executed."""
+    """Lançada quando os binários do SUMO não podem ser encontrados ou executados."""
 
 
 class UnsupportedSumoVersionError(RuntimeError):
-    """Raised when the installed SUMO version is not the expected one."""
+    """Lançada quando a versão instalada do SUMO não é a esperada."""
 
 
 @dataclass(frozen=True)

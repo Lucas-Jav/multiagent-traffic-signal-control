@@ -11,7 +11,7 @@ from traffic_agents.domain import EdgeId, IntersectionId, IntersectionState, Lan
 
 
 class SensorReadError(RuntimeError):
-    """Raised when TraCI cannot provide a required sensor value."""
+    """Lançada quando o TraCI não consegue fornecer um valor de sensor necessário."""
 
 
 @runtime_checkable

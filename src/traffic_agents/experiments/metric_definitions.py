@@ -1,16 +1,16 @@
-"""Operational definitions of the final V1 metrics.
+"""Definições operacionais das métricas finais V1.
 
-Every metric exported by the canonical run finalization (``run_metrics.json``) and consumed by
-report/analysis has an entry here with its unit, source, population, aggregation, window and
-edge-case policy. ``docs/methodology/metrics.md`` mirrors this module.
+Toda métrica exportada pela finalização canônica da execução (``run_metrics.json``) e consumida
+pelo relatório/análise tem aqui uma entrada com sua unidade, fonte, população, agregação, janela
+e política de casos-limite. ``docs/methodology/metrics.md`` espelha este módulo.
 
-Population vocabulary:
+Vocabulário de populações:
 
-* **measurement cohort** - offered vehicles whose SCHEDULED departure lies in the measurement
-  window ``[warmup, warmup + measurement_duration)``.
-* **completed trips** - cohort vehicles that arrived before the run ended. Metrics computed
-  only over completed trips are CONDITIONAL on completion and must always be read together
-  with ``throughput``, the completion ratios and the queue/backlog metrics.
+* **coorte de medição** - veículos ofertados cuja partida PROGRAMADA está dentro da janela de
+  medição ``[warmup, warmup + measurement_duration)``.
+* **viagens concluídas** - veículos da coorte que chegaram antes do fim da execução. Métricas
+  calculadas apenas sobre viagens concluídas são CONDICIONAIS à conclusão e devem sempre ser
+  lidas junto com ``throughput``, as razões de conclusão e as métricas de fila/backlog.
 """
 
 from __future__ import annotations
@@ -121,7 +121,7 @@ def _queue(name: str, aggregation: str, *, window: str = _QUEUE_WINDOW) -> Metri
 
 
 METRIC_DEFINITIONS: Mapping[str, MetricDefinition] = {
-    # --- populations -----------------------------------------------------------------
+    # --- populações -----------------------------------------------------------------
     "offered_vehicle_count": _count(
         "offered_vehicle_count",
         "Count of offered vehicles in the measurement cohort (alias of "
@@ -234,7 +234,7 @@ METRIC_DEFINITIONS: Mapping[str, MetricDefinition] = {
         _COHORT_WINDOW,
         "Measurement cohort, completed trips.",
     ),
-    # --- insertion delay -------------------------------------------------------------
+    # --- atraso de inserção -------------------------------------------------------------
     "mean_depart_delay_seconds": MetricDefinition(
         name="mean_depart_delay_seconds",
         unit="seconds/vehicle",
@@ -265,7 +265,7 @@ METRIC_DEFINITIONS: Mapping[str, MetricDefinition] = {
         edge_case_policy="0 when every cohort vehicle was inserted.",
         population="Cohort vehicles that never entered the network.",
     ),
-    # --- completed-trip (conditional) metrics ----------------------------------------
+    # --- métricas de viagens concluídas (condicionais) ----------------------------------------
     "mean_travel_time": _completed(
         "mean_travel_time",
         "seconds/vehicle",
@@ -333,7 +333,7 @@ METRIC_DEFINITIONS: Mapping[str, MetricDefinition] = {
         ),
         window="Pre-shock subset of the measurement window.",
     ),
-    # --- queues ----------------------------------------------------------------------
+    # --- filas ----------------------------------------------------------------------
     "mean_network_queue_vehicles": _queue(
         "mean_network_queue_vehicles",
         "Mean over measurement steps of network_total_queue (sum of unique incoming-lane "
@@ -470,7 +470,7 @@ METRIC_DEFINITIONS: Mapping[str, MetricDefinition] = {
         edge_case_policy="0.0 for an entry with no departures.",
         population="Measurement cohort grouped by entry edge.",
     ),
-    # --- communication ---------------------------------------------------------------
+    # --- comunicação ---------------------------------------------------------------
     "messages_sent": MetricDefinition(
         name="messages_sent",
         unit="messages",
@@ -562,7 +562,8 @@ METRIC_DEFINITIONS: Mapping[str, MetricDefinition] = {
     ),
 }
 
-# Pairing metrics that must accompany completed-trip (conditional) metrics in any analysis.
+# Métricas de pareamento que devem acompanhar métricas de viagens concluídas (condicionais) em
+# qualquer análise.
 COMPANION_METRICS: tuple[str, ...] = (
     "throughput",
     "completion_ratio_offered",
@@ -667,9 +668,9 @@ METRIC_DEFINITION_ALIASES: Mapping[str, str] = {
     "average_message_age": "mean_message_age_steps",
     "max_observed_message_age": "max_message_age_steps",
 }
-# Ambiguous legacy names (``mean_queue``, ``max_queue``, ``queue``, ``post_shock_*_queue``,
-# ``post_shock_queue_auc``) are intentionally NOT aliased: a queue metric must always name its
-# scope (lane / intersection / network).
+# Nomes legados ambíguos (``mean_queue``, ``max_queue``, ``queue``, ``post_shock_*_queue``,
+# ``post_shock_queue_auc``) intencionalmente NÃO têm alias: uma métrica de fila deve sempre nomear
+# seu escopo (lane / interseção / rede).
 
 
 def metric_definition_payload(metric_names: Sequence[str]) -> list[dict[str, str]]:

@@ -105,4 +105,4 @@ Consequências da política:
 - Pendente (passo seguinte, não feito aqui): executar a reavaliação do S3 com o gate composto sobre a telemetria existente e registrar o resultado; só então decidir se a comparação B2 vs C1 pode ser liberada.
 - Risco a declarar no relatório da reavaliação: a janela de 1800 s foi escolhida depois de observar os dados da auditoria (Seção 4).
 
-> **Status update (final audit, Prompt 52).** The re-evaluation left pending in section 9 was executed in Prompt 48: S3 passes the composite gate with 5/5 valid seeds (seed 4517 `VALID_WITH_DIAGNOSTIC_WARNING`). No blocker remains.
+> **Atualização de status (auditoria final, Prompt 52).** A reavaliação deixada pendente na seção 9 foi executada no Prompt 48: o S3 passa no gate composto com 5/5 seeds válidas (seed 4517 `VALID_WITH_DIAGNOSTIC_WARNING`). Nenhum bloqueio permanece.

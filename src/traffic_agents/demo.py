@@ -22,7 +22,7 @@ DEFAULT_CONSOLE_INTERVAL_STEPS = 10
 
 
 class DemoConfigurationError(ValueError):
-    """Raised when a SUMO-GUI demo request is invalid."""
+    """Lançada quando uma solicitação de demo no SUMO-GUI é inválida."""
 
 
 @dataclass(frozen=True)

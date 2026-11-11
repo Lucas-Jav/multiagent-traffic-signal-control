@@ -1,14 +1,14 @@
-"""Seeded, deterministic turning-ratio routing for border-entry demand.
+"""Roteamento determinístico com seed por razões de conversão para demanda de entrada de borda.
 
-Vehicles enter the network at a border entry edge and, at every signalized junction,
-choose ``straight``/``left``/``right`` with the configured turning ratios until they
-reach a border exit edge. Only legal movements of the SUMO network (connections with
-``dir`` in ``s``, ``l``, ``r``; U-turns are never created) are considered, so illegal
-turns are never forced to satisfy a ratio.
+Os veículos entram na rede em uma aresta de entrada de borda e, em cada junção semaforizada,
+escolhem ``straight``/``left``/``right`` com as razões de conversão configuradas até
+alcançarem uma aresta de saída de borda. Apenas movimentos legais da rede SUMO (conexões com
+``dir`` em ``s``, ``l``, ``r``; retornos em U nunca são criados) são considerados, portanto
+conversões ilegais nunca são forçadas para satisfazer uma razão.
 
-All randomness comes from ``random.Random`` instances seeded from
-``(seed, demand_id)``; the same seed and configuration always reproduce identical
-routes and departure times.
+Toda a aleatoriedade vem de instâncias de ``random.Random`` com seed derivada de
+``(seed, demand_id)``; a mesma seed e configuração sempre reproduzem rotas e horários de
+partida idênticos.
 """
 
 from __future__ import annotations
@@ -41,12 +41,14 @@ MAX_ROUTE_JUNCTIONS = 64
 
 
 class RouteWalkError(ValueError):
-    """Raised when turning-ratio routing cannot be built from the network or config."""
+    """Lançada quando o roteamento por razões de conversão não pode ser construído a partir da rede
+    ou da config.
+    """
 
 
 @dataclass(frozen=True)
 class RoutingGraph:
-    """Legal movement graph extracted from a SUMO network file."""
+    """Grafo de movimentos legais extraído de um arquivo de rede SUMO."""
 
     successors: Mapping[str, Mapping[Movement, str]]
     entry_edges: frozenset[str]
@@ -140,10 +142,10 @@ def shortest_paths_to_node(
     entry_edge_id: str,
     via_node_id: str,
 ) -> tuple[tuple[str, ...], ...]:
-    """All shortest legal edge paths from the entry edge to an approach of ``via_node_id``.
+    """Todos os caminhos legais mais curtos da entrada até uma aproximação de ``via_node_id``.
 
-    A path ends at the first edge whose end node is ``via_node_id``. Results are sorted so
-    the choice among equally short paths is deterministic.
+    Um caminho termina na primeira aresta cujo nó final é ``via_node_id``. Os resultados são
+    ordenados para que a escolha entre caminhos igualmente curtos seja determinística.
     """
 
     if entry_edge_id not in graph.entry_edges:
@@ -182,7 +184,7 @@ def sample_route(
     rng: random.Random,
     via_node_id: str | None = None,
 ) -> tuple[str, ...]:
-    """Sample one route from ``entry_edge_id`` to a border exit edge."""
+    """Sorteia uma rota de ``entry_edge_id`` até uma aresta de saída de borda."""
 
     if entry_edge_id not in graph.entry_edges:
         msg = f"not a border entry edge: {entry_edge_id}"
@@ -229,7 +231,9 @@ def departure_times(
     vehicles_per_hour: float,
     rng: random.Random,
 ) -> tuple[float, ...]:
-    """Evenly spaced departures (SUMO ``vehsPerHour`` semantics) with a seeded phase."""
+    """Partidas uniformemente espaçadas (semântica ``vehsPerHour`` do SUMO) com fase definida por
+    seed.
+    """
 
     if vehicles_per_hour <= 0:
         return ()
@@ -297,9 +301,10 @@ def expected_edge_flows(
     via_node_by_entry: Mapping[str, str | None] | None = None,
     max_steps: int = 80,
 ) -> tuple[dict[str, float], dict[Movement, float]]:
-    """Expected vehicles/hour on each edge and expected movement volume (Markov chain).
+    """Veículos/hora esperados em cada aresta e volume esperado de movimentos (cadeia de Markov).
 
-    Entries with a via node first follow the uniformly chosen shortest paths to it.
+    Entradas com nó intermediário (via) primeiro seguem os caminhos mais curtos, escolhidos
+    uniformemente, até ele.
     """
 
     flows: dict[str, float] = defaultdict(float)
@@ -344,7 +349,9 @@ def summarize_vehicles(
     measurement_start_seconds: float,
     measurement_end_seconds: float,
 ) -> dict[str, object]:
-    """Offered demand, realized movement mix and junction coverage of generated vehicles."""
+    """Demanda ofertada, mistura de movimentos realizada e cobertura de junções dos veículos
+    gerados.
+    """
 
     by_entry: dict[str, int] = defaultdict(int)
     by_group: dict[str, int] = defaultdict(int)

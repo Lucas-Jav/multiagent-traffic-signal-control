@@ -143,12 +143,12 @@ class DemandScheduleWindowConfig(ConfigModel):
 
 
 class TurningRatiosConfig(ConfigModel):
-    """Probability of each movement at every signalized junction.
+    """Probabilidade de cada movimento em cada junção semaforizada.
 
-    For ``entries``-based demand these ratios drive the seeded route generator (a
-    junction-turning random walk from each border entry to a border exit), so they
-    shape the movements that vehicles actually perform. The default is the approved
-    V1 protocol distribution (S1: 0.70 straight, 0.15 left, 0.15 right).
+    Para demanda baseada em ``entries``, essas razões conduzem o gerador de rotas com seed
+    (um passeio aleatório de conversões entre junções, de cada entrada de borda até uma saída
+    de borda), portanto moldam os movimentos que os veículos de fato realizam. O padrão é a
+    distribuição aprovada do protocolo V1 (S1: 0,70 em frente, 0,15 esquerda, 0,15 direita).
     """
 
     straight: NonNegativeFloat = 0.70
@@ -165,16 +165,16 @@ class TurningRatiosConfig(ConfigModel):
 
 
 class EntryDemandConfig(ConfigModel):
-    """Demand injected at one border entry edge and routed by turning ratios.
+    """Demanda injetada em uma aresta de entrada de borda e roteada por razões de conversão.
 
-    ``begin_seconds``/``end_seconds`` are absolute simulation seconds (warmup included).
-    ``turning_ratios`` optionally overrides the scenario-level ratios for this entry.
-    ``via_intersection_id`` (a project intersection id such as ``A5``) makes every vehicle of
-    this demand first follow a shortest legal path to that intersection and then continue
-    with the turning-ratio walk; it is used to build deliberate convergence (S3 shock, S4
-    hotspot).
-    ``group`` labels the role of the demand (for example ``base``, ``dominant``,
-    ``residual``, ``shock``, ``hotspot``) and is reported in the route metadata.
+    ``begin_seconds``/``end_seconds`` são segundos absolutos de simulação (warmup incluído).
+    ``turning_ratios`` opcionalmente substitui as razões do nível do cenário para esta entrada.
+    ``via_intersection_id`` (um id de interseção do projeto, como ``A5``) faz todo veículo
+    desta demanda seguir primeiro um caminho legal mais curto até essa interseção e depois
+    continuar com o passeio por razões de conversão; é usado para construir convergência
+    deliberada (choque do S3, hotspot do S4).
+    ``group`` rotula o papel da demanda (por exemplo ``base``, ``dominant``, ``residual``,
+    ``shock``, ``hotspot``) e é registrado nos metadados de rota.
     """
 
     demand_id: Annotated[str, Field(min_length=1)]
@@ -205,14 +205,14 @@ class EntryDemandConfig(ConfigModel):
 
 
 class TrafficDemandConfig(ConfigModel):
-    """Traffic demand definition.
+    """Definição da demanda de tráfego.
 
-    Exactly one demand form is used:
+    Exatamente uma forma de demanda é usada:
 
-    * ``entries``: per-border-entry rates routed by the turning ratios (seeded,
-      deterministic). This is the form used by the V1 scenarios.
-    * ``flows``: explicit origin/destination flows routed by SUMO ``duarouter``
-      (legacy form; turning ratios are metadata only in this form).
+    * ``entries``: taxas por entrada de borda roteadas pelas razões de conversão (com seed,
+      determinístico). Esta é a forma usada pelos cenários V1.
+    * ``flows``: fluxos explícitos de origem/destino roteados pelo ``duarouter`` do SUMO
+      (forma legada; as razões de conversão são apenas metadados nesta forma).
     """
 
     demand_profile: DemandProfileId
@@ -257,11 +257,12 @@ class CommunicationConfig(ConfigModel):
 
 
 class TracingConfig(ConfigModel):
-    """Optional debug tracing.
+    """Rastreamento opcional para depuração.
 
-    Scientific metrics never depend on these traces: canonical telemetry is produced by the
-    simulation runner for every controller. ``intersection_trace`` re-enables the legacy
-    controller-produced per-movement CSV (``intersection_trace.csv``) for debugging only.
+    As métricas científicas nunca dependem desses rastros: a telemetria canônica é produzida
+    pelo executor da simulação para todo controlador. ``intersection_trace`` reativa o CSV
+    legado por movimento produzido pelo controlador (``intersection_trace.csv``), apenas
+    para depuração.
     """
 
     agent_decisions: bool = False

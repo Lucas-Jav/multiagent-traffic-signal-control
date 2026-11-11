@@ -1,5 +1,5 @@
-"""Render artifacts/final-analysis/final_analysis.md from the analysis CSVs and copy the lightweight
-evidence to docs/evidencias/final-analysis/. Reads analysis outputs only; runs no simulation."""
+"""Renderiza artifacts/final-analysis/final_analysis.md a partir dos CSVs da análise e copia a
+evidência leve para docs/evidencias/final-analysis/. Lê apenas saídas da análise; não executa simulação."""
 
 from __future__ import annotations
 
@@ -279,7 +279,7 @@ def main() -> None:
     ch = [r for r in PVF if r["verdict_changed"] == "True"]
     persisted = sum(r["direction_persisted"] == "True" for r in PVF if r["pilot_mean_diff_C1_minus_B2"] not in ("0", "0.0"))
     first5_same = sum(r["final_first5_identical_to_pilot"] == "True" for r in PVF)
-    # width ratios per scenario (service/delay key metrics only)
+    # razões de largura por cenário (apenas métricas-chave de serviço/atraso)
     wr = {}
     for s in SCEN:
         vals = [float(r["ci_width_ratio_final_over_pilot"]) for r in PVF if r["scenario"] == s and r["ci_width_ratio_final_over_pilot"] not in ("", "None") and r["metric"] in ("throughput", "completion_ratio_offered", "mean_waiting_time", "mean_time_loss", "mean_network_queue_vehicles", "max_network_queue_vehicles", "mean_travel_time")]
@@ -551,7 +551,7 @@ Expectativa "cooperação ajuda sob congestão": confirmada apenas em S4 (e com 
 """
     (OUT / "final_analysis.md").write_text(md, encoding="utf-8")
 
-    # lightweight evidence
+    # evidência leve
     EVID.mkdir(parents=True, exist_ok=True)
     for name in ["final_controller_summary.csv", "final_pairwise_summary.csv", "final_scenario_pair_classification.csv",
                  "reference_route_pairwise.csv", "reference_route_summary.csv", "reference_route_cohort_summary.csv",

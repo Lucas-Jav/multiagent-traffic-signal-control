@@ -1,16 +1,17 @@
-"""Final fixed-time baseline calibration (Prompt 55.5). Controller: B0 only.
+"""Calibração do baseline de tempo fixo final (Prompt 55.5). Controlador: apenas B0.
 
-    uv run python scripts/calibrate_fixed_time.py plan       # predeclare + candidates (no sim)
-    uv run python scripts/calibrate_fixed_time.py run        # calibration runs (B0 only)
-    uv run python scripts/calibrate_fixed_time.py select     # apply the predeclared objective
-    uv run python scripts/calibrate_fixed_time.py validate   # untouched validation seeds
-    uv run python scripts/calibrate_fixed_time.py finalize   # write the final plan file
+    uv run python scripts/calibrate_fixed_time.py plan       # pré-declara + candidatos (sem simulação)
+    uv run python scripts/calibrate_fixed_time.py run        # execuções de calibração (apenas B0)
+    uv run python scripts/calibrate_fixed_time.py select     # aplica o objetivo pré-declarado
+    uv run python scripts/calibrate_fixed_time.py validate   # seeds de validação intocadas
+    uv run python scripts/calibrate_fixed_time.py finalize   # grava o arquivo do plano final
 
-Everything that defines the calibration (search space, objective, guards, seeds, tie-break rule) is
-declared by the constants below and frozen into ``calibration-plan.json`` by the ``plan`` command,
-BEFORE any candidate is simulated. The objective uses only B0 traffic outcomes measured on the
-calibration scenarios; no B1/B2/C1/C2 result is read anywhere in this script.
-All artifacts carry ``campaign_role: BASELINE_CALIBRATION``; they are not scientific results.
+Tudo que define a calibração (espaço de busca, objetivo, salvaguardas, seeds, regra de desempate)
+é declarado pelas constantes abaixo e congelado em ``calibration-plan.json`` pelo comando ``plan``,
+ANTES de qualquer candidato ser simulado. O objetivo usa apenas resultados de tráfego do B0
+medidos nos cenários de calibração; nenhum resultado de B1/B2/C1/C2 é lido em nenhum ponto deste
+script. Todos os artefatos carregam ``campaign_role: BASELINE_CALIBRATION``; não são resultados
+científicos.
 """
 
 from __future__ import annotations
@@ -44,33 +45,33 @@ OUT_ROOT = Path("artifacts/calibration/fixed_time_b0")
 SOURCE_DIR = Path("scenarios/grid_3x3")
 FINAL_PLAN_PATH = Path("experiments/fixed_time/b0_fixed_calibrated.json")
 
-# --- Seeds (never Pilot V2 seeds, never the reserved final-analysis pool) -------------------------
+# --- Seeds (nunca as do Pilot V2, nunca o pool reservado da análise final) -------------------------
 CALIBRATION_SEEDS = (101, 1009, 2029)
 VALIDATION_SEEDS = (3011, 4021, 5003)
-SCENARIOS = ("s1", "s2", "s3", "s4")  # demand levels = the already calibrated gen.CALIBRATED
+SCENARIOS = ("s1", "s2", "s3", "s4")  # níveis de demanda = os já calibrados em gen.CALIBRATED
 
-# --- Search space ---------------------------------------------------------------------------------
+# --- Espaço de busca ---------------------------------------------------------------------------------
 YELLOW_SECONDS = 3
 ALL_RED_SECONDS = 2
-LOST_SECONDS = 4 * (YELLOW_SECONDS + ALL_RED_SECONDS)  # 20 s per cycle
-CYCLES = (68, 84, 100, 116, 132)  # (cycle - 20) divisible by 4: equal greens 12/16/20/24/28 s
+LOST_SECONDS = 4 * (YELLOW_SECONDS + ALL_RED_SECONDS)  # 20 s por ciclo
+CYCLES = (68, 84, 100, 116, 132)  # (ciclo - 20) divisível por 4: verdes iguais 12/16/20/24/28 s
 SPLITS = ("EQUAL", "DEMAND_PROPORTIONAL")
 OFFSETS = ("ZERO", "STAGGER", "ALTERNATE")
 MIN_GREEN = 10
 MAX_GREEN = 60
-STAGGER_STEP_SECONDS = 10  # same rule as the historical plan: ((logical index - 1) * 10) mod cycle
-REFERENCE_ID = "static98"  # historical B0_FIXED_STATIC, evaluated natively (no override)
+STAGGER_STEP_SECONDS = 10  # mesma regra do plano histórico: ((índice lógico - 1) * 10) mod ciclo
+REFERENCE_ID = "static98"  # B0_FIXED_STATIC histórico, avaliado nativamente (sem override)
 
-# --- Objective (lower is better; the reference plan scores exactly 1.0) ---------------------------
+# --- Objetivo (menor é melhor; o plano de referência pontua exatamente 1,0) ---------------------------
 W_COMPLETION = 0.40
 W_QUEUE = 0.35
 W_TIME_LOSS = 0.25
-GUARD_MIN_COMPLETION_REL = 0.95  # per scenario: mean completion_ratio_offered >= 0.95 x reference
-GUARD_MIN_DEPARTURE_REL = 0.95  # per scenario: mean departure_ratio >= 0.95 x reference
-GUARD_MAX_QUEUE_REL = 1.25  # per scenario: mean network queue <= 1.25 x reference
-GUARD_MAX_TIME_LOSS_REL = 1.25  # per scenario: mean time loss <= 1.25 x reference
-TIE_TOLERANCE = 0.005  # J within tolerance of the best: higher mean completion, then shorter cycle
-VALIDATION_MAX_J_REGRESSION = 1.0  # selected plan must score J <= 1.0 on validation seeds too
+GUARD_MIN_COMPLETION_REL = 0.95  # por cenário: média de completion_ratio_offered >= 0,95 x referência
+GUARD_MIN_DEPARTURE_REL = 0.95  # por cenário: média de departure_ratio >= 0,95 x referência
+GUARD_MAX_QUEUE_REL = 1.25  # por cenário: fila média da rede <= 1,25 x referência
+GUARD_MAX_TIME_LOSS_REL = 1.25  # por cenário: perda de tempo média <= 1,25 x referência
+TIE_TOLERANCE = 0.005  # J dentro da tolerância do melhor: maior conclusão média, depois ciclo mais curto
+VALIDATION_MAX_J_REGRESSION = 1.0  # o plano selecionado deve ter J <= 1,0 também nas seeds de validação
 
 
 def objective_spec() -> dict[str, Any]:
@@ -120,13 +121,13 @@ def predeclaration() -> dict[str, Any]:
     }
 
 
-# --- Plan construction ----------------------------------------------------------------------------
+# --- Construção do plano ----------------------------------------------------------------------------
 def _network(path: Path) -> ET.Element:
     return ET.parse(path).getroot()
 
 
 def tls_approach_edges(network_path: Path) -> dict[str, list[str]]:
-    """Incoming edge of each approach phase (network phase order) of every traffic light."""
+    """Aresta de entrada de cada fase de aproximação (ordem de fases da rede) de todo semáforo."""
 
     root = _network(network_path)
     edges_by_tls_link: dict[str, dict[int, str]] = defaultdict(dict)
@@ -156,7 +157,7 @@ def tls_approach_edges(network_path: Path) -> dict[str, list[str]]:
 def demand_shares(
     scenarios_root: Path, approach_edges: dict[str, list[str]]
 ) -> dict[str, list[float]]:
-    """Mean approach share per traffic light over S1-S4 and calibration seeds (equal weights)."""
+    """Participação média por aproximação em cada semáforo sobre S1-S4 e seeds de calibração (pesos iguais)."""
 
     shares: dict[str, list[list[float]]] = {tls: [] for tls in approach_edges}
     for scenario in SCENARIOS:
@@ -168,7 +169,7 @@ def demand_shares(
                 depart = float(vehicle.get("depart", "0"))
                 if not gen.WARMUP_SECONDS <= depart < gen.TOTAL_SECONDS:
                     continue
-                for edge in routes[vehicle.get("route")][:-1]:  # last edge exits the network
+                for edge in routes[vehicle.get("route")][:-1]:  # a última aresta sai da rede
                     counts[edge] += 1
             for tls, edges in approach_edges.items():
                 flows = [counts[edge] for edge in edges]
@@ -181,10 +182,10 @@ def demand_shares(
 
 
 def allocate_greens(shares: list[float], green_total: int) -> list[int]:
-    """Webster split rule under equal saturation flows: green proportional to flow share.
+    """Regra de divisão de Webster com fluxos de saturação iguais: verde proporcional à participação no fluxo.
 
-    Each approach first gets MIN_GREEN; the rest is shared by largest remainder; the greens are then
-    capped at MAX_GREEN. Deterministic.
+    Cada aproximação recebe primeiro MIN_GREEN; o restante é repartido pelo maior resto; os verdes
+    são então limitados a MAX_GREEN. Determinístico.
     """
 
     n = len(shares)
@@ -203,7 +204,7 @@ def allocate_greens(shares: list[float], green_total: int) -> list[int]:
 
 
 def tls_grid_position(tls_id: str) -> tuple[int, int]:
-    return "ABC".index(tls_id[0]), int(tls_id[1])  # (column, row) in SUMO naming
+    return "ABC".index(tls_id[0]), int(tls_id[1])  # (coluna, linha) na nomenclatura do SUMO
 
 
 def offsets_for(strategy: str, cycle: int, logical_index: dict[str, int]) -> dict[str, int]:
@@ -213,7 +214,7 @@ def offsets_for(strategy: str, cycle: int, logical_index: dict[str, int]) -> dic
             offsets[tls] = 0
         elif strategy == "STAGGER":
             offsets[tls] = ((index - 1) * STAGGER_STEP_SECONDS) % cycle
-        else:  # ALTERNATE: checkerboard half-cycle offset
+        else:  # ALTERNATE: deslocamento de meio ciclo em xadrez
             column, row = tls_grid_position(tls)
             offsets[tls] = ((column + row) % 2) * (cycle // 2)
     return offsets
@@ -255,7 +256,7 @@ def candidate_plans(network_path: Path, scenarios_root: Path) -> list[FixedTimeP
     ]
 
 
-# --- Simulation -----------------------------------------------------------------------------------
+# --- Simulação -----------------------------------------------------------------------------------
 def _scenario_dir(scenario: str) -> Path:
     return OUT_ROOT / "scenarios" / scenario
 
@@ -279,11 +280,11 @@ def prepare_scenarios(seeds: tuple[int, ...]) -> None:
 
 
 def run_job(job: dict[str, Any]) -> dict[str, Any]:
-    """Run one job, retrying on SUMO output flush races.
+    """Executa um job, repetindo em caso de corrida de flush da saída do SUMO.
 
-    Under heavy parallel load the runner may parse ``tripinfo.xml`` before SUMO finished writing it
-    (``traci.close(wait=False)``). The simulation is deterministic, so a retry reproduces the same
-    run; the retry never changes any metric or decision.
+    Sob carga paralela pesada o executor pode ler ``tripinfo.xml`` antes de o SUMO terminar de
+    escrevê-lo (``traci.close(wait=False)``). A simulação é determinística, então uma nova
+    tentativa reproduz a mesma execução; a repetição nunca altera nenhuma métrica ou decisão.
     """
 
     last_error: Exception | None = None
@@ -313,7 +314,7 @@ def _run_job_once(job: dict[str, Any]) -> dict[str, Any]:
     override = None
     controller_id = "B0_FIXED"
     if job["plan"] is not None:
-        from traffic_agents.controllers import plan_from_payload  # local import for workers
+        from traffic_agents.controllers import plan_from_payload  # import local para os workers
 
         override = FixedTimePlanController(plan_from_payload(job["plan"]))
         controller_id = override.controller_id
@@ -366,10 +367,10 @@ def _row_from_run_dir(
 
 
 def scan_finalized_runs(stage: str) -> list[dict[str, Any]]:
-    """Rows of runs already finalized on disk (resume after an interrupted session).
+    """Linhas de execuções já finalizadas em disco (retomada após uma sessão interrompida).
 
-    A finished run is deterministic, so it is reused instead of re-simulated; incomplete run
-    directories (no finalized metrics) are deleted so that they are simulated again.
+    Uma execução finalizada é determinística, então é reutilizada em vez de re-simulada; diretórios
+    de execução incompletos (sem métricas finalizadas) são apagados para serem simulados de novo.
     """
 
     rows: list[dict[str, Any]] = []
@@ -435,13 +436,13 @@ def _run(
     results_path.write_text(json.dumps(rows, indent=1), encoding="utf-8")
 
 
-# --- Evaluation -----------------------------------------------------------------------------------
+# --- Avaliação -----------------------------------------------------------------------------------
 def _mean(values: list[float]) -> float:
     return sum(values) / len(values)
 
 
 def evaluate(rows: list[dict[str, Any]], plan_ids: list[str]) -> list[dict[str, Any]]:
-    """Apply the predeclared objective. Reference rows are the baseline of every comparison."""
+    """Aplica o objetivo pré-declarado. As linhas de referência são o baseline de toda comparação."""
 
     index = {(r["plan_id"], r["scenario"], r["seed"]): r for r in rows}
     evaluations = []
@@ -511,7 +512,7 @@ def pick(evaluations: list[dict[str, Any]], cycles: dict[str, int]) -> dict[str,
     ]
 
 
-# --- Commands -------------------------------------------------------------------------------------
+# --- Comandos -------------------------------------------------------------------------------------
 def _load_plans() -> list[FixedTimePlan]:
     from traffic_agents.controllers import plan_from_payload
 

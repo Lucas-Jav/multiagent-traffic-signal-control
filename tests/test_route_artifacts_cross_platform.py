@@ -1,4 +1,6 @@
-"""Route/network artifact validation must not depend on checkout line endings (LF vs CRLF)."""
+"""A validação de artefatos de rota/rede não deve depender das quebras de linha do checkout (LF vs
+CRLF).
+"""
 
 from __future__ import annotations
 
@@ -44,7 +46,7 @@ def _lf(data: bytes) -> bytes:
 
 
 def _stage(tmp_path: Path, scenario: str, seed: int, convert: object) -> Path:
-    """Copy one scenario's artifacts into ``tmp_path`` with every text file converted."""
+    """Copia os artefatos de um cenário para ``tmp_path`` com todo arquivo de texto convertido."""
 
     target = tmp_path / f"{scenario}_{seed}"
     target.mkdir()
@@ -66,7 +68,7 @@ def _validate(scenario_yaml: Path) -> None:
     validate_route_artifacts(scenario_config=config, scenario_dir=scenario_yaml.parent)
 
 
-# --- LF <-> CRLF equivalence --------------------------------------------------------------------
+# --- equivalência LF <-> CRLF --------------------------------------------------------------------
 @pytest.mark.parametrize("seed", [*PILOT_SEEDS, *EXTENSION_SEEDS])
 @pytest.mark.parametrize("scenario", ff.MAIN_SCENARIOS)
 @pytest.mark.parametrize("variant", ["lf", "crlf"])
@@ -99,7 +101,7 @@ def test_validation_has_no_side_effects(tmp_path: Path) -> None:
     assert {p.name: p.read_bytes() for p in scenario_yaml.parent.iterdir()} == before
 
 
-# --- real scientific changes are still rejected -------------------------------------------------
+# --- mudanças científicas reais ainda são rejeitadas ----------------------------------------------
 @pytest.mark.parametrize("variant", [_lf, _crlf], ids=["lf", "crlf"])
 def test_changed_route_edge_is_rejected(tmp_path: Path, variant: object) -> None:
     scenario_yaml = _stage(tmp_path, "S4_LOCAL_SATURATION", 42, variant)
@@ -144,8 +146,8 @@ def test_added_trailing_whitespace_is_a_content_change(tmp_path: Path) -> None:
 
 
 def test_unknown_recorded_raw_hash_cannot_be_laundered(tmp_path: Path) -> None:
-    """A raw mismatch is never accepted just because the file is 'valid': the recorded hash
-    must be a known legacy identity whose canonical hash equals the file's."""
+    """Uma divergência bruta nunca é aceita só porque o arquivo é 'válido': o hash registrado
+    deve ser uma identidade legada conhecida cujo hash canônico seja igual ao do arquivo."""
 
     scenario_yaml = _stage(tmp_path, "S1_BALANCED", 42, _crlf)
     metadata_path = scenario_yaml.parent / "routes_s1_seed_42.metadata.json"
@@ -204,7 +206,7 @@ def test_other_scientific_metadata_fields_change_semantic_identity(field: str) -
     assert semantic_metadata_sha256(json.dumps(metadata).encode()) != original
 
 
-# --- new metadata (canonical fields) ------------------------------------------------------------
+# --- metadados novos (campos canônicos) -----------------------------------------------------------
 def _with_canonical_fields(scenario_yaml: Path, scenario: str, seed: int) -> None:
     short = scenario.split("_", maxsplit=1)[0].lower()
     metadata_path = scenario_yaml.parent / f"routes_{short}_seed_{seed}.metadata.json"
@@ -213,7 +215,8 @@ def _with_canonical_fields(scenario_yaml: Path, scenario: str, seed: int) -> Non
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
     metadata["route_canonical_sha256"] = canonical_sha256(route.read_bytes())
     metadata["network_canonical_sha256"] = canonical_sha256(network.read_bytes())
-    # a raw hash that matches no checkout: only the canonical field can authorise the files
+    # um hash bruto que não corresponde a nenhum checkout: só o campo canônico pode autorizar os
+    # arquivos
     metadata["route_hash"] = "f" * 64
     metadata["network_hash"] = "e" * 64
     metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
@@ -258,11 +261,11 @@ def test_generator_emits_raw_and_canonical_fields_without_changing_routes(
         assert regenerated["route_raw_sha256"] == raw_byte_sha256(route.read_bytes())
         assert regenerated["route_canonical_sha256"] == canonical_sha256(route.read_bytes())
         assert regenerated["network_canonical_sha256"] == canonical_sha256(network.read_bytes())
-        # route content is the committed content (only line endings may differ)
+        # o conteúdo da rota é o conteúdo commitado (só as quebras de linha podem diferir)
         assert canonical_sha256(route.read_bytes()) == canonical_sha256(
             (SCENARIO_DIR / ff.route_file_name(scenario, 6841)).read_bytes()
         )
-        # apart from the new fields and provenance, the metadata is the committed metadata
+        # fora os campos novos e a proveniência, os metadados são os commitados
         scientific_regenerated = {
             k: v
             for k, v in regenerated.items()
@@ -274,7 +277,7 @@ def test_generator_emits_raw_and_canonical_fields_without_changing_routes(
             if k not in {"generated_at", "route_hash", "network_hash"}
         }
         assert scientific_regenerated == scientific_committed
-        # and the regenerated artifacts validate (also with CRLF copies)
+        # e os artefatos regenerados validam (também com cópias CRLF)
         scenario_yaml = tmp_path / ff.scenario_file_name(scenario, 6841)
         _validate(scenario_yaml)
         for path in (route, network):
@@ -284,7 +287,7 @@ def test_generator_emits_raw_and_canonical_fields_without_changing_routes(
             path.write_bytes(_lf(path.read_bytes()))
 
 
-# --- historical (Pilot V2 / existing) artifacts --------------------------------------------
+# --- artefatos históricos (Pilot V2 / existentes) --------------------------------------------
 @pytest.mark.parametrize("seed", PILOT_SEEDS)
 @pytest.mark.parametrize("scenario", ff.MAIN_SCENARIOS)
 def test_pilot_v2_artifacts_validate_in_place(scenario: str, seed: int) -> None:
@@ -311,9 +314,11 @@ def test_legacy_tables_cover_every_committed_artifact_and_only_those() -> None:
     assert len(expected_routes) == 40
 
 
-# --- scientific semantics -----------------------------------------------------------------------
+# --- semântica científica -----------------------------------------------------------------------
 def test_validation_module_only_decides_acceptance() -> None:
-    """The route validation imports hashing/config helpers only: it cannot reach simulation code."""
+    """A validação de rotas importa apenas auxiliares de hashing/config: não alcança código de
+    simulação.
+    """
 
     import ast
 

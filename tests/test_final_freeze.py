@@ -81,7 +81,7 @@ def test_b0_plan_identity_and_hash() -> None:
     plan = json.loads(plan_path.read_text(encoding="utf-8"))
     assert plan["plan_id"] == "fx_c84_demand_proportional_alternate"
     assert (plan["cycle_seconds"], plan["yellow_seconds"], plan["all_red_seconds"]) == (84, 3, 2)
-    # Raw bytes depend on the checkout line endings; the canonical hash is the authority.
+    # Os bytes brutos dependem das quebras de linha do checkout; o hash canônico é a autoridade.
     assert canonical_sha256(plan_path.read_bytes()) == ff.B0_CANONICAL_SHA256
     assert file_sha256(plan_path) in {
         "a950d82d1d59562766b183c096477f39215f0de8a905960b223a7a6fcef1f0fe",
@@ -106,11 +106,13 @@ def test_statistical_plan_records_bootstrap_seed() -> None:
     assert plan["paired_comparison_unit"] == "scenario + seed"
 
 
-SYNTHETIC_SOURCE_SHA = "5" * 40  # the real SHA is supplied at freeze time; tests never need one
+SYNTHETIC_SOURCE_SHA = (
+    "5" * 40
+)  # o SHA real é informado no momento do freeze; os testes nunca precisam de um
 
 
 def _synthetic_preconditions() -> FreezePreconditions:
-    """Preconditions as they would be on a clean tree whose source tree equals the current one."""
+    """Pré-condições como seriam em uma árvore limpa cuja árvore-fonte é igual à atual."""
 
     tree = compute_scientific_tree(ff.scientific_spec(), WorkingTreeSource(REPO))
     return FreezePreconditions(
@@ -128,7 +130,7 @@ def _synthetic_preconditions() -> FreezePreconditions:
 
 @pytest.fixture(scope="module")
 def fresh_manifest(tmp_path_factory: pytest.TempPathFactory) -> tuple[dict[str, object], Path]:
-    """Schema-2 manifest built in memory (nothing is written into the repository)."""
+    """Manifesto schema 2 construído em memória (nada é gravado no repositório)."""
 
     manifest = ff.build_freeze_manifest(
         REPO, generated_at="2026-01-01T00:00:00Z", preconditions=_synthetic_preconditions()

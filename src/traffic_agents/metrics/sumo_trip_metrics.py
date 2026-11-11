@@ -9,7 +9,7 @@ SUMO_TRAFFIC_METRICS_FILE = "sumo_traffic_metrics.json"
 
 
 class SumoTripMetricsError(ValueError):
-    """Raised when SUMO metric output cannot be parsed."""
+    """Lançada quando a saída de métricas do SUMO não pode ser interpretada."""
 
 
 @dataclass(frozen=True)

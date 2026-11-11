@@ -59,7 +59,7 @@ def _geometry():
     return config, geometry, intersection_junctions(config, geometry)
 
 
-# --- camera presets ---------------------------------------------------------------------------
+# --- presets de câmera ---------------------------------------------------------------------------
 def test_camera_presets_parse_all_required() -> None:
     presets = load_camera_presets(PRESETS)
     assert set(presets.presets) >= {"whole_grid", "a5_center", "west_to_center", "reference_route"}
@@ -122,7 +122,7 @@ def test_reference_route_view_spans_corridor() -> None:
     assert view.min_x < 0 and view.max_x > 700
 
 
-# --- fairness / seeds -------------------------------------------------------------------------
+# --- equidade / seeds -------------------------------------------------------------------------
 def _side(controller: str, seed: int = DEMO_SEED):
     path = resolve_scenario_path("S4_LOCAL_SATURATION", seed, SCENARIO_DIR)
     return build_replay_side(scenario_path=path, controller_id=controller, seed=seed)
@@ -134,7 +134,7 @@ def test_demo_seed_is_42() -> None:
 
 def test_fairness_passes_and_ignores_controller_id() -> None:
     before, after = _side("B2_LOCAL_PRESSURE"), _side("C1_COOPERATIVE_COMPACT")
-    # The raw scenario hash differs by design; the neutral one must not.
+    # O hash bruto do cenário difere por construção; o neutro não deve diferir.
     assert before.fingerprint.scenario_sha256 != after.fingerprint.scenario_sha256
     verify_fairness(before, after, requested_seed=42)
     report = fairness_report(before, after)
@@ -183,7 +183,7 @@ def test_different_scenarios_have_different_route_hash() -> None:
     assert fairness_mismatches(s4.fairness, s1.fairness)
 
 
-# --- synchronisation --------------------------------------------------------------------------
+# --- sincronização --------------------------------------------------------------------------
 def test_step_synchronizer() -> None:
     sync = StepSynchronizer(1.0)
     sync.check(0, before_time=1.0, after_time=1.0)
@@ -201,7 +201,7 @@ def test_interval_validation() -> None:
             validate_interval(start, end, 3900)
 
 
-# --- metadata / naming ------------------------------------------------------------------------
+# --- metadados / nomenclatura ---------------------------------------------------------------------
 def test_file_naming(tmp_path: Path) -> None:
     assert frame_name(0) == "000000.png"
     assert frame_name(1234) == "001234.png"
@@ -263,7 +263,7 @@ def test_visual_metrics_csv_roundtrip(tmp_path: Path) -> None:
     assert read_visual_metrics(path) == rows
 
 
-# --- reference vehicle ------------------------------------------------------------------------
+# --- veículo de referência ------------------------------------------------------------------------
 def _veh(vehicle_id: str, depart: float, route: tuple[str, ...] = ROUTE) -> OfferedVehicle:
     return OfferedVehicle(vehicle_id, vehicle_id.split(".")[0], depart, route[0], route)
 
@@ -271,10 +271,10 @@ def _veh(vehicle_id: str, depart: float, route: tuple[str, ...] = ROUTE) -> Offe
 def test_reference_vehicle_selection_is_deterministic() -> None:
     offered = [
         _veh("a.9", 700.0),
-        _veh("b.1", 650.0, ("left1A1", "A1B1", "B1C1", "C1C0")),  # not the reference route
+        _veh("b.1", 650.0, ("left1A1", "A1B1", "B1C1", "C1C0")),  # não é a rota de referência
         _veh("c.2", 650.0),
         _veh("c.1", 650.0),
-        _veh("d.0", 100.0),  # before the window
+        _veh("d.0", 100.0),  # antes da janela
     ]
     chosen = select_reference_vehicle(offered, earliest_depart_seconds=600.0)
     assert chosen is not None and chosen.vehicle_id == "c.1"
@@ -292,7 +292,7 @@ def test_reference_vehicle_exists_in_real_route_file() -> None:
     assert chosen is not None and chosen.scheduled_depart >= 600.0
 
 
-# --- S3 shock marker --------------------------------------------------------------------------
+# --- marcador de choque do S3 ---------------------------------------------------------------------
 def test_shock_marker_reads_official_definition() -> None:
     config = load_scenario_config(SCENARIO_DIR / "scenario_s3_demand_shift_seed_42.yaml")
     marker = shock_marker_for(config)

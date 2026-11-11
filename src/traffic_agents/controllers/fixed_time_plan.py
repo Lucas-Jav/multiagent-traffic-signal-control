@@ -1,18 +1,18 @@
-"""Calibrated fixed-time baseline (``B0_FIXED_CALIBRATED``).
+"""Baseline de tempo fixo calibrado (``B0_FIXED_CALIBRATED``).
 
-The historical Pilot V2 baseline (``B0_FIXED``, a.k.a. ``B0_FIXED_STATIC``) leaves the static
-``tlLogic`` stored in ``network.net.xml`` untouched. ``B0_FIXED_CALIBRATED`` is the final fixed-time
-baseline: it installs a calibrated *static* plan through TraCI once, before the first simulation
-step, and then never acts again. It is not traffic responsive: no observation is read after the
-installation and no phase is changed during the run.
+O baseline histórico do Pilot V2 (``B0_FIXED``, também chamado ``B0_FIXED_STATIC``) deixa o
+``tlLogic`` estático armazenado em ``network.net.xml`` intacto. ``B0_FIXED_CALIBRATED`` é o
+baseline de tempo fixo final: instala um plano *estático* calibrado via TraCI uma única vez,
+antes do primeiro passo de simulação, e depois nunca mais atua. Não é responsivo ao tráfego:
+nenhuma observação é lida após a instalação e nenhuma fase é alterada durante a execução.
 
-A plan only changes the green durations and the start offset of the programs that already exist
-in the network. The phase states, the phase order, the yellow time and the all-red time are
-preserved, so the network, the legal movements and the safety timings are identical to those of
-every other controller.
+Um plano altera apenas as durações de verde e o deslocamento (offset) inicial dos programas que
+já existem na rede. Os estados de fase, a ordem das fases, o tempo de amarelo e o tempo de
+vermelho total são preservados, de modo que a rede, os movimentos legais e os tempos de
+segurança são idênticos aos de todos os outros controladores.
 
-Offset semantics are those of the SUMO ``tlLogic`` ``offset`` attribute (verified against the
-native program): the program time at simulation time ``t`` is ``(t - offset) mod cycle``.
+A semântica do offset é a do atributo ``offset`` do ``tlLogic`` do SUMO (verificada contra o
+programa nativo): o tempo do programa no instante de simulação ``t`` é ``(t - offset) mod cycle``.
 """
 
 from __future__ import annotations
@@ -34,7 +34,7 @@ DEFAULT_FIXED_TIME_PLAN_PATH = (
 )
 
 APPROACH_COUNT = 4
-PHASES_PER_APPROACH = 3  # green, yellow, all-red
+PHASES_PER_APPROACH = 3  # verde, amarelo, vermelho total
 YELLOW_SECONDS = 3
 ALL_RED_SECONDS = 2
 MIN_GREEN_SECONDS = 10
@@ -42,12 +42,12 @@ MAX_GREEN_SECONDS = 60
 
 
 class FixedTimePlanError(ValueError):
-    """Raised when a fixed-time plan is inconsistent with the network programs."""
+    """Lançada quando um plano de tempo fixo é inconsistente com os programas da rede."""
 
 
 @dataclass(frozen=True)
 class TrafficLightTiming:
-    """Green seconds per approach phase (network phase order) and program offset."""
+    """Segundos de verde por fase de aproximação (ordem de fases da rede) e offset do programa."""
 
     green_seconds: tuple[int, ...]
     offset_seconds: int
@@ -149,7 +149,9 @@ def plan_from_payload(payload: Mapping[str, Any]) -> FixedTimePlan:
 
 
 def cycle_start_state(durations: tuple[int, ...], offset_seconds: int) -> tuple[int, int]:
-    """Phase index and remaining seconds at simulation time 0 (program time ``-offset``)."""
+    """Índice da fase e segundos restantes no instante de simulação 0 (tempo do programa
+    ``-offset``).
+    """
 
     cycle = sum(durations)
     position = (-offset_seconds) % cycle
@@ -163,7 +165,7 @@ def cycle_start_state(durations: tuple[int, ...], offset_seconds: int) -> tuple[
 
 
 class FixedTimePlanController:
-    """Installs a calibrated static plan once; afterwards it never acts."""
+    """Instala um plano estático calibrado uma única vez; depois disso nunca atua."""
 
     controller_id: ClassVar[str] = FIXED_TIME_PLAN_CONTROLLER_ID
     controller_version: ClassVar[str] = FIXED_TIME_PLAN_CONTROLLER_VERSION

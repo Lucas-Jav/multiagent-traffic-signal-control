@@ -1,10 +1,10 @@
-"""Render the TCC academic content (Prompt 65) from templates + the validated FINAL N=10 analysis.
+"""Renderiza o conteúdo acadêmico do TCC (Prompt 65) a partir de templates + a análise FINAL N=10 validada.
 
     python scripts/build_tcc_content.py
 
-Reads scripts/tcc_content_templates/*.md, evaluates every {{ expression }} against artifacts/final-analysis/,
-writes docs/tcc-final-content/*.md, the claims-traceability file and a validation report.
-No simulation is run; no scientific artifact is modified.
+Lê scripts/tcc_content_templates/*.md, avalia toda {{ expressão }} contra artifacts/final-analysis/,
+grava docs/tcc-final-content/*.md, o arquivo de rastreabilidade de afirmações e um relatório de
+validação. Nenhuma simulação é executada; nenhum artefato científico é modificado.
 """
 
 from __future__ import annotations
@@ -66,11 +66,11 @@ def main() -> int:
     for name in ORDER:
         text = (TPL / f"{name}.md").read_text(encoding="utf-8")
         rendered[name] = L.render(text, name)
-    # [CITAÇÃO NECESSÁRIA] counts, then outline
+    # contagens de [CITAÇÃO NECESSÁRIA], depois o outline
     counts = {n: t.count(CITE) for n, t in rendered.items() if t.count(CITE)}
     L.NS["CITE_TOTAL"] = str(sum(counts.values()))
     L.NS["CITE_BY_FILE"] = ", ".join(f"`{n}`: {c}" for n, c in counts.items())
-    # real citation slots = markers outside blockquote (">") header/instruction notes
+    # espaços reais de citação = marcadores fora de blockquote (">") de cabeçalho/notas de instrução
     slots = {n: sum(ln.count(CITE) for ln in t.splitlines() if not ln.lstrip().startswith(">")) for n, t in rendered.items()}
     slots = {n: c for n, c in slots.items() if c}
     L.NS["CITE_SLOTS"] = str(sum(slots.values()))
@@ -78,11 +78,11 @@ def main() -> int:
     L.NS["CITE_NOTES"] = str(sum(counts.values()) - sum(slots.values()))
     outline = L.render((TPL / "00-outline-final.md").read_text(encoding="utf-8"), "00-outline-final")
     rendered = {"00-outline-final": outline, **rendered}
-    # the outline text itself mentions the marker; recount excluding it
+    # o próprio texto do outline menciona o marcador; recontar excluindo-o
     for name, text in rendered.items():
         (OUT / f"{name}.md").write_text(text, encoding="utf-8")
 
-    # ---- claims traceability ---------------------------------------------------------------------------
+    # ---- rastreabilidade das afirmações ---------------------------------------------------------------------------
     seen: set[tuple] = set()
     rows_by_file: dict[str, list[dict]] = {}
     for e in L.LOG:
@@ -139,7 +139,7 @@ def main() -> int:
         lines.append("")
     (OUT / "15-claims-traceability.md").write_text("\n".join(lines), encoding="utf-8")
 
-    # ---- validation (prompt §49) ----------------------------------------------------------------------------
+    # ---- validação (prompt §49) ----------------------------------------------------------------------------
     report = validate(rendered)
     (VAL / "content_validation.json").write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(json.dumps({k: v for k, v in report.items() if k not in ("expected_values", "details")}, indent=1, ensure_ascii=False))
@@ -152,12 +152,12 @@ def validate(rendered: dict[str, str]) -> dict:
     chk: dict[str, object] = {}
     allt = "\n".join(rendered.values())
     chk["no_unresolved_placeholders"] = "{{" not in allt and "}}" not in allt
-    # independent recomputation of the reference-route means from per-run results (not from the summary CSV)
+    # recálculo independente das médias da rota de referência a partir dos resultados por execução (não do CSV-resumo)
     by: dict[tuple, list[float]] = {}
     for r in L.RR_RUNS:
         if r["metric"] in (L.TT, L.CMP) and r["value"] is not None:
             by.setdefault((r["scenario"], r["controller"], r["metric"]), []).append(r["value"])
-    prompt_values = {  # values listed in the Prompt 65 text (S1..S4; travel s / completion)
+    prompt_values = {  # valores listados no texto do Prompt 65 (S1..S4; viagem s / conclusão)
         (L.S1, L.B0): (129.2, 0.977), (L.S1, L.B2): (116.7, 0.971), (L.S1, L.C1): (139.8, 0.964),
         (L.S2, L.B0): (129.3, 0.967), (L.S2, L.B2): (322.4, 0.673), (L.S2, L.C1): (283.0, 0.649),
         (L.S3, L.B0): (226.7, 0.858), (L.S3, L.B2): (278.7, 0.817), (L.S3, L.C1): (232.5, 0.826),
@@ -192,7 +192,7 @@ def validate(rendered: dict[str, str]) -> dict:
     for k, (got, want) in checks.items():
         exp[k] = {"expected": want, "got": got, "ok": got == want}
     chk["expected_values"] = exp
-    # semantic checks
+    # verificações semânticas
     def has(name, *needles):
         return all(n in rendered[name] for n in needles)
     chk["S3_post_hoc_disclosed"] = all("post-hoc" in rendered[f] for f in ("05-metodologia", "08-resultados", "10-limitacoes", "12-conclusao"))

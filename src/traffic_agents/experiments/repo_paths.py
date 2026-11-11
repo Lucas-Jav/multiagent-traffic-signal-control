@@ -1,14 +1,15 @@
-"""Repository-portable path identity for frozen scientific inputs.
+"""Identidade de caminho portável entre repositórios para entradas científicas congeladas.
 
-Frozen files are identified by their repository-relative POSIX path (``experiments/configs/x.yaml``)
-and never by an absolute location, so a freeze verifies the same after the repository is moved,
-cloned elsewhere, or checked out on another operating system. The repository root is resolved with
-``git rev-parse --show-toplevel`` from an anchor path, never from the current directory alone.
+Arquivos congelados são identificados pelo caminho POSIX relativo ao repositório
+(``experiments/configs/x.yaml``) e nunca por uma localização absoluta, de modo que um freeze é
+verificado da mesma forma depois que o repositório é movido, clonado em outro lugar ou obtido em
+outro sistema operacional. A raiz do repositório é resolvida com ``git rev-parse --show-toplevel``
+a partir de um caminho âncora, nunca apenas a partir do diretório atual.
 
-A serialized relative path must be: non-empty, ``/``-separated (no backslash), without drive
-letter, leading slash (absolute or UNC), ``.`` / ``..`` / empty segments or NUL characters. A path
-that resolves (symlinks included) outside the repository root is rejected, so a crafted record can
-not make verification read arbitrary files.
+Um caminho relativo serializado deve ser: não vazio, separado por ``/`` (sem barra invertida), sem
+letra de unidade, sem barra inicial (absoluto ou UNC), sem segmentos ``.`` / ``..`` / vazios nem
+caracteres NUL. Um caminho que resolve (inclusive via symlinks) para fora da raiz do repositório é
+rejeitado, para que um registro forjado não consiga fazer a verificação ler arquivos arbitrários.
 """
 
 from __future__ import annotations
@@ -23,11 +24,11 @@ _DRIVE_PATTERN = re.compile(r"^[A-Za-z]:")
 
 
 class RepositoryPathError(ValueError):
-    """Raised for non-portable, malformed or repository-escaping paths."""
+    """Lançada para caminhos não portáveis, malformados ou que escapam do repositório."""
 
 
 def resolve_repository_root(anchor: Path) -> Path:
-    """Git top-level directory containing ``anchor`` (a file or directory)."""
+    """Diretório raiz do git que contém ``anchor`` (um arquivo ou diretório)."""
 
     start = anchor if anchor.is_dir() else anchor.parent
     while not start.exists() and start != start.parent:
@@ -50,7 +51,7 @@ def resolve_repository_root(anchor: Path) -> Path:
 
 
 def validate_relative_posix(value: object) -> PurePosixPath:
-    """Return ``value`` as a safe repository-relative POSIX path or raise."""
+    """Retorna ``value`` como um caminho POSIX relativo ao repositório seguro ou lança erro."""
 
     if not isinstance(value, str) or not value:
         msg = f"repository-relative path must be a non-empty string, got {value!r}"
@@ -75,7 +76,9 @@ def validate_relative_posix(value: object) -> PurePosixPath:
 
 
 def resolve_repo_relative(repository_root: Path, value: object) -> Path:
-    """Local file for a serialized relative path; it must stay inside ``repository_root``."""
+    """Arquivo local para um caminho relativo serializado; deve permanecer dentro de
+    ``repository_root``.
+    """
 
     relative = validate_relative_posix(value)
     root = repository_root.resolve()
@@ -87,7 +90,7 @@ def resolve_repo_relative(repository_root: Path, value: object) -> Path:
 
 
 def to_repo_relative_posix(path: Path, repository_root: Path) -> str:
-    """Serialize ``path`` as a repository-relative POSIX path (``/`` even on Windows)."""
+    """Serializa ``path`` como caminho POSIX relativo ao repositório (``/`` mesmo no Windows)."""
 
     root = repository_root.resolve()
     resolved = path.resolve()
@@ -105,7 +108,7 @@ def to_repo_relative_posix(path: Path, repository_root: Path) -> str:
 
 
 def absolute_paths_in(value: Any, _prefix: str = "") -> list[str]:
-    """Every string inside a JSON-like structure that looks like an absolute path."""
+    """Toda string dentro de uma estrutura tipo JSON que se pareça com um caminho absoluto."""
 
     return list(_walk_absolute(value, _prefix))
 

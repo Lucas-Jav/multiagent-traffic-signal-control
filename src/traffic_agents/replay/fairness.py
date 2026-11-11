@@ -1,10 +1,10 @@
-"""Scenario resolution and BEFORE/AFTER fairness verification.
+"""Resolução de cenário e verificação de equidade ANTES/DEPOIS.
 
-Both sides of a replay must share every scientific input; only the controller may differ. The
-manifest ``scenario_sha256`` is NOT used for the comparison because it incorporates
-``controller_id`` and therefore differs between controllers by design. A controller-neutral hash
-(``scenario_neutral_sha256``, the scenario config with the controller id neutralised) is used
-instead, exactly like the reference-route pairing.
+Os dois lados de um replay devem compartilhar toda entrada científica; apenas o controlador pode
+diferir. O ``scenario_sha256`` do manifesto NÃO é usado na comparação porque incorpora o
+``controller_id`` e, portanto, difere entre controladores por construção. Um hash neutro em
+relação ao controlador (``scenario_neutral_sha256``, a config do cenário com o id do controlador
+neutralizado) é usado em seu lugar, exatamente como no pareamento da rota de referência.
 """
 
 from __future__ import annotations
@@ -34,7 +34,7 @@ KNOWN_SCENARIOS: tuple[str, ...] = (
 )
 NEUTRAL_CONTROLLER_ID = "NEUTRAL"
 
-# Every field below must be identical on both sides. Order is only for readable reports.
+# Todo campo abaixo deve ser idêntico nos dois lados. A ordem serve apenas para relatórios legíveis.
 FAIRNESS_FIELDS: tuple[str, ...] = (
     "scenario_id",
     "demand_profile",
@@ -61,7 +61,7 @@ FAIRNESS_FIELDS: tuple[str, ...] = (
 
 
 class ReplayFairnessError(ValueError):
-    """Raised when BEFORE and AFTER differ in a scientific input (or are otherwise invalid)."""
+    """Lançada quando ANTES e DEPOIS diferem em uma entrada científica (ou são inválidos)."""
 
 
 @dataclass(frozen=True)
@@ -75,7 +75,9 @@ class ReplaySide:
 
 
 def resolve_scenario_path(scenario: str, seed: int, scenario_dir: Path) -> Path:
-    """Frozen scenario YAML for ``(scenario, seed)``; ``scenario`` may also be a YAML path."""
+    """YAML de cenário congelado para ``(scenario, seed)``; ``scenario`` também pode ser um caminho
+    YAML.
+    """
 
     candidate = Path(scenario)
     if candidate.suffix in {".yaml", ".yml"}:
@@ -103,7 +105,9 @@ def build_replay_side(
     controller_id: str,
     seed: int,
 ) -> ReplaySide:
-    """Run configuration of one side, built like the experiment runner builds a run."""
+    """Configuração de execução de um lado, construída como o executor de experimentos constrói uma
+    execução.
+    """
 
     base = load_scenario_config(scenario_path)
     if base.seed != seed:
@@ -201,7 +205,7 @@ def fairness_mismatches(
 
 
 def verify_fairness(before: ReplaySide, after: ReplaySide, *, requested_seed: int) -> None:
-    """Fail immediately on any scientific-input mismatch between the two sides."""
+    """Falha imediatamente em qualquer divergência de entrada científica entre os dois lados."""
 
     mismatches = fairness_mismatches(before.fairness, after.fairness)
     for label, side in (("before", before), ("after", after)):
@@ -215,7 +219,9 @@ def verify_fairness(before: ReplaySide, after: ReplaySide, *, requested_seed: in
 
 
 def fairness_report(before: ReplaySide, after: ReplaySide) -> dict[str, object]:
-    """Verified, controller-independent inputs shared by both sides (for comparison.json)."""
+    """Entradas verificadas e independentes do controlador compartilhadas pelos dois lados (para
+    comparison.json).
+    """
 
     shared = {name: before.fairness[name] for name in FAIRNESS_FIELDS}
     shared["fairness_digest"] = json_sha256(shared)

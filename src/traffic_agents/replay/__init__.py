@@ -1,4 +1,4 @@
-"""Deterministic before/after visual replay (presentation tool; never alters simulation results)."""
+"""Replay visual determinístico antes/depois (ferramenta de apresentação; não altera resultados)."""
 
 from traffic_agents.replay.camera import (
     CameraPreset,

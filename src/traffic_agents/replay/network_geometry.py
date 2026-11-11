@@ -1,8 +1,9 @@
-"""Static geometry of a SUMO network, read straight from ``network.net.xml``.
+"""Geometria estática de uma rede SUMO, lida diretamente de ``network.net.xml``.
 
-The replay tool needs junction coordinates (camera framing, intersection labels) and the
-mapping from the project's intersection labels (``A1``..``A9``) to SUMO junction ids
-(``A0``..``C2``). Both are derived from the frozen network and scenario files, never hard-coded.
+A ferramenta de replay precisa das coordenadas das junções (enquadramento da câmera, rótulos de
+interseção) e do mapeamento dos rótulos de interseção do projeto (``A1``..``A9``) para os ids de
+junção do SUMO (``A0``..``C2``). Ambos são derivados dos arquivos congelados de rede e cenário,
+nunca fixados no código.
 """
 
 from __future__ import annotations
@@ -16,7 +17,7 @@ from traffic_agents.config import ScenarioConfig
 
 
 class NetworkGeometryError(ValueError):
-    """Raised when the network file cannot provide the requested geometry."""
+    """Lançada quando o arquivo de rede não consegue fornecer a geometria solicitada."""
 
 
 @dataclass(frozen=True)
@@ -73,9 +74,9 @@ def intersection_junctions(
     scenario_config: ScenarioConfig,
     geometry: NetworkGeometry,
 ) -> dict[str, str]:
-    """Map each intersection label (``A5``) to its SUMO junction id (``B1``).
+    """Mapeia cada rótulo de interseção (``A5``) para seu id de junção do SUMO (``B1``).
 
-    A junction is where every incoming lane of the intersection ends.
+    Uma junção é onde termina toda lane de entrada da interseção.
     """
 
     mapping: dict[str, str] = {}

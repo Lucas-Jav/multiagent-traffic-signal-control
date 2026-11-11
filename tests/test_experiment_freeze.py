@@ -142,7 +142,8 @@ def _sumo_info(tmp_path: Path) -> SumoEnvironmentInfo:
 
 
 def _write_experiment_fixture(tmp_path: Path) -> Path:
-    # Freeze identities are repository-relative, so the fixture lives in a (throw-away) git repo.
+    # As identidades do freeze são relativas ao repositório, então a fixture vive em um repositório
+    # git descartável.
     subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
     scenario_dir = tmp_path / "scenario"
     scenario_dir.mkdir()
@@ -249,7 +250,7 @@ max_steps: 1
     return config_path
 
 
-# --- cross-platform (LF/CRLF) verification, CANONICAL_TEXT_LF_V1 ---------------------------
+# --- verificação multiplataforma (LF/CRLF), CANONICAL_TEXT_LF_V1 ---------------------------
 def _to_crlf(path: Path) -> None:
     path.write_bytes(path.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
 
@@ -278,7 +279,7 @@ def test_new_freeze_records_raw_and_canonical_hashes(tmp_path: Path) -> None:
     assert checksums["hash_schema"] == "CANONICAL_TEXT_LF_V1"
     assert len(checksums["experiment_config_canonical_sha256"]) == 64
     for entry in checksums["files"]:
-        assert entry["raw_byte_sha256"] == entry["sha256"]  # legacy key kept
+        assert entry["raw_byte_sha256"] == entry["sha256"]  # chave legada mantida
         assert entry["canonical_sha256"] and entry["hash_schema"] == "CANONICAL_TEXT_LF_V1"
     fields = load_frozen_experiment_config_from_dir(freeze_dir).run_manifest_fields()
     assert set(fields) == {"experiment_config_sha256", "experiment_config_canonical_sha256"}
@@ -296,7 +297,9 @@ def test_freeze_created_with_lf_verifies_after_crlf_checkout(tmp_path: Path) -> 
 
 
 def _record_canonical_artifact_hashes(tmp_path: Path) -> None:
-    """New-style route metadata: canonical hashes authorise either line-ending representation."""
+    """Metadados de rota no formato novo: hashes canônicos autorizam qualquer representação de
+    quebra de linha.
+    """
 
     scenario_dir = tmp_path / "scenario"
     metadata_path = scenario_dir / "routes_s1_seed_42.metadata.json"

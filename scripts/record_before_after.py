@@ -1,15 +1,15 @@
-"""Record a synchronized BEFORE/AFTER SUMO comparison video (presentation tool).
+"""Grava um vídeo de comparação ANTES/DEPOIS sincronizado do SUMO (ferramenta de apresentação).
 
-Example:
+Exemplo:
 
     python scripts/record_before_after.py --scenario S4_LOCAL_SATURATION --seed 42 \\
         --before-controller B2_LOCAL_PRESSURE --after-controller C1_COOPERATIVE_COMPACT \\
         --camera a5_center --start-step 600 --end-step 2600 --fps 30 \\
         --output artifacts/demos/s4_seed42_b2_vs_c1
 
-Both simulations run in lock-step by simulation step. Frame ``k`` is the state at the end of
-step ``start_step + k``; steps ``[start_step, end_step)`` are recorded. Requires SUMO (sumo-gui)
-and FFmpeg. The tool never changes controllers, demand, seeds or metrics.
+As duas simulações rodam em lock-step por passo de simulação. O frame ``k`` é o estado ao fim do
+passo ``start_step + k``; os passos ``[start_step, end_step)`` são gravados. Requer SUMO
+(sumo-gui) e FFmpeg. A ferramenta nunca altera controladores, demanda, seeds ou métricas.
 """
 
 from __future__ import annotations

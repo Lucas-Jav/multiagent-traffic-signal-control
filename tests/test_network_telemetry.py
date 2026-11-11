@@ -20,7 +20,9 @@ INCOMING_LANES = ("top1A1_0", "right1A1_0", "bottom1A1_0", "left1A1_0")
 
 
 class FakeLaneApi:
-    """Scripted lane sensors: ``queues[lane_id]`` is the halting count per sampled step."""
+    """Sensores de lane roteirizados: ``queues[lane_id]`` é a contagem de parados por passo
+    amostrado.
+    """
 
     def __init__(self, queues: dict[str, list[int]]) -> None:
         self.queues = queues
@@ -180,7 +182,7 @@ def test_lane_queue_is_recorded_once_per_physical_lane(tmp_path: Path) -> None:
     junctions = pq.read_table(junction_path).to_pydict()
     assert lane_path.name == LANE_TELEMETRY_FILE
     assert junction_path.name == JUNCTION_TELEMETRY_FILE
-    # 3 steps x 4 unique incoming lanes, never one row per movement.
+    # 3 passos x 4 lanes de entrada únicas, nunca uma linha por movimento.
     assert len(lanes["queue"]) == 12
     assert sorted(set(lanes["lane_id"])) == sorted(INCOMING_LANES)
     per_step = [
@@ -188,7 +190,7 @@ def test_lane_queue_is_recorded_once_per_physical_lane(tmp_path: Path) -> None:
         for step in range(3)
     ]
     assert per_step == [7, 7, 7]
-    # One physical lane queue of 7 vehicles is 7 vehicles for the intersection, not 21.
+    # Uma fila física de 7 veículos em uma lane são 7 veículos para a interseção, não 21.
     assert junctions["intersection_total_queue"] == [7, 7, 7]
     assert junctions["tls_phase"] == [3, 3, 3]
     assert junctions["internal_vehicle_count"] == [0, 0, 0]
@@ -214,7 +216,7 @@ def test_junction_telemetry_counts_persistence_once_per_intersection(tmp_path: P
     junctions = pq.read_table(junction_path).to_pydict()
     assert junctions["internal_vehicle_count"] == [2, 2, 2]
     assert junctions["junction_entries"] == [2, 0, 0]
-    # persistence: vehicles present in two consecutive steps, one row per intersection-step.
+    # persistência: veículos presentes em dois passos consecutivos, uma linha por interseção-passo.
     assert junctions["internal_lane_persistence_events"] == [0, 2, 2]
 
 
@@ -324,7 +326,7 @@ def test_fixed_time_baseline_gets_the_same_telemetry_as_adaptive_controllers(
     assert len(lanes["queue"]) == config.total_simulation_steps * len(INCOMING_LANES)
     assert lanes["is_warmup"][:4] == [True] * 4
     assert lanes["is_warmup"][-4:] == [False] * 4
-    # B0 has no controller-produced trace and no debug movement CSV by default.
+    # O B0 não tem rastro produzido pelo controlador nem CSV de movimentos de depuração por padrão.
     assert not (run_dir / "intersection_trace.csv").exists()
     assert "intersection_trace_file" not in manifest
     assert manifest["metrics_finalized"] is False
@@ -334,7 +336,7 @@ def test_metrics_finalization_failure_is_visible_and_not_silent(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    # The fake SUMO writes no tripinfo/statistics, so finalization cannot succeed.
+    # O SUMO falso não grava tripinfo/statistics, então a finalização não pode ter sucesso.
     fake_traci = FakeTraCI({INCOMING_LANES[0]: [1, 1, 1, 1]})
     _install_fake_traci(monkeypatch, fake_traci)
     config = scenario_config()

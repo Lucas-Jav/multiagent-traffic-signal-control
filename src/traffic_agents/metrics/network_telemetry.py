@@ -1,23 +1,24 @@
-"""Canonical, controller-independent traffic telemetry.
+"""Telemetria de tráfego canônica e independente do controlador.
 
-The simulation runner samples this collector after every simulation step, for every
-controller (including ``B0_FIXED``), so all controllers pass through exactly the same
-measurement pipeline. Controllers are not involved in producing scientific traffic metrics.
+O executor da simulação amostra este coletor após cada passo de simulação, para todo
+controlador (incluindo ``B0_FIXED``), de modo que todos os controladores passam exatamente pelo
+mesmo pipeline de medição. Controladores não participam da produção das métricas científicas
+de tráfego.
 
-Two compressed Parquet tables are written per run:
+Duas tabelas Parquet comprimidas são gravadas por execução:
 
 ``lane_telemetry.parquet``
-    One row per (step, unique incoming lane): ``queue`` (SUMO halting vehicles),
-    ``vehicle_count``, ``occupancy`` (fraction), ``mean_speed``. A physical lane appears
-    exactly once per step, so sums over lanes are never duplicated.
+    Uma linha por (passo, lane de entrada única): ``queue`` (veículos parados do SUMO),
+    ``vehicle_count``, ``occupancy`` (fração), ``mean_speed``. Uma lane física aparece
+    exatamente uma vez por passo, portanto somas sobre lanes nunca são duplicadas.
 
 ``junction_telemetry.parquet``
-    One row per (step, intersection): active traffic-light phase index and elapsed time,
-    internal-lane vehicle counts, entries/exits, ``internal_lane_persistence_events`` and
-    ``intersection_total_queue`` (sum of the unique incoming-lane queues).
+    Uma linha por (passo, interseção): índice da fase ativa do semáforo e tempo decorrido,
+    contagens de veículos em lanes internas, entradas/saídas, ``internal_lane_persistence_events``
+    e ``intersection_total_queue`` (soma das filas das lanes de entrada únicas).
 
-Sampling convention: the sample of step ``i`` is read right after ``simulationStep()`` number
-``i`` (simulation time ``(i + 1) * step_length``); ``timestamp`` stores that time.
+Convenção de amostragem: a amostra do passo ``i`` é lida logo após o ``simulationStep()`` de
+número ``i`` (tempo de simulação ``(i + 1) * step_length``); ``timestamp`` armazena esse tempo.
 """
 
 from __future__ import annotations
@@ -42,7 +43,7 @@ NETWORK_TELEMETRY_VERSION = "network-telemetry-v1"
 
 
 class NetworkTelemetryError(RuntimeError):
-    """Raised when canonical telemetry cannot be collected or written."""
+    """Lançada quando a telemetria canônica não pode ser coletada ou gravada."""
 
 
 class _LaneApi(Protocol):
@@ -74,7 +75,7 @@ class NetworkTelemetryConnection(Protocol):
 
 
 class NetworkTelemetrySink(Protocol):
-    """What the runner needs from a telemetry collector."""
+    """O que o executor precisa de um coletor de telemetria."""
 
     def record(self, step_index: int) -> None: ...
 
@@ -111,7 +112,7 @@ def edge_id_of_lane(lane_id: str) -> str:
 
 
 class NetworkTelemetryCollector:
-    """Samples unique incoming-lane and junction state for every intersection."""
+    """Amostra o estado de lanes de entrada únicas e de junção para toda interseção."""
 
     def __init__(
         self,

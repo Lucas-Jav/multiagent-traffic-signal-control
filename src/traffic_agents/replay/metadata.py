@@ -1,4 +1,6 @@
-"""Naming helpers, code fingerprint and ``comparison.json`` payload for replay outputs."""
+"""Auxiliares de nomenclatura, fingerprint do código e payload de ``comparison.json`` para as saídas
+do replay.
+"""
 
 from __future__ import annotations
 
@@ -25,7 +27,7 @@ _CODE_FINGERPRINT_EXCLUDED_PARTS = frozenset({"replay", "__pycache__"})
 
 
 def frame_name(frame_index: int) -> str:
-    """Deterministic frame file name (``000000.png``); same index for BEFORE and AFTER."""
+    """Nome de arquivo de frame determinístico (``000000.png``); mesmo índice em ANTES e DEPOIS."""
 
     if frame_index < 0:
         msg = "frame_index must be non-negative"
@@ -69,9 +71,9 @@ def git_sha(repo_dir: Path) -> str | None:
 
 
 def simulation_code_fingerprint(package_dir: Path) -> str:
-    """Hash of every simulation/controller source file (the replay package itself excluded).
+    """Hash de todo arquivo-fonte de simulação/controlador (o próprio pacote replay excluído).
 
-    Used to decide whether previously captured frames are still valid for reuse.
+    Usado para decidir se frames capturados anteriormente ainda são válidos para reuso.
     """
 
     digest = hashlib.sha256()
@@ -101,7 +103,7 @@ def comparison_payload(
     git_commit: str | None,
     extra: Mapping[str, object],
 ) -> dict[str, object]:
-    """Contents of ``comparison.json``."""
+    """Conteúdo de ``comparison.json``."""
 
     payload: dict[str, object] = {
         "scenario": scenario,

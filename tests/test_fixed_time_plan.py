@@ -107,8 +107,8 @@ def test_valid_plan_cycle_is_consistent_with_phase_durations() -> None:
     for tls_id in plan.traffic_lights:
         durations = plan.phase_durations(tls_id)
         assert sum(durations) == plan.cycle_seconds
-        assert durations[1::3] == (3, 3, 3, 3)  # yellow preserved
-        assert durations[2::3] == (2, 2, 2, 2)  # all-red preserved
+        assert durations[1::3] == (3, 3, 3, 3)  # amarelo preservado
+        assert durations[2::3] == (2, 2, 2, 2)  # vermelho total preservado
         assert durations[0::3] == plan.traffic_lights[tls_id].green_seconds
 
 
@@ -140,7 +140,7 @@ def test_safety_timings_cannot_be_changed() -> None:
 def test_start_state_matches_sumo_native_offsets_of_the_historical_plan() -> None:
     durations = (18, 3, 2, 20, 3, 2, 20, 3, 2, 20, 3, 2)
 
-    # Verified against the native tlLogic offsets through TraCI at simulation time 0.
+    # Verificado contra os offsets nativos do tlLogic via TraCI no instante de simulação 0.
     assert cycle_start_state(durations, 0) == (0, 18)
     assert cycle_start_state(durations, 60) == (3, 5)  # A0
     assert cycle_start_state(durations, 30) == (7, 3)  # A1
@@ -175,7 +175,7 @@ def test_install_preserves_states_yellow_all_red_and_sets_offset() -> None:
             2.0,
         ]
         assert all(phase.minDur == phase.maxDur == phase.duration for phase in logic.phases)
-    # offset 0 starts at the first phase with the full green remaining; offset 30 is mid-cycle
+    # offset 0 começa na primeira fase com o verde inteiro restante; offset 30 está no meio do ciclo
     assert ("setPhase", ("A0", 0)) in connection.trafficlight.calls
     assert ("setPhaseDuration", ("A0", 20.0)) in connection.trafficlight.calls
     index_b1, remaining_b1 = cycle_start_state(_plan().phase_durations("B1"), 30)
@@ -189,7 +189,7 @@ def test_controller_is_not_traffic_responsive() -> None:
     controller.before_simulation_step(connection)
     calls_after_install = len(connection.trafficlight.calls)
 
-    # After the one-off installation no connection access happens at all.
+    # Após a instalação única, nenhum acesso à conexão ocorre.
     exploding = ExplodingConnection()
     for _ in range(50):
         controller.before_simulation_step(exploding)
@@ -213,7 +213,7 @@ def test_plan_payload_round_trip_and_hash_are_reproducible(tmp_path: Path) -> No
     assert loaded.sha256() == plan.sha256()
     assert plan_from_payload(plan.to_payload()).sha256() == plan.sha256()
     assert _plan(offset=11).sha256() != plan.sha256()
-    # provenance does not affect the identity hash
+    # a proveniência não afeta o hash de identidade
     with_provenance = FixedTimePlan(
         plan_id=plan.plan_id,
         cycle_seconds=plan.cycle_seconds,
@@ -277,7 +277,7 @@ def test_calibration_split_allocation_is_deterministic_and_bounded() -> None:
     assert greens == module.allocate_greens([0.1, 0.2, 0.3, 0.4], 80)
     assert sum(greens) == 80
     assert all(module.MIN_GREEN <= green <= module.MAX_GREEN for green in greens)
-    assert greens == sorted(greens)  # proportional to the share order
+    assert greens == sorted(greens)  # proporcional à ordem de participação
     assert module.allocate_greens([0.25] * 4, 80) == [20, 20, 20, 20]
 
 
@@ -295,7 +295,7 @@ def test_calibration_candidates_cover_the_predeclared_grid_and_are_valid() -> No
 
     assert len(plans) == len(module.CYCLES) * len(module.SPLITS) * len(module.OFFSETS)
     assert len({plan.plan_id for plan in plans}) == len(plans)
-    for plan in plans:  # FixedTimePlan validates cycle/greens/offsets/safety on construction
+    for plan in plans:  # FixedTimePlan valida ciclo/verdes/offsets/segurança na construção
         assert plan.yellow_seconds == 3
         assert plan.all_red_seconds == 2
     assert module.predeclaration()["method"].startswith("EMPIRICAL_FIXED_TIME")
@@ -329,7 +329,7 @@ def test_calibration_objective_ranks_reference_at_one_and_applies_guards() -> No
     assert evaluations[module.REFERENCE_ID]["J"] == pytest.approx(1.0)
     assert evaluations["better"]["J"] < 1.0
     assert evaluations["better"]["guards_ok"]
-    assert not evaluations["collapsed"]["guards_ok"]  # completion collapse is rejected
+    assert not evaluations["collapsed"]["guards_ok"]  # o colapso de conclusão é rejeitado
     picked = module.pick(
         list(evaluations.values()), {"better": 100, "collapsed": 100, module.REFERENCE_ID: 98}
     )

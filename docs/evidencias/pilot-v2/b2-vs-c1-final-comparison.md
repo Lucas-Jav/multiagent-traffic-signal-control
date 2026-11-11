@@ -1,35 +1,35 @@
 > **Proveniencia (copia versionada).**
 > Fonte: `artifacts/experiments/pilot_v2/b2-vs-c1-final-comparison.md` (git-ignorado) | Experimento: `pilot_v2` |
 > Git SHA do codigo que gerou as runs: `7fffb4efff9ad98498c81cc0d829911ad44baa46` | Git SHA no empacotamento: `0215e852603cb56a2c1ebd2ddd615b94c50b95ad` |
-> Data de empacotamento: 2026-10-13 | Tipo: **derived** | Conteudo copiado sem alteracao abaixo.
+> Data de empacotamento: 2026-10-13 | Tipo: **derived** | Conteudo copiado abaixo (texto traduzido para português, sem alteração de números ou conclusões).
 
-# B2_LOCAL_PRESSURE vs C1_COOPERATIVE_COMPACT: Pilot V2 paired comparison (Prompt 50)
+# B2_LOCAL_PRESSURE vs C1_COOPERATIVE_COMPACT: comparação pareada do Pilot V2 (Prompt 50)
 
-`campaign_role: PILOT`. Descriptive analysis with 5 seeds; not a final result, not a significance test, no controller ranking or tuning. Pilot V1 is not used.
+`campaign_role: PILOT`. Análise descritiva com 5 seeds; não é um resultado final, nem um teste de significância, sem ranking ou ajuste de controladores. O Pilot V1 não é usado.
 
-## 1. Context of the release
+## 1. Contexto da liberação
 
-- Pilot V2: 100 runs (4 scenarios x 5 seeds x 5 controllers), 100 completed, 0 failed, `metrics_finalized=true` on all.
-- S1, S2, S4 valid (Prompt 46.8). S3 valid under the composite gate (Prompts 47/48): 5/5 seeds valid, seed 4517 `VALID_WITH_DIAGNOSTIC_WARNING`. S4 policy `ALLOW_AND_MEASURE`. Release decision: `pilot-v2-release-decision.md` (Prompt 49).
-- The old 360 s rule was NOT used to block this comparison; it remains a diagnostic (seed 4517 fails it: projected change 6.51 veh vs limit 5.00).
+- Pilot V2: 100 execuções (4 cenários x 5 seeds x 5 controladores), 100 concluídas, 0 falhas, `metrics_finalized=true` em todas.
+- S1, S2, S4 válidos (Prompt 46.8). S3 válido no gate composto (Prompts 47/48): 5/5 seeds válidas, seed 4517 `VALID_WITH_DIAGNOSTIC_WARNING`. Política do S4 `ALLOW_AND_MEASURE`. Decisão de liberação: `pilot-v2-release-decision.md` (Prompt 49).
+- A antiga regra de 360 s NÃO foi usada para bloquear esta comparação; ela permanece como diagnóstico (a seed 4517 falha nela: variação projetada 6,51 veíc vs limite 5,00).
 
-## 2. Data used
+## 2. Dados utilizados
 
-- `combined_metrics.parquet` of `artifacts/experiments/pilot_v2` (project `experiment aggregate` pipeline), controllers `B2_LOCAL_PRESSURE` and `C1_COOPERATIVE_COMPACT` only, 20 (scenario, seed) pairs. Nothing recomputed from telemetry; no new simulation; repository untouched.
-- Full per-pair values and all summaries: `b2-vs-c1-final-comparison-table.csv`; sensitivity: `b2-vs-c1-seed-sensitivity.csv`.
+- `combined_metrics.parquet` de `artifacts/experiments/pilot_v2` (pipeline `experiment aggregate` do projeto), apenas os controladores `B2_LOCAL_PRESSURE` e `C1_COOPERATIVE_COMPACT`, 20 pares (cenário, seed). Nada foi recalculado a partir da telemetria; nenhuma nova simulação; repositório intocado.
+- Valores completos por par e todos os resumos: `b2-vs-c1-final-comparison-table.csv`; sensibilidade: `b2-vs-c1-seed-sensitivity.csv`.
 
-## 3. Method
+## 3. Método
 
-- Pairing: same scenario, same seed (same network, route file and demand; the offered cohort is identical for both controllers). Difference = C1 - B2.
-- Per metric: means, absolute and percentage difference (relative to the B2 mean), median, std and IQR of the paired differences, between-seed SD of each controller, number of seeds in which C1 is better, paired percentile bootstrap 95% CI of the mean difference (10000 resamples, seed 20260930). With n = 5 per scenario (n = 20 pooled) the intervals are descriptive.
-- Direction: lower is better for waiting, time loss, travel time, queue, stops, depart delay, never inserted, unfinished and teleports; higher is better for throughput, arrived, departed and completion/departure ratios.
-- Interpretation rule (declared before the numbers): a (scenario, primary metric) cell is FAV if the mean difference is favourable and >= 4/5 seeds are favourable (UNFAV symmetric). POSITIVE: no UNFAV and >= 16 of 24 cells FAV; NEGATIVE: no FAV and >= 16 UNFAV; INCONCLUSIVE: FAV + UNFAV < 8; otherwise MIXED.
+- Pareamento: mesmo cenário, mesma seed (mesma rede, arquivo de rotas e demanda; a coorte ofertada é idêntica para os dois controladores). Diferença = C1 - B2.
+- Por métrica: médias, diferença absoluta e percentual (relativa à média do B2), mediana, dp e IQR das diferenças pareadas, dp entre seeds de cada controlador, número de seeds em que o C1 é melhor, IC 95% bootstrap por percentil pareado da diferença média (10000 reamostragens, seed 20260930). Com n = 5 por cenário (n = 20 agrupado), os intervalos são descritivos.
+- Direção: menor é melhor para espera, perda de tempo, tempo de viagem, fila, paradas, atraso de partida, nunca inseridos, não finalizados e teleportes; maior é melhor para throughput, chegados, partidos e razões de conclusão/partida.
+- Regra de interpretação (declarada antes dos números): uma célula (cenário, métrica primária) é FAV se a diferença média é favorável e >= 4/5 seeds são favoráveis (UNFAV simétrico). POSITIVE: nenhuma UNFAV e >= 16 de 24 células FAV; NEGATIVE: nenhuma FAV e >= 16 UNFAV; INCONCLUSIVE: FAV + UNFAV < 8; caso contrário MIXED.
 
-## 4. Results per scenario (most interpretable reading; n = 5 pairs each)
+## 4. Resultados por cenário (leitura mais interpretável; n = 5 pares cada)
 
 ### S1_BALANCED
 
-| metric | B2 mean | C1 mean | diff (C1-B2) | diff % | effect | seeds C1 better | median diff | std diff | 95% CI (mean diff) | cell |
+| métrica | média B2 | média C1 | dif. (C1-B2) | dif. % | efeito | seeds com C1 melhor | dif. mediana | dp da dif. | IC 95% (dif. média) | célula |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | mean_waiting_time | 46.765 | 67.678 | 20.913 | 44.7% | C1_worse | 0/5 | 21.793 | 4.070 | [17.763, 24.004] | UNFAV |
 | mean_time_loss | 66.151 | 87.716 | 21.566 | 32.6% | C1_worse | 0/5 | 21.934 | 4.269 | [18.163, 24.809] | UNFAV |
@@ -55,7 +55,7 @@
 
 ### S2_DIRECTIONAL_PEAK
 
-| metric | B2 mean | C1 mean | diff (C1-B2) | diff % | effect | seeds C1 better | median diff | std diff | 95% CI (mean diff) | cell |
+| métrica | média B2 | média C1 | dif. (C1-B2) | dif. % | efeito | seeds com C1 melhor | dif. mediana | dp da dif. | IC 95% (dif. média) | célula |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | mean_waiting_time | 164.483 | 143.524 | -20.959 | -12.7% | C1_better | 5/5 | -17.523 | 6.734 | [-26.290, -15.873] | FAV |
 | mean_time_loss | 195.770 | 170.168 | -25.602 | -13.1% | C1_better | 5/5 | -21.984 | 7.150 | [-31.239, -20.196] | FAV |
@@ -81,7 +81,7 @@
 
 ### S3_DEMAND_SHIFT
 
-| metric | B2 mean | C1 mean | diff (C1-B2) | diff % | effect | seeds C1 better | median diff | std diff | 95% CI (mean diff) | cell |
+| métrica | média B2 | média C1 | dif. (C1-B2) | dif. % | efeito | seeds com C1 melhor | dif. mediana | dp da dif. | IC 95% (dif. média) | célula |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | mean_waiting_time | 76.696 | 95.656 | 18.960 | 24.7% | C1_worse | 0/5 | 21.011 | 4.571 | [15.293, 22.270] | UNFAV |
 | mean_time_loss | 102.601 | 120.737 | 18.136 | 17.7% | C1_worse | 0/5 | 20.358 | 5.254 | [13.952, 21.881] | UNFAV |
@@ -109,7 +109,7 @@
 
 ### S4_LOCAL_SATURATION
 
-| metric | B2 mean | C1 mean | diff (C1-B2) | diff % | effect | seeds C1 better | median diff | std diff | 95% CI (mean diff) | cell |
+| métrica | média B2 | média C1 | dif. (C1-B2) | dif. % | efeito | seeds com C1 melhor | dif. mediana | dp da dif. | IC 95% (dif. média) | célula |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | mean_waiting_time | 927.859 | 738.192 | -189.668 | -20.4% | C1_better | 5/5 | -195.635 | 24.183 | [-205.963, -168.610] | FAV |
 | mean_time_loss | 1166.235 | 894.312 | -271.923 | -23.3% | C1_better | 5/5 | -278.618 | 26.867 | [-288.520, -247.894] | FAV |
@@ -133,11 +133,11 @@
 | corridor_throughput | 209.000 | 239.200 | 30.200 | 14.4% | C1_better | 5/5 | 30.000 | 15.611 | [18.600, 42.800] |  |
 | corridor_mean_travel_time | 1384.350 | 984.206 | -400.144 | -28.9% | C1_better | 5/5 | -379.772 | 115.783 | [-492.038, -313.177] |  |
 
-Survivorship guard: waiting time, time loss, travel time and stops are conditional on completion. Read them with `offered_vehicle_count`, `departed_vehicle_count`, `arrived_vehicle_count`, `completion_ratio_*` and `departure_ratio` shown in each table above (offered is identical for both controllers within a pair).
+Salvaguarda contra viés de sobrevivência: tempo de espera, perda de tempo, tempo de viagem e paradas são condicionais à conclusão. Leia-os junto com `offered_vehicle_count`, `departed_vehicle_count`, `arrived_vehicle_count`, `completion_ratio_*` e `departure_ratio` mostrados em cada tabela acima (o ofertado é idêntico para os dois controladores dentro de um par).
 
-## 5. Aggregated reading (20 pooled pairs; mixes regimes, less interpretable)
+## 5. Leitura agregada (20 pares agrupados; mistura regimes, menos interpretável)
 
-| metric | B2 mean | C1 mean | diff (C1-B2) | diff % | effect | seeds C1 better | median diff | std diff | 95% CI (mean diff) | cell |
+| métrica | média B2 | média C1 | dif. (C1-B2) | dif. % | efeito | seeds com C1 melhor | dif. mediana | dp da dif. | IC 95% (dif. média) | célula |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | mean_waiting_time | 303.951 | 261.262 | -42.688 | -14.0% | C1_better | 10/20 | -1.536 | 89.523 | [-82.308, -6.796] |  |
 | mean_time_loss | 382.689 | 318.233 | -64.456 | -16.8% | C1_better | 10/20 | -4.703 | 125.056 | [-120.878, -15.245] |  |
@@ -163,39 +163,39 @@ Survivorship guard: waiting time, time loss, travel time and stops are condition
 | post_shock_queue_auc_vehicle_seconds | 115239.700 | 131035.400 | 15795.700 | 13.7% | C1_worse | 0/5 | 14945.000 | 6811.959 | [11159.400, 21331.000] |  |
 | post_shock_time_loss | 135.819 | 151.490 | 15.671 | 11.5% | C1_worse | 0/5 | 14.692 | 7.643 | [10.641, 22.277] |  |
 
-## 6. Sensitivity
+## 6. Sensibilidade
 
-### 6.1 Without the pair S4 seed 5791 (the only pair with B2 teleports)
+### 6.1 Sem o par S4 seed 5791 (o único par com teleportes no B2)
 
-| metric | pooled all diff | pooled without pair diff | pooled CI without pair | S4 all diff | S4 without pair diff | S4 CI without pair | effect changed (pooled) |
+| métrica | dif. agrupada (todos) | dif. agrupada sem o par | IC agrupado sem o par | dif. S4 (todos) | dif. S4 sem o par | IC S4 sem o par | efeito mudou (agrupado) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| mean_waiting_time | -42.688 | -33.717 | [-73.310, -0.864] | -189.668 | -183.796 | [-199.786, -161.854] | no |
-| mean_time_loss | -64.456 | -52.944 | [-107.699, -6.059] | -271.923 | -269.109 | [-290.995, -239.073] | no |
-| throughput | 11.700 | -7.211 | [-32.000, 19.158] | 142.600 | 85.500 | [59.500, 111.500] | YES |
-| mean_network_queue_vehicles | -12.742 | -9.437 | [-22.404, 1.998] | -63.620 | -60.641 | [-65.415, -55.867] | no |
-| mean_travel_time | -64.506 | -52.996 | [-106.134, -6.629] | -272.077 | -269.296 | [-291.480, -238.849] | no |
-| completion_ratio_offered | -0.009 | -0.015 | [-0.030, -0.002] | 0.041 | 0.025 | [0.016, 0.033] | no |
-| completion_ratio_departed | 0.018 | 0.012 | [0.000, 0.025] | 0.077 | 0.063 | [0.052, 0.072] | no |
-| departure_ratio | -0.015 | -0.020 | [-0.034, -0.008] | 0.015 | -0.002 | [-0.009, 0.005] | no |
-| offered_vehicle_count | 0.000 | 0.000 | [0.000, 0.000] | 0.000 | 0.000 | [0.000, 0.000] | no |
-| departed_vehicle_count | -11.800 | -27.632 | [-44.526, -12.630] | 52.400 | -6.750 | [-32.000, 18.500] | no |
-| arrived_vehicle_count | 8.850 | -10.421 | [-35.895, 17.317] | 145.400 | 88.000 | [58.500, 117.500] | YES |
-| never_inserted_vehicle_count | 11.800 | 27.632 | [12.579, 44.895] | -52.400 | 6.750 | [-18.500, 32.000] | no |
-| unfinished_in_network_count | -20.650 | -17.211 | [-37.212, 0.526] | -93.000 | -94.750 | [-103.500, -85.750] | no |
-| mean_depart_delay_seconds | 42.721 | 31.671 | [10.918, 58.092] | 143.324 | 115.989 | [73.968, 176.967] | no |
-| mean_stops | -2.472 | -2.172 | [-4.100, -0.561] | -9.575 | -9.924 | [-10.689, -9.159] | no |
-| max_network_queue_vehicles | -24.750 | -20.632 | [-42.370, -1.893] | -103.000 | -103.000 | [-108.000, -97.000] | no |
-| max_lane_queue_vehicles | -2.050 | -2.105 | [-3.316, -0.947] | -1.000 | -1.000 | [-1.000, -1.000] | no |
-| internal_lane_persistence_events | -821.550 | -659.105 | [-1226.388, -200.053] | -3083.600 | -2877.500 | [-3163.750, -2481.250] | no |
-| sumo_teleports_total | -0.150 | 0.000 | [0.000, 0.000] | -0.600 | 0.000 | [0.000, 0.000] | YES |
-| corridor_throughput | 5.700 | 3.263 | [-3.368, 10.159] | 30.200 | 24.750 | [15.750, 33.500] | no |
-| corridor_mean_travel_time | -113.940 | -101.241 | [-186.683, -32.031] | -400.144 | -411.376 | [-511.347, -302.668] | no |
+| mean_waiting_time | -42.688 | -33.717 | [-73.310, -0.864] | -189.668 | -183.796 | [-199.786, -161.854] | não |
+| mean_time_loss | -64.456 | -52.944 | [-107.699, -6.059] | -271.923 | -269.109 | [-290.995, -239.073] | não |
+| throughput | 11.700 | -7.211 | [-32.000, 19.158] | 142.600 | 85.500 | [59.500, 111.500] | SIM |
+| mean_network_queue_vehicles | -12.742 | -9.437 | [-22.404, 1.998] | -63.620 | -60.641 | [-65.415, -55.867] | não |
+| mean_travel_time | -64.506 | -52.996 | [-106.134, -6.629] | -272.077 | -269.296 | [-291.480, -238.849] | não |
+| completion_ratio_offered | -0.009 | -0.015 | [-0.030, -0.002] | 0.041 | 0.025 | [0.016, 0.033] | não |
+| completion_ratio_departed | 0.018 | 0.012 | [0.000, 0.025] | 0.077 | 0.063 | [0.052, 0.072] | não |
+| departure_ratio | -0.015 | -0.020 | [-0.034, -0.008] | 0.015 | -0.002 | [-0.009, 0.005] | não |
+| offered_vehicle_count | 0.000 | 0.000 | [0.000, 0.000] | 0.000 | 0.000 | [0.000, 0.000] | não |
+| departed_vehicle_count | -11.800 | -27.632 | [-44.526, -12.630] | 52.400 | -6.750 | [-32.000, 18.500] | não |
+| arrived_vehicle_count | 8.850 | -10.421 | [-35.895, 17.317] | 145.400 | 88.000 | [58.500, 117.500] | SIM |
+| never_inserted_vehicle_count | 11.800 | 27.632 | [12.579, 44.895] | -52.400 | 6.750 | [-18.500, 32.000] | não |
+| unfinished_in_network_count | -20.650 | -17.211 | [-37.212, 0.526] | -93.000 | -94.750 | [-103.500, -85.750] | não |
+| mean_depart_delay_seconds | 42.721 | 31.671 | [10.918, 58.092] | 143.324 | 115.989 | [73.968, 176.967] | não |
+| mean_stops | -2.472 | -2.172 | [-4.100, -0.561] | -9.575 | -9.924 | [-10.689, -9.159] | não |
+| max_network_queue_vehicles | -24.750 | -20.632 | [-42.370, -1.893] | -103.000 | -103.000 | [-108.000, -97.000] | não |
+| max_lane_queue_vehicles | -2.050 | -2.105 | [-3.316, -0.947] | -1.000 | -1.000 | [-1.000, -1.000] | não |
+| internal_lane_persistence_events | -821.550 | -659.105 | [-1226.388, -200.053] | -3083.600 | -2877.500 | [-3163.750, -2481.250] | não |
+| sumo_teleports_total | -0.150 | 0.000 | [0.000, 0.000] | -0.600 | 0.000 | [0.000, 0.000] | SIM |
+| corridor_throughput | 5.700 | 3.263 | [-3.368, 10.159] | 30.200 | 24.750 | [15.750, 33.500] | não |
+| corridor_mean_travel_time | -113.940 | -101.241 | [-186.683, -32.031] | -400.144 | -411.376 | [-511.347, -302.668] | não |
 
-Primary metrics whose pooled direction changes when the pair is removed: ['throughput'].
+Métricas primárias cuja direção agrupada muda quando o par é removido: ['throughput'].
 
-### 6.2 Leave-one-seed-out (pooled over scenarios): direction of the mean difference per primary metric
+### 6.2 Remover uma seed por vez (agrupado entre cenários): direção da diferença média por métrica primária
 
-| metric | without 42 | without 2027 | without 3253 | without 4517 | without 5791 |
+| métrica | sem 42 | sem 2027 | sem 3253 | sem 4517 | sem 5791 |
 | --- | --- | --- | --- | --- | --- |
 | mean_waiting_time | -43.133 (C1_better) | -41.919 (C1_better) | -44.885 (C1_better) | -42.601 (C1_better) | -40.904 (C1_better) |
 | mean_time_loss | -64.915 (C1_better) | -63.098 (C1_better) | -67.132 (C1_better) | -63.755 (C1_better) | -63.378 (C1_better) |
@@ -204,48 +204,48 @@ Primary metrics whose pooled direction changes when the pair is removed: ['throu
 | mean_travel_time | -64.974 (C1_better) | -63.116 (C1_better) | -67.227 (C1_better) | -63.744 (C1_better) | -63.469 (C1_better) |
 | completion_ratio_offered | -0.008 (C1_worse) | -0.009 (C1_worse) | -0.009 (C1_worse) | -0.004 (C1_worse) | -0.015 (C1_worse) |
 
-### 6.3 Teleports (auxiliary metric, sum over the 5 seeds)
+### 6.3 Teleportes (métrica auxiliar, soma das 5 seeds)
 
-| scenario | B2 | C1 |
+| cenário | B2 | C1 |
 | --- | --- | --- |
 | S1_BALANCED | 0 | 0 |
 | S2_DIRECTIONAL_PEAK | 0 | 0 |
 | S3_DEMAND_SHIFT | 0 | 0 |
 | S4_LOCAL_SATURATION | 3 | 0 |
 
-Only B2 S4 seed 5791 has teleports in this comparison (3); C1 has none. The pair was removed in 6.1; the comparison also appears in the S4 rows of section 4.
+Apenas o B2 S4 seed 5791 tem teleportes nesta comparação (3); o C1 não tem nenhum. O par foi removido em 6.1; a comparação também aparece nas linhas do S4 da seção 4.
 
-## 7. Interpretation
+## 7. Interpretação
 
-- Cell tally over 6 primary metrics x 4 scenarios = 24 cells: **FAV 10**, **UNFAV 13**, NEUTRAL 1.
+- Contagem de células sobre 6 métricas primárias x 4 cenários = 24 células: **FAV 10**, **UNFAV 13**, NEUTRAL 1.
   - S1_BALANCED: mean_waiting_time UNFAV, mean_time_loss UNFAV, throughput NEUTRAL, mean_network_queue_vehicles UNFAV, mean_travel_time UNFAV, completion_ratio_offered UNFAV
   - S2_DIRECTIONAL_PEAK: mean_waiting_time FAV, mean_time_loss FAV, throughput UNFAV, mean_network_queue_vehicles FAV, mean_travel_time FAV, completion_ratio_offered UNFAV
   - S3_DEMAND_SHIFT: mean_waiting_time UNFAV, mean_time_loss UNFAV, throughput UNFAV, mean_network_queue_vehicles UNFAV, mean_travel_time UNFAV, completion_ratio_offered UNFAV
   - S4_LOCAL_SATURATION: mean_waiting_time FAV, mean_time_loss FAV, throughput FAV, mean_network_queue_vehicles FAV, mean_travel_time FAV, completion_ratio_offered FAV
-- Pooled CI excludes zero for 4 of 6 primary metrics.
-- Result class by the predeclared rule: **MIXED**; confidence **MEDIUM** (never HIGH for a 5-seed pilot).
-- C1 outperforms B2: **MIXED**.
-- The per-scenario reading is the one to use; the direction can differ between scenarios and the pooled number mixes regimes.
+- O IC agrupado exclui zero em 4 das 6 métricas primárias.
+- Classe de resultado pela regra pré-declarada: **MIXED**; confiança **MÉDIA** (nunca ALTA para um piloto de 5 seeds).
+- O C1 supera o B2: **MISTO**.
+- A leitura por cenário é a que deve ser usada; a direção pode diferir entre cenários e o número agrupado mistura regimes.
 
-## 8. Limitations
+## 8. Limitações
 
-- Pilot V2 is a pilot: results do not enter the final campaign and Pilot V1 is not combined with V2.
-- Small sample: 5 seeds per scenario; bootstrap intervals are descriptive, not a significance test.
-- S3 was approved by the composite gate (Prompts 47/48); the 1800 s window was chosen after observing the 46.9 diagnostics.
-- The 360 s rule is kept as a diagnostic: seed 4517 of S3 fails it (VALID_WITH_DIAGNOSTIC_WARNING).
-- S4 is accepted as ALLOW_AND_MEASURE: teleports are reported (B2: 3 in seed 5791; C1: 0) and the sensitivity without that pair is shown. The S4 scale 2.0 is the top of the calibration grid and about half of the S4 demand never enters.
-- The zero-teleport counterfactual was tested only with B0; B2 and C1 behaviour without teleports is unknown.
-- Scenario validity was judged on B0 reference runs; controllers may change the realised regime.
-- Waiting time, time loss, travel time and stops are conditional on completion and depend on offered/departed/arrived and the completion ratios.
-- One communication-delay/drop setting only (delay 0, drop 0); C1 cost (messages) is not analysed here.
+- O Pilot V2 é um piloto: os resultados não entram na campanha final e o Pilot V1 não é combinado com o V2.
+- Amostra pequena: 5 seeds por cenário; os intervalos bootstrap são descritivos, não um teste de significância.
+- O S3 foi aprovado pelo gate composto (Prompts 47/48); a janela de 1800 s foi escolhida após observar os diagnósticos do 46.9.
+- A regra de 360 s é mantida como diagnóstico: a seed 4517 do S3 falha nela (VALID_WITH_DIAGNOSTIC_WARNING).
+- O S4 é aceito como ALLOW_AND_MEASURE: os teleportes são reportados (B2: 3 na seed 5791; C1: 0) e a sensibilidade sem esse par é mostrada. A escala 2,0 do S4 é o topo da grade de calibração e cerca de metade da demanda do S4 nunca entra.
+- O contrafactual de zero teleportes foi testado apenas com o B0; o comportamento de B2 e C1 sem teleportes é desconhecido.
+- A validade de cenário foi julgada em execuções de referência do B0; os controladores podem alterar o regime realizado.
+- Tempo de espera, perda de tempo, tempo de viagem e paradas são condicionais à conclusão e dependem de ofertados/partidos/chegados e das razões de conclusão.
+- Apenas uma configuração de atraso/descarte de comunicação (atraso 0, descarte 0); o custo do C1 (mensagens) não é analisado aqui.
 
-## 9. Conclusion of Pilot V2
+## 9. Conclusão do Pilot V2
 
-Under the predeclared descriptive rule the B2-vs-C1 result is **MIXED** with **MEDIUM** confidence. This is a pilot observation to inform the seed-count decision (use the CI widths above), not evidence of a cooperative benefit.
+Sob a regra descritiva pré-declarada, o resultado B2-vs-C1 é **MISTO** com confiança **MÉDIA**. Esta é uma observação de piloto para subsidiar a decisão sobre o número de seeds (use as larguras dos ICs acima), não evidência de benefício cooperativo.
 
-## 10. Reading of the tables (plain summary, numbers from sections 4-6)
+## 10. Leitura das tabelas (resumo em linguagem simples, números das seções 4-6)
 
-- S1 (balanced) and S3 (demand shift): C1 is worse than B2 in all 5 seeds on waiting time (+44.7% and +24.7%), time loss, travel time and network queue; completion ratio is slightly lower. The S3 direction is the same after the shock (post-shock time loss +11.5%, post-shock queue AUC worse).
-- S2 (directional peak): mixed inside the scenario. C1 has lower waiting time (-12.7%), time loss, travel time and queue in 5/5 seeds, but lower throughput (-6.1%) and lower completion ratio (-0.052) in 5/5 seeds; the completed-trip delay advantage therefore comes with fewer completed trips and must not be read alone.
-- S4 (A5 saturation): C1 is better in 5/5 seeds on all six primary metrics (waiting -20.4%, time loss -23.3%, queue -17.7%, throughput +12.0%, completion +0.041). Without the pair S4 seed 5791 the direction holds and all S4 intervals still exclude zero, but the throughput gain falls from +142.6 to +85.5 veh and the pooled throughput direction flips, so the pooled throughput sign depends on that pair.
-- Net: C1 does not outperform B2 consistently; its advantage is concentrated in the overloaded S4 (and partly S2 delays), while S1 and S3 favour B2 in every seed. Class MIXED. The pooled aggregate (negative waiting/time-loss/travel-time differences) is driven by the very large S4 magnitudes and should not be read as a general benefit.
+- S1 (balanceado) e S3 (mudança de demanda): o C1 é pior que o B2 em todas as 5 seeds em tempo de espera (+44,7% e +24,7%), perda de tempo, tempo de viagem e fila da rede; a razão de conclusão é ligeiramente menor. A direção do S3 é a mesma após o choque (perda de tempo pós-choque +11,5%, AUC da fila pós-choque pior).
+- S2 (pico direcional): misto dentro do cenário. O C1 tem menor tempo de espera (-12,7%), perda de tempo, tempo de viagem e fila em 5/5 seeds, mas menor throughput (-6,1%) e menor razão de conclusão (-0,052) em 5/5 seeds; a vantagem de atraso das viagens concluídas, portanto, vem com menos viagens concluídas e não deve ser lida isoladamente.
+- S4 (saturação em A5): o C1 é melhor em 5/5 seeds em todas as seis métricas primárias (espera -20,4%, perda de tempo -23,3%, fila -17,7%, throughput +12,0%, conclusão +0,041). Sem o par S4 seed 5791 a direção se mantém e todos os intervalos do S4 ainda excluem zero, mas o ganho de throughput cai de +142,6 para +85,5 veíc e a direção agrupada do throughput se inverte, de modo que o sinal agrupado do throughput depende desse par.
+- Em resumo: o C1 não supera o B2 de forma consistente; sua vantagem se concentra no S4 sobrecarregado (e em parte nos atrasos do S2), enquanto S1 e S3 favorecem o B2 em toda seed. Classe MIXED. O agregado agrupado (diferenças negativas de espera/perda de tempo/tempo de viagem) é conduzido pelas magnitudes muito grandes do S4 e não deve ser lido como um benefício geral.

@@ -1,14 +1,14 @@
-# Versioned camera presets for the before/after visual replay (scripts/record_before_after.py).
+# Presets de câmera versionados para o replay visual antes/depois (scripts/record_before_after.py).
 #
-# Presets only describe WHAT to frame. They never touch the simulation: the replay tool reads
-# junction coordinates from the frozen network and positions the SUMO GUI view accordingly.
+# Os presets descrevem apenas O QUE enquadrar. Nunca tocam a simulação: a ferramenta de replay lê
+# as coordenadas das junções da rede congelada e posiciona a visão do SUMO GUI de acordo.
 #
-# focus: exactly one of
-#   network: true             - the whole network
-#   intersections: [A5, ...]  - project intersection labels (A1..A9)
-#   edges: [left1A1, ...]     - SUMO edge ids (both end junctions are framed)
-# margin_m: padding added around the focus bounding box, in metres.
-# labels: intersection labels drawn as unobtrusive overlay text (no change to the SUMO network).
+# focus: exatamente um entre
+#   network: true             - a rede inteira
+#   intersections: [A5, ...]  - rótulos de interseção do projeto (A1..A9)
+#   edges: [left1A1, ...]     - ids de aresta do SUMO (as duas junções das pontas são enquadradas)
+# margin_m: margem adicionada ao redor da caixa delimitadora do foco, em metros.
+# labels: rótulos de interseção desenhados como texto de overlay discreto (sem alterar a rede SUMO).
 version: 1
 resolution:
   width: 1280

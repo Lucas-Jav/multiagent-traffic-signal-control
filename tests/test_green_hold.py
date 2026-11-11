@@ -18,8 +18,8 @@ from traffic_agents.domain import (
 )
 from traffic_agents.traffic_light_actuator import TrafficLightActuator
 
-# The grid_3x3 SUMO program: four protected approach greens, each followed by
-# yellow (3 s) and all-red (2 s). State strings are the real 12-signal states.
+# O programa SUMO do grid_3x3: quatro verdes de aproximação protegidos, cada um seguido de
+# amarelo (3 s) e vermelho total (2 s). As strings de estado são os estados reais de 12 sinais.
 GRID_PROGRAM: tuple[tuple[str, float], ...] = (
     ("GGGrrrrrrrrr", 18.0),
     ("yyyrrrrrrrrr", 3.0),
@@ -80,7 +80,9 @@ def make_observation(phase_index: int, elapsed: float) -> AgentObservation:
 
 @dataclass
 class FakeSumoTrafficLight:
-    """Emulates SUMO's phase timer: the static program advances on expiry unless extended."""
+    """Emula o temporizador de fase do SUMO: o programa estático avança ao expirar, salvo se
+    estendido.
+    """
 
     program: tuple[tuple[str, float], ...] = GRID_PROGRAM
     phase: int = 0
@@ -136,7 +138,7 @@ def run_closed_loop(
 
 
 def green_segments(tls: FakeSumoTrafficLight) -> list[tuple[int, int]]:
-    """(phase_index, duration_seconds) of each completed green segment."""
+    """(phase_index, duration_seconds) de cada segmento de verde concluído."""
     green_indexes = {index for index, (state, _) in enumerate(GRID_PROGRAM) if "G" in state}
     segments: list[tuple[int, int]] = []
     current_phase: int | None = None
@@ -170,7 +172,7 @@ def test_keep_phase_continues_beyond_default_program_duration() -> None:
 
     run_closed_loop(tls, make_safety(), steps=30)
 
-    # Without the hold, SUMO would have left phase 0 after 18 s.
+    # Sem a retenção, o SUMO teria saído da fase 0 após 18 s.
     assert {phase for phase, _ in tls.visited} == {0}
     assert max(spent for _, spent in tls.visited) == 29.0
     assert tls.phase == 0
@@ -195,15 +197,15 @@ def test_max_green_is_forced_through_the_regular_yellow_and_all_red_sequence() -
 
     run_closed_loop(tls, safety, steps=30 + 3 + 2 + 5)
 
-    # The hold never grants more than max_green: the timer expires (or the safety
-    # manager forces SET_PHASE) exactly at 30 s, and it always goes to yellow.
+    # A retenção nunca concede mais que max_green: o temporizador expira (ou o gerenciador de
+    # segurança força SET_PHASE) exatamente em 30 s, e sempre vai para o amarelo.
     assert [phase for phase, _ in tls.visited[:30]] == [0] * 30
-    assert tls.visited[30][0] == 1  # yellow, never straight to the next green
+    assert tls.visited[30][0] == 1  # amarelo, nunca direto para o próximo verde
     visited_order = []
     for phase, _ in tls.visited:
         if not visited_order or visited_order[-1] != phase:
             visited_order.append(phase)
-    assert visited_order[:4] == [0, 1, 2, 3]  # green, yellow, all-red, next green
+    assert visited_order[:4] == [0, 1, 2, 3]  # verde, amarelo, vermelho total, próximo verde
     yellow_seconds = sum(1 for phase, _ in tls.visited if phase == 1)
     all_red_seconds = sum(1 for phase, _ in tls.visited if phase == 2)
     assert (yellow_seconds, all_red_seconds) == (3, 2)
@@ -221,7 +223,7 @@ def test_change_request_still_respects_min_green_and_keeps_green_held() -> None:
     switch = commands[int(MIN_GREEN)]
     assert switch.kind == PhaseCommandKind.SET_PHASE
     assert switch.phase_index == 1
-    # The green was allowed to run its full min_green (10 s) even though it asked to leave.
+    # O verde pôde cumprir seu min_green completo (10 s) mesmo tendo pedido para sair.
     assert green_segments(tls) == [] or all(d >= MIN_GREEN for _, d in green_segments(tls))
     assert tls.phase == 1
 
@@ -237,10 +239,11 @@ def test_only_program_states_are_ever_used_and_no_conflicting_movement_opens() -
     previous = None
     for phase, _ in tls.visited:
         state = GRID_PROGRAM[phase][0]
-        assert state == make_phases()[phase].signal_state  # untouched program state
-        assert state.count("G") in {0, 3}  # exactly one approach open at a time
+        assert state == make_phases()[phase].signal_state  # estado do programa intocado
+        assert state.count("G") in {0, 3}  # exatamente uma aproximação aberta por vez
         if previous is not None and phase != previous:
-            # phases only advance to the next program phase (yellow/all-red never skipped)
+            # as fases só avançam para a próxima fase do programa (amarelo/vermelho total nunca são
+            # pulados)
             assert phase == (previous + 1) % len(GRID_PROGRAM)
         previous = phase
 

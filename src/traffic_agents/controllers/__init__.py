@@ -1,4 +1,4 @@
-"""Traffic signal controllers."""
+"""Controladores de semáforo."""
 
 from traffic_agents.controllers.cooperative_compact import (
     COOPERATIVE_COMPACT_CONTROLLER_ID,

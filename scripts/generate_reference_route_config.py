@@ -1,10 +1,10 @@
-"""Generate the 20-run ``B0_FIXED_CALIBRATED`` config of the reference-route experiment.
+"""Gera a config de 20 execuções ``B0_FIXED_CALIBRATED`` do experimento de rota de referência.
 
     uv run python scripts/generate_reference_route_config.py
 
-The runs reuse exactly the scenario/seed pairs and the communication block of Pilot V2
-(``experiments/configs/pilot_v2.yaml``); only the controller changes. B1/B2/C1/C2 are not run:
-their Pilot V2 data is reused by the analysis.
+As execuções reutilizam exatamente os pares cenário/seed e o bloco de comunicação do Pilot V2
+(``experiments/configs/pilot_v2.yaml``); apenas o controlador muda. B1/B2/C1/C2 não são executados:
+seus dados do Pilot V2 são reutilizados pela análise.
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ OUTPUT = Path("experiments/configs/refroute_b0.yaml")
 HISTORICAL_CONTROLLER = "B0_FIXED"
 CALIBRATED_CONTROLLER = "B0_FIXED_CALIBRATED"
 CAMPAIGN_ROLE = "REFERENCE_ROUTE_B0_CALIBRATED"
-# Short id on purpose: Windows limits paths to 260 characters and the run directory names are long.
+# Id curto de propósito: o Windows limita caminhos a 260 caracteres e os nomes dos diretórios de execução são longos.
 EXPERIMENT_ID = "refroute_b0"
 
 

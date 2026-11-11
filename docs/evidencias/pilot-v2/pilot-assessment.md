@@ -1,29 +1,29 @@
 > **Proveniencia (copia versionada).**
 > Fonte: `artifacts/experiments/pilot_v2/pilot-assessment.md` (git-ignorado) | Experimento: `pilot_v2` |
 > Git SHA do codigo que gerou as runs: `7fffb4efff9ad98498c81cc0d829911ad44baa46` | Git SHA no empacotamento: `0215e852603cb56a2c1ebd2ddd615b94c50b95ad` |
-> Data de empacotamento: 2026-10-13 | Tipo: **derived** | Conteudo copiado sem alteracao abaixo.
+> Data de empacotamento: 2026-10-13 | Tipo: **derived** | Conteudo copiado abaixo (texto traduzido para português, sem alteração de números ou conclusões).
 
-> **SUPERSEDED STATUS (final audit, Prompt 52).** This is the original Prompt 46.8 assessment, kept unchanged below. Its gates `S3_ADAPTATION_SCENARIO_VALID = NO`, `SCIENTIFIC_PILOT_VALID = NO`, `READY_FOR_SEED_DECISION = NO` and the withheld B2-vs-C1 comparison reflect the old 360 s rule only. After the approved composite gate (Prompts 47/48) S3 is valid (5/5 seeds), the Pilot V2 was released for B2 vs C1 (Prompt 49) and the comparison was completed (Prompt 50, result MIXED). See `pilot-v2-release-decision.md`, `b2-vs-c1-final-comparison.md` and `final-scientific-conclusion.md`.
+> **STATUS SUBSTITUÍDO (auditoria final, Prompt 52).** Esta é a avaliação original do Prompt 46.8, mantida sem alterações abaixo. Seus gates `S3_ADAPTATION_SCENARIO_VALID = NO`, `SCIENTIFIC_PILOT_VALID = NO`, `READY_FOR_SEED_DECISION = NO` e a comparação B2-vs-C1 retida refletem apenas a antiga regra de 360 s. Após o gate composto aprovado (Prompts 47/48), o S3 é válido (5/5 seeds), o Pilot V2 foi liberado para B2 vs C1 (Prompt 49) e a comparação foi concluída (Prompt 50, resultado MISTO). Ver `pilot-v2-release-decision.md`, `b2-vs-c1-final-comparison.md` e `final-scientific-conclusion.md`.
 
-# Pilot V2 assessment
+# Avaliação do Pilot V2
 
-`campaign_role: PILOT` - Pilot V1 and V2 are never combined statistically. Not final results. No controller ranking or tuning.
+`campaign_role: PILOT` - Pilot V1 e V2 nunca são combinados estatisticamente. Não são resultados finais. Nenhum ranking ou ajuste de controladores.
 
-Authoritative sources: runner `manifest.json`/`run_status.jsonl`, per-run `run_metrics.json` + canonical telemetry, `combined_metrics.parquet` (project `experiment aggregate` pipeline). Scenario validity criteria are evaluated on the `B0_FIXED` reference runs (5 seeds) and listed for all controllers as information. The analysis script is `artifacts/experiments/pilot_v2/analysis/pilot_v2_analysis.py` (reuses `scripts/calibrate_scenarios.py::analyze_run`, no source change).
+Fontes autoritativas: `manifest.json`/`run_status.jsonl` do executor, `run_metrics.json` por execução + telemetria canônica, `combined_metrics.parquet` (pipeline `experiment aggregate` do projeto). Os critérios de validade de cenário são avaliados nas execuções de referência do `B0_FIXED` (5 seeds) e listados para todos os controladores a título informativo. O script de análise é `artifacts/experiments/pilot_v2/analysis/pilot_v2_analysis.py` (reutiliza `scripts/calibrate_scenarios.py::analyze_run`, sem alteração de código-fonte).
 
-## 1. Execution
+## 1. Execução
 
 - PLANNED_RUNS 100; COMPLETED_RUNS 100; FAILED_RUNS 0
-- status transitions per run (run_status.jsonl): {"RUNNING->COMPLETED": 100}
-- metrics_finalized=true on all runs: True; missing required metrics: 0 []
-- Requested metric names vs project names: `mean_waiting_time_seconds`->`mean_waiting_time`, `mean_time_loss_seconds`->`mean_time_loss`, `mean_travel_time_seconds`->`mean_travel_time` (metrics were frozen; checked via this mapping).
-- jam teleports per run (SUMO): total 17; runs with teleports 6; by scenario {'S1_BALANCED': 0, 'S2_DIRECTIONAL_PEAK': 0, 'S3_DEMAND_SHIFT': 0, 'S4_LOCAL_SATURATION': 17}
+- transições de status por execução (run_status.jsonl): {"RUNNING->COMPLETED": 100}
+- metrics_finalized=true em todas as execuções: True; métricas obrigatórias ausentes: 0 []
+- Nomes de métricas solicitados vs nomes do projeto: `mean_waiting_time_seconds`->`mean_waiting_time`, `mean_time_loss_seconds`->`mean_time_loss`, `mean_travel_time_seconds`->`mean_travel_time` (as métricas estavam congeladas; verificadas por este mapeamento).
+- teleportes por congestionamento (jam) por execução (SUMO): total 17; execuções com teleportes 6; por cenário {'S1_BALANCED': 0, 'S2_DIRECTIONAL_PEAK': 0, 'S3_DEMAND_SHIFT': 0, 'S4_LOCAL_SATURATION': 17}
 
-## 2. Scenario validity (B0 reference runs)
+## 2. Validade de cenário (execuções de referência do B0)
 
 ### S1_BALANCED
 
-| seed | dep ratio | compl. departed | final-20% proj. change / mean | min junction share | turning s/l/r | checks failed |
+| seed | razão de partida | concl. partidos | variação proj. últimos 20% / média | participação mín. por junção | conversões s/l/r | verificações que falharam |
 | --- | --- | --- | --- | --- | --- | --- |
 | 42 | 1.000 | 0.957 | -6.4 / 45.5 | 0.107 | 0.71/0.15/0.15 | - |
 | 2027 | 1.000 | 0.960 | -2.2 / 45.7 | 0.107 | 0.70/0.15/0.16 | - |
@@ -35,7 +35,7 @@ S1_STABLE_REGIME_VALID = YES
 
 ### S2_DIRECTIONAL_PEAK
 
-| seed | offered dominant share | DBI | dep ratio | dominant dep | residual dep | left+right share | checks failed |
+| seed | participação dominante ofertada | DBI | razão de partida | partida dominante | partida residual | participação esq+dir | verificações que falharam |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 42 | 0.805 | 0.805 | 1.000 | 1.000 | 1.000 | 0.310 | - |
 | 2027 | 0.804 | 0.804 | 1.000 | 1.000 | 1.000 | 0.297 | - |
@@ -47,7 +47,7 @@ S2_DIRECTIONAL_SCENARIO_VALID = YES
 
 ### S3_DEMAND_SHIFT
 
-| seed | pre-shock queue / S1 same window | pre-shock mean | post-shock mean (600 s) | ratio | A5 ratio | latency (s) | max insertion delay (s) | dep ratio | checks failed |
+| seed | fila pré-choque / S1 mesma janela | média pré-choque | média pós-choque (600 s) | razão | razão A5 | latência (s) | atraso máx de inserção (s) | razão de partida | verificações que falharam |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 42 | 1.00 | 48.1 | 65.2 | 1.36 | 2.60 | 130 | 118 | 0.997 | - |
 | 2027 | 1.00 | 46.4 | 66.7 | 1.44 | 3.56 | 216 | 367 | 0.975 | - |
@@ -59,7 +59,7 @@ S3_ADAPTATION_SCENARIO_VALID = NO
 
 ### S4_LOCAL_SATURATION
 
-| seed | A5 mean queue | A5 / others | neighbours / corners | min 300 s arrivals | arrivals last 1800 s / offered | dep ratio | teleports | checks failed |
+| seed | fila média A5 | A5 / demais | vizinhas / cantos | chegadas mín. em 300 s | chegadas últimos 1800 s / ofertados | razão de partida | teleportes | verificações que falharam |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 42 | 75.4 | 2.52 | 2.06 | 121 | 767 / 1788 | 0.491 | 2 | - |
 | 2027 | 74.6 | 2.44 | 2.02 | 117 | 770 / 1784 | 0.485 | 2 | - |
@@ -69,9 +69,9 @@ S3_ADAPTATION_SCENARIO_VALID = NO
 
 S4_SATURATION_SCENARIO_VALID = YES
 
-### Information: zero-arrival 300 s bins and calibration criteria per controller (all 100 runs)
+### Informação: intervalos de 300 s sem chegadas e critérios de calibração por controlador (todas as 100 execuções)
 
-| scenario | controller | runs with zero-arrival 300 s bin | runs passing all calibration criteria |
+| cenário | controlador | execuções com intervalo de 300 s sem chegadas | execuções que passam em todos os critérios de calibração |
 | --- | --- | --- | --- |
 | S1_BALANCED | B0_FIXED | 0/5 | 5/5 |
 | S1_BALANCED | B1_LOCAL_ADAPTIVE | 0/5 | 5/5 |
@@ -94,18 +94,18 @@ S4_SATURATION_SCENARIO_VALID = YES
 | S4_LOCAL_SATURATION | C1_COOPERATIVE_COMPACT | 0/5 | 5/5 |
 | S4_LOCAL_SATURATION | C2_COOPERATIVE_EXPANDED | 0/5 | 5/5 |
 
-## 3. B0 measurement fairness
+## 3. Equidade de medição do B0
 
-- distinct (warmup, start, end, steps, horizon_complete) tuples across all 100 runs: 1 -> ['(300.0, 300.0, 3900.0, 3900, True)']
-- canonical files missing: 0; B0 lane-telemetry rows == 3900 x 36 in all B0 runs
-- offered cohort identical across the 5 controllers per (scenario, seed): True
-- canonical metrics present for adaptive controllers but absent for B0: []
+- tuplas distintas (warmup, início, fim, passos, horizon_complete) em todas as 100 execuções: 1 -> ['(300.0, 300.0, 3900.0, 3900, True)']
+- arquivos canônicos ausentes: 0; linhas de telemetria de lane do B0 == 3900 x 36 em todas as execuções B0
+- coorte ofertada idêntica entre os 5 controladores por (cenário, seed): True
+- métricas canônicas presentes para controladores adaptativos mas ausentes para o B0: []
 
 B0_MEASUREMENT_FAIR = YES
 
-## 4. Green-hold semantics (junction telemetry, all 100 runs)
+## 4. Semântica de retenção de verde (telemetria de junção, todas as 100 execuções)
 
-| controller | runs | greens | greens > 20 s | max green (s) | yellow values | all-red values | non-sequential changes |
+| controlador | execuções | verdes | verdes > 20 s | verde máx (s) | valores de amarelo | valores de vermelho total | mudanças não sequenciais |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | B0_FIXED | 20 | 28480 | 0 | 20 | [3] | [2] | 0 |
 | B1_LOCAL_ADAPTIVE | 20 | 38266 | 3473 | 60 | [3] | [2] | 0 |
@@ -113,13 +113,13 @@ B0_MEASUREMENT_FAIR = YES
 | C1_COOPERATIVE_COMPACT | 20 | 36174 | 3786 | 60 | [3] | [2] | 0 |
 | C2_COOPERATIVE_EXPANDED | 20 | 26502 | 7012 | 60 | [3] | [2] | 0 |
 
-max_green = 60 s (+1 step sampling tolerance). Not every controller/scenario must hold long greens.
+max_green = 60 s (+1 passo de tolerância de amostragem). Nem todo controlador/cenário precisa reter verdes longos.
 
 GREEN_HOLD_SEMANTICS_OBSERVED = YES
 
-## 5. Survivorship-safe population table (mean over 5 seeds; completed-trip metrics are conditional on completion)
+## 5. Tabela de população à prova de viés de sobrevivência (média de 5 seeds; métricas de viagens concluídas são condicionais à conclusão)
 
-| scenario | controller | offered | departed | arrived | dep ratio | compl. offered | compl. departed | waiting (s) | time loss (s) | travel (s) | stops | throughput |
+| cenário | controlador | ofertados | partiram | chegaram | razão de partida | concl. ofertados | concl. partidos | espera (s) | perda de tempo (s) | viagem (s) | paradas | throughput |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | S1_BALANCED | B0_FIXED | 1794 | 1794 | 1716 | 1.000 | 0.956 | 0.956 | 93.7 | 113.2 | 166.3 | 2.42 | 1795 |
 | S1_BALANCED | B1_LOCAL_ADAPTIVE | 1794 | 1794 | 1732 | 1.000 | 0.965 | 0.965 | 60.6 | 80.4 | 133.6 | 2.53 | 1800 |
@@ -142,42 +142,42 @@ GREEN_HOLD_SEMANTICS_OBSERVED = YES
 | S4_LOCAL_SATURATION | C1_COOPERATIVE_COMPACT | 3587 | 1480 | 1096 | 0.413 | 0.306 | 0.741 | 738.2 | 894.3 | 958.1 | 16.73 | 1330 |
 | S4_LOCAL_SATURATION | C2_COOPERATIVE_EXPANDED | 3587 | 1462 | 1114 | 0.408 | 0.310 | 0.762 | 609.7 | 702.5 | 765.9 | 9.33 | 1364 |
 
-## 6. Primary pilot comparison: B2_LOCAL_PRESSURE vs C1_COOPERATIVE_COMPACT (paired scenario+seed)
+## 6. Comparação primária do piloto: B2_LOCAL_PRESSURE vs C1_COOPERATIVE_COMPACT (cenário+seed pareados)
 
-WITHHELD: at least one scenario validity gate is NO (comparison only after validity passes).
+RETIDA: pelo menos um gate de validade de cenário é NO (comparação apenas após a validade passar).
 
-## 7. Runtime, storage, variability
+## 7. Tempo de execução, armazenamento, variabilidade
 
-- sum of run wall times: 165.5 min; mean per run by controller: B0_FIXED 55 s, B1_LOCAL_ADAPTIVE 106 s, B2_LOCAL_PRESSURE 105 s, C1_COOPERATIVE_COMPACT 113 s, C2_COOPERATIVE_EXPANDED 118 s
-- storage of `artifacts/experiments/pilot_v2`: 147.6 MB (1.5 MB/run)
-- median across scenarios of the seed coefficient of variation (std/mean over 5 seeds):
+- soma dos tempos de relógio das execuções: 165,5 min; média por execução por controlador: B0_FIXED 55 s, B1_LOCAL_ADAPTIVE 106 s, B2_LOCAL_PRESSURE 105 s, C1_COOPERATIVE_COMPACT 113 s, C2_COOPERATIVE_EXPANDED 118 s
+- armazenamento de `artifacts/experiments/pilot_v2`: 147,6 MB (1,5 MB/execução)
+- mediana entre cenários do coeficiente de variação entre seeds (dp/média sobre 5 seeds):
 
-| metric | B0_FIXED | B1_LOCAL_ADAPTIVE | B2_LOCAL_PRESSURE | C1_COOPERATIVE_COMPACT | C2_COOPERATIVE_EXPANDED |
+| métrica | B0_FIXED | B1_LOCAL_ADAPTIVE | B2_LOCAL_PRESSURE | C1_COOPERATIVE_COMPACT | C2_COOPERATIVE_EXPANDED |
 | --- | --- | --- | --- | --- | --- |
 | mean_network_queue_vehicles | 0.016 | 0.019 | 0.044 | 0.024 | 0.041 |
 | throughput | 0.009 | 0.005 | 0.013 | 0.010 | 0.015 |
 | mean_waiting_time | 0.018 | 0.022 | 0.053 | 0.028 | 0.051 |
 
-## 8. Engineering differences V1 -> V2 (no statistical combination)
+## 8. Diferenças de engenharia V1 -> V2 (sem combinação estatística)
 
-- Stable demand: V1 S1 was oversaturated; V2 levels come from a B0-only predeclared calibration (S1 150, S2 320, S3 base 150 + shock 150, S4 scale 2.0 veh/h per entry).
-- Queue measurement: V1 queues came from controller-side traces (missing for B0, duplicated lanes); V2 uses one canonical unique-lane telemetry for every controller.
-- Green-hold semantics: V1 KEEP_PHASE was effectively capped at the static green; V2 extends greens up to `max_green` with yellow/all-red still enforced.
-- Turning realization: V1 declared ratios did not shape routes; V2 uses a seeded turning-ratio route walk (70/15/15) with realized proportions in metadata.
-- S3 shock: V2 shock is a one-border (west) surge routed via A5 at the exact measurement midpoint (2100 s), base equals S1.
-- S4 hotspot: V2 hotspot vehicles are all routed through A5 (background + hotspot entries).
-- Metric finalization: V2 finalizes `run_metrics.json` automatically (`metrics_finalized=true`) and aggregates `combined_metrics.parquet` in the runner.
+- Demanda estável: o S1 do V1 estava supersaturado; os níveis do V2 vêm de uma calibração pré-declarada apenas com B0 (S1 150, S2 320, S3 base 150 + choque 150, S4 escala 2,0 veíc/h por entrada).
+- Medição de fila: as filas do V1 vinham de rastros do lado do controlador (ausentes para o B0, lanes duplicadas); o V2 usa uma telemetria canônica de lanes únicas para todo controlador.
+- Semântica de retenção de verde: no V1, o KEEP_PHASE era efetivamente limitado ao verde estático; o V2 estende os verdes até `max_green` com amarelo/vermelho total ainda impostos.
+- Realização das conversões: no V1, as razões declaradas não moldavam as rotas; o V2 usa um passeio de rota por razões de conversão com seed (70/15/15), com proporções realizadas nos metadados.
+- Choque do S3: o choque do V2 é uma onda de uma borda (oeste) roteada via A5 exatamente no ponto médio da medição (2100 s), com base igual ao S1.
+- Hotspot do S4: os veículos de hotspot do V2 são todos roteados por A5 (entradas de fundo + hotspot).
+- Finalização de métricas: o V2 finaliza `run_metrics.json` automaticamente (`metrics_finalized=true`) e agrega `combined_metrics.parquet` no executor.
 
-## 9. Methodological risks
+## 9. Riscos metodológicos
 
-- Only 5 seeds: paired CIs are wide and descriptive; the seed decision must use the CI widths above, not p-values.
-- Scenario validity is judged on B0; controllers can change the realized regime (see per-controller information table).
-- S4 scale 2.0 is the top of the calibration grid; heavy insertion-limited overload and jam teleports (count above) can distort queue physics.
-- Completed-trip metrics are conditional on completion and biased when completion ratios differ across controllers.
-- Pooling the 4 scenarios in one paired mean mixes regimes; per-scenario rows are the interpretable view.
-- Requested metric names differ from the frozen project names (mapping listed in section 1).
+- Apenas 5 seeds: os ICs pareados são largos e descritivos; a decisão sobre seeds deve usar as larguras dos ICs acima, não valores-p.
+- A validade de cenário é julgada no B0; controladores podem alterar o regime realizado (ver tabela informativa por controlador).
+- A escala 2,0 do S4 é o topo da grade de calibração; sobrecarga pesada limitada por inserção e teleportes por congestionamento (contagem acima) podem distorcer a física das filas.
+- As métricas de viagens concluídas são condicionais à conclusão e enviesadas quando as razões de conclusão diferem entre controladores.
+- Agrupar os 4 cenários em uma única média pareada mistura regimes; as linhas por cenário são a visão interpretável.
+- Os nomes de métricas solicitados diferem dos nomes congelados do projeto (mapeamento listado na seção 1).
 
-## 10. Final gates
+## 10. Gates finais
 
 ```
 PLANNED_RUNS = 100

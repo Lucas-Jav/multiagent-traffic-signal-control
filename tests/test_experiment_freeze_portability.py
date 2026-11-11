@@ -1,4 +1,6 @@
-"""Experiment freezes identify files by repository-relative POSIX paths (location independent)."""
+"""Freezes de experimentos identificam arquivos por caminhos POSIX relativos ao repositório
+(independentes de localização).
+"""
 
 from __future__ import annotations
 
@@ -59,7 +61,7 @@ def _text_files(root: Path) -> list[Path]:
     ]
 
 
-# --- path policy ---------------------------------------------------------------------------------
+# --- política de caminhos -------------------------------------------------------------------------
 @pytest.mark.parametrize(
     "bad",
     [
@@ -145,7 +147,7 @@ def test_absolute_path_scanner() -> None:
     assert absolute_paths_in({"a": "experiments/configs/x.yaml", "sha": "ab" * 32}) == []
 
 
-# --- portable freeze records ---------------------------------------------------------------------
+# --- registros de freeze portáveis ----------------------------------------------------------------
 def test_new_freeze_contains_no_absolute_paths(tmp_path: Path) -> None:
     freeze_dir = _freeze(tmp_path)
     for name in ("checksums.json", "freeze_manifest.json"):
@@ -172,7 +174,7 @@ def test_freeze_verifies_after_the_repository_is_moved(tmp_path: Path) -> None:
     repo_b = tmp_path / "somewhere" / "else" / "entirely" / "location_b"
     repo_b.parent.mkdir(parents=True)
     shutil.copytree(repo_a, repo_b)
-    shutil.rmtree(repo_a)  # the original location no longer exists
+    shutil.rmtree(repo_a)  # a localização original não existe mais
     freeze_dir_b = repo_b / freeze_dir_a.relative_to(repo_a)
     assert resolve_repository_root(freeze_dir_b) == repo_b.resolve()
     load_frozen_experiment_config_from_dir(freeze_dir_b).validate()
@@ -187,7 +189,9 @@ def test_moved_repository_with_line_ending_change_verifies(tmp_path: Path, conve
     repo_b.parent.mkdir()
     shutil.copytree(repo_a, repo_b)
     for path in _text_files(repo_b):
-        if "artifacts" not in path.parts:  # the frozen inputs, not the freeze record itself
+        if (
+            "artifacts" not in path.parts
+        ):  # as entradas congeladas, não o próprio registro de freeze
             convert(path)  # type: ignore[operator]
     load_frozen_experiment_config_from_dir(repo_b / freeze_dir_a.relative_to(repo_a)).validate()
 
@@ -220,7 +224,7 @@ def test_a_cloned_repository_verifies(tmp_path: Path) -> None:
     load_frozen_experiment_config_from_dir(repo_b / freeze_dir_a.relative_to(repo_a)).validate()
 
 
-# --- repository root resolution ------------------------------------------------------------------
+# --- resolução da raiz do repositório -------------------------------------------------------------
 def test_freeze_and_verification_work_from_a_subdirectory(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -258,7 +262,7 @@ def test_freeze_outside_a_git_repository_is_refused(tmp_path: Path) -> None:
         freeze._repository_root_for(config)
 
 
-# --- hostile records -----------------------------------------------------------------------------
+# --- registros hostis -----------------------------------------------------------------------------
 def _portable(entry: dict[str, str], root: Path) -> FrozenExperimentConfig:
     return FrozenExperimentConfig(
         experiment_id="t",
@@ -311,7 +315,7 @@ def test_scientific_input_outside_the_repository_is_refused(tmp_path: Path) -> N
         freeze._file_entry("experiment_config", outside, repo)
 
 
-# --- legacy absolute-path records still verify (not portable by construction) ---------------
+# --- registros legados de caminho absoluto ainda verificam (não portáveis por construção) ---------
 def test_legacy_absolute_path_records_are_still_verified(tmp_path: Path) -> None:
     target = tmp_path / "a.yaml"
     target.write_text("a: 1\n", encoding="utf-8")
@@ -336,7 +340,7 @@ def test_legacy_record_that_is_missing_keeps_failing(tmp_path: Path) -> None:
         FrozenExperimentConfig("t", Path("."), {"files": [entry], "derived": []}, {}).validate()
 
 
-# --- the real final campaign configs -------------------------------------------------------------
+# --- as configs reais da campanha final -----------------------------------------------------------
 @pytest.mark.parametrize("name", sorted(FINAL_CONFIGS))
 def test_final_campaign_freeze_is_portable(name: str) -> None:
     config_path = FINAL_CONFIGS[name]
@@ -352,7 +356,7 @@ def test_final_campaign_freeze_is_portable(name: str) -> None:
         assert "path" not in entry
         assert resolve_repo_relative(root, entry["relative_path"]).is_file()
     assert any(entry["relative_path"].startswith("experiments/configs/") for entry in files)
-    # every scientific input of the final campaign lives inside the repository
+    # toda entrada científica da campanha final vive dentro do repositório
     assert not checksums["missing_files"]
     FrozenExperimentConfig(name, REPO, checksums, {}, repository_root=root).validate()
 

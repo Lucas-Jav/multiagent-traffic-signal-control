@@ -15,11 +15,13 @@ from traffic_agents.domain import (
 
 
 class PhaseSafetyViolationError(ValueError):
-    """Raised when a controller intent cannot be converted to a safe phase command."""
+    """Lançada quando uma intenção de controlador não pode ser convertida em um comando de fase
+    seguro.
+    """
 
 
 class UnsafePhaseProgramError(ValueError):
-    """Raised when the configured SUMO phase program contains unsafe definitions."""
+    """Lançada quando o programa de fases SUMO configurado contém definições inseguras."""
 
 
 class PhaseCommandKind(StrEnum):
@@ -56,10 +58,10 @@ class PhaseCommand:
     phase_id: str
     phase_index: int
     hold_remaining_seconds: float | None = None
-    """Remaining green time the actuator must grant a kept green phase.
+    """Tempo de verde restante que o atuador deve conceder a uma fase verde mantida.
 
-    ``None`` means the command does not extend the SUMO phase timer (transition
-    phases, or a safety manager without a configured ``max_green_seconds``).
+    ``None`` significa que o comando não estende o temporizador de fase do SUMO (fases de
+    transição, ou um gerenciador de segurança sem ``max_green_seconds`` configurado).
     """
 
     @classmethod
@@ -141,7 +143,7 @@ class PhaseSafetyManager:
 
         elapsed = observation.state.phase_elapsed
         if self.max_green_seconds is not None and elapsed >= self.max_green_seconds:
-            # max_green reached: force the regular yellow/all-red sequence.
+            # max_green atingido: força a sequência regular de amarelo/vermelho total.
             return PhaseCommand.set_phase(self._next_phase_after(current_phase))
 
         if action.kind == TrafficLightActionKind.KEEP_PHASE:

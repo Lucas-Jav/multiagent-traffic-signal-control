@@ -289,7 +289,7 @@ class CooperativePressureAdjustment:
             return
 
         incoming_edge_id = self._edge_id_between(message.source, message.destination)
-        # "projected" is a historical name: current-state estimate, not a temporal forecast.
+        # "projected" é um nome histórico: estimativa do estado atual, não uma previsão temporal.
         projected_demand = sum(message.outgoing_queue_summary.values()) + message.arrival_trend
         pressure_bonus = max(message.outgoing_pressure, 0.0) * self.config.directed_pressure_weight
         for movement in self.movements_by_incoming_edge.get(incoming_edge_id, ()):

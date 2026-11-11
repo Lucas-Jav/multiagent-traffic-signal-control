@@ -1,10 +1,10 @@
-"""Deterministic BEFORE/AFTER recording orchestration.
+"""Orquestração determinística da gravação ANTES/DEPOIS.
 
-Two SUMO GUI instances are initialised from identical frozen inputs and advanced in lock-step, by
-simulation step (never by wall-clock). Frame ``k`` of both sides is the state at the end of
-simulation step ``start_step + k``. The pipeline is:
+Duas instâncias do SUMO GUI são inicializadas a partir de entradas congeladas idênticas e
+avançadas em lock-step, por passo de simulação (nunca por relógio de parede). O frame ``k`` de
+ambos os lados é o estado ao fim do passo de simulação ``start_step + k``. O pipeline é:
 
-    capture (SUMO GUI screenshots, both sides, same step) -> compose overlays -> FFmpeg
+    captura (screenshots do SUMO GUI, ambos os lados, mesmo passo) -> compor overlays -> FFmpeg
 """
 
 from __future__ import annotations
@@ -88,11 +88,11 @@ VIDEO_VARIANTS: tuple[str, ...] = ("before", "after", "side_by_side")
 
 
 class ReplayError(RuntimeError):
-    """Raised for invalid recording requests or a failed recording."""
+    """Lançada para solicitações de gravação inválidas ou uma gravação que falhou."""
 
 
 class SimulationSyncError(ReplayError):
-    """Raised when BEFORE and AFTER are not at the same simulation step/time."""
+    """Lançada quando ANTES e DEPOIS não estão no mesmo passo/tempo de simulação."""
 
 
 @dataclass(frozen=True)
@@ -126,7 +126,7 @@ class RecordingResult:
 
 
 def validate_interval(start_step: int, end_step: int, total_steps: int) -> None:
-    """Frames cover steps ``[start_step, end_step)`` of the scenario's ``total_steps``."""
+    """Os frames cobrem os passos ``[start_step, end_step)`` dos ``total_steps`` do cenário."""
 
     if start_step < 0:
         msg = f"start_step must be non-negative, got {start_step}"
@@ -140,7 +140,9 @@ def validate_interval(start_step: int, end_step: int, total_steps: int) -> None:
 
 
 class StepSynchronizer:
-    """Asserts BEFORE and AFTER sit at the same simulation step (synchronised by step only)."""
+    """Garante que ANTES e DEPOIS estão no mesmo passo de simulação (sincronizados apenas por
+    passo).
+    """
 
     def __init__(self, step_length: float) -> None:
         self._step_length = step_length
@@ -168,7 +170,7 @@ def capture_fingerprint(
     resolution: tuple[int, int],
     reference_vehicle_id: str | None,
 ) -> str:
-    """Everything that determines the captured pixels; reuse is only safe if it is unchanged."""
+    """Tudo que determina os pixels capturados; o reuso só é seguro se isso não tiver mudado."""
 
     return json_sha256(
         {
@@ -211,7 +213,7 @@ def capture_frames(
     geometry: NetworkGeometry,
     reference_vehicle_id: str | None,
 ) -> dict[str, list[VisualMetricsRow]]:
-    """Advance both simulations in lock-step and screenshot every step in the interval."""
+    """Avança as duas simulações em lock-step e captura a tela a cada passo do intervalo."""
 
     width, height = resolution
     before_side = sides["before"]
@@ -267,7 +269,7 @@ def _highlight_reference_vehicle(
     connection: Any,
     reference_vehicle_id: str | None,
 ) -> None:
-    """Visual halo around the pre-selected vehicle (GUI only; no effect on the simulation)."""
+    """Halo visual em torno do veículo pré-selecionado (somente GUI; sem efeito na simulação)."""
 
     if reference_vehicle_id is None or state.highlighted:
         return
@@ -315,7 +317,7 @@ def compose_frames(
     shock: ShockMarker | None,
     variant: str,
 ) -> Iterator[Image.Image]:
-    """Yield one composed frame per frame index for ``before``, ``after`` or ``side_by_side``."""
+    """Produz um frame composto por índice para ``before``, ``after`` ou ``side_by_side``."""
 
     if variant not in VIDEO_VARIANTS:
         msg = f"unknown video variant {variant!r}"

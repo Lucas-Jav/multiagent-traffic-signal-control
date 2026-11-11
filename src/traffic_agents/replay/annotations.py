@@ -1,7 +1,7 @@
-"""Annotation rules for the replay: S3 shock marker and the deterministic reference vehicle.
+"""Regras de anotação do replay: marcador de choque do S3 e veículo de referência determinístico.
 
-Both rules read official scenario / route artifacts. Nothing here depends on simulation outcomes,
-so the annotations can never favour a controller.
+Ambas as regras leem artefatos oficiais de cenário / rota. Nada aqui depende de resultados da
+simulação, portanto as anotações nunca podem favorecer um controlador.
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ REFERENCE_VEHICLE_RULE = (
 
 @dataclass(frozen=True)
 class ShockMarker:
-    """Step window (inclusive start, exclusive end) in which the shock banner is displayed."""
+    """Janela de passos (início inclusivo, fim exclusivo) em que o banner de choque é exibido."""
 
     start_step: int
     end_step: int
@@ -36,7 +36,7 @@ class ShockMarker:
 
 
 def shock_marker_for(config: ScenarioConfig) -> ShockMarker | None:
-    """Marker anchored on the official ``traffic.shock_start_seconds`` (S3 only)."""
+    """Marcador ancorado no ``traffic.shock_start_seconds`` oficial (somente S3)."""
 
     start_step = config.shock_start_step
     if start_step is None:
@@ -50,7 +50,7 @@ def select_reference_vehicle(
     *,
     earliest_depart_seconds: float,
 ) -> OfferedVehicle | None:
-    """Deterministic reference vehicle to highlight (never chosen by travel-time outcome)."""
+    """Veículo de referência determinístico a destacar (nunca escolhido pelo tempo de viagem)."""
 
     eligible = [
         vehicle

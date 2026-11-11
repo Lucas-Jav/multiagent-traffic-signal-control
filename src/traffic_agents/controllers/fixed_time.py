@@ -28,17 +28,17 @@ FIXED_TIME_CONTROLLER_VERSION = "0.1.0"
 
 
 class UnsupportedControllerError(ValueError):
-    """Raised when a simulation requests an unsupported controller."""
+    """Lançada quando uma simulação solicita um controlador não suportado."""
 
 
 @dataclass(frozen=True)
 class FixedTimeController:
-    """Baseline controller that leaves the SUMO fixed-time program untouched.
+    """Controlador baseline que deixa o programa de tempo fixo do SUMO intacto.
 
-    This is the historical Pilot V2 baseline (documented as ``B0_FIXED_STATIC``): the static
-    98 s plan stored in ``network.net.xml``. Its ``controller_id`` stays ``B0_FIXED`` so that Pilot
-    V2 artifacts remain valid. The final calibrated variant is ``B0_FIXED_CALIBRATED``
-    (``fixed_time_plan.py``).
+    Este é o baseline histórico do Pilot V2 (documentado como ``B0_FIXED_STATIC``): o plano
+    estático de 98 s armazenado em ``network.net.xml``. Seu ``controller_id`` permanece
+    ``B0_FIXED`` para que os artefatos do Pilot V2 continuem válidos. A variante calibrada final
+    é ``B0_FIXED_CALIBRATED`` (``fixed_time_plan.py``).
     """
 
     controller_id: ClassVar[str] = FIXED_TIME_CONTROLLER_ID

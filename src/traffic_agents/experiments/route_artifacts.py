@@ -25,7 +25,7 @@ FLOW_RATE_TOLERANCE = 0.1
 
 
 class RouteArtifactValidationError(ValueError):
-    """Raised when generated route artifacts no longer match the scenario config."""
+    """Lançada quando os artefatos de rota gerados deixam de corresponder à config do cenário."""
 
 
 def route_metadata_path(route_path: Path) -> Path:
@@ -95,18 +95,19 @@ def _validate_text_artifact_hash(
     legacy_table: Mapping[str, str],
     required: bool,
 ) -> None:
-    """Check a text artifact against its metadata identity, independent of line endings.
+    """Verifica um artefato de texto contra a identidade dos metadados, ignorando quebras de linha.
 
-    Acceptance order (this only decides whether an artifact is accepted; it never alters the
-    artifact or anything the simulation reads):
+    Ordem de aceitação (isto apenas decide se um artefato é aceito; nunca altera o artefato nem
+    nada que a simulação lê):
 
-    1. metadata carries ``<label>_canonical_sha256`` (``CANONICAL_TEXT_LF_V1``): the file's
-       canonical hash must equal it;
-    2. otherwise the historical raw hash (``route_hash`` / ``network_hash``): a raw match is
-       accepted exactly as before;
-    3. on a raw mismatch the file is accepted only if the recorded raw hash is a KNOWN legacy
-       identity and the file's canonical hash equals the trusted canonical value stored for it
-       (proof that only line endings differ). Unknown recorded hashes are rejected.
+    1. os metadados trazem ``<label>_canonical_sha256`` (``CANONICAL_TEXT_LF_V1``): o hash
+       canônico do arquivo deve ser igual a ele;
+    2. caso contrário, o hash bruto histórico (``route_hash`` / ``network_hash``): uma
+       correspondência bruta é aceita exatamente como antes;
+    3. em uma divergência bruta, o arquivo só é aceito se o hash bruto registrado for uma
+       identidade legada CONHECIDA e o hash canônico do arquivo for igual ao valor canônico
+       confiável armazenado para ela (prova de que só as quebras de linha diferem). Hashes
+       registrados desconhecidos são rejeitados.
     """
 
     data = path.read_bytes()

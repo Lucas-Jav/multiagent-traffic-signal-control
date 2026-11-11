@@ -1,15 +1,18 @@
-"""SUMO GUI session used to capture frames, driven by the project's own simulation runner.
+"""Sessão do SUMO GUI usada para capturar frames, conduzida pelo executor de simulação do projeto.
 
-The runner (``TraCISimulationRunner``) is reused unchanged: controller timing
-(``before_simulation_step`` / ``simulationStep`` / ``after_simulation_step``), seed, network and
-route files are exactly the ones used in experiments. This module only adds GUI-side behaviour:
+O executor (``TraCISimulationRunner``) é reutilizado sem alterações: o timing do controlador
+(``before_simulation_step`` / ``simulationStep`` / ``after_simulation_step``), a seed, a rede e
+os arquivos de rotas são exatamente os usados nos experimentos. Este módulo apenas adiciona
+comportamento do lado da GUI:
 
-* a read-only view of the GUI settings file and window size on the command line;
-* screenshot requests, which SUMO satisfies at the END of the next ``simulationStep``;
-* a gate that waits for that screenshot file before any further TraCI command is issued, so the
-  rendered frame can never race with controller commands executed after the step.
+* uma visão somente leitura do arquivo de configurações da GUI e do tamanho da janela na linha
+  de comando;
+* solicitações de captura de tela, que o SUMO atende ao FIM do próximo ``simulationStep``;
+* uma barreira que espera esse arquivo de captura antes que qualquer outro comando TraCI seja
+  emitido, de modo que o frame renderizado nunca dispute com comandos do controlador executados
+  após o passo.
 
-None of this feeds back into the simulation: it only changes wall-clock time.
+Nada disso realimenta a simulação: apenas altera o tempo de relógio de parede.
 """
 
 from __future__ import annotations
@@ -28,13 +31,13 @@ _POLL_SECONDS = 0.01
 
 
 class ScreenshotError(RuntimeError):
-    """Raised when SUMO does not deliver a requested screenshot."""
+    """Lançada quando o SUMO não entrega uma captura de tela solicitada."""
 
 
 def wait_for_stable_file(
     path: Path, *, timeout_seconds: float = SCREENSHOT_TIMEOUT_SECONDS
 ) -> None:
-    """Block until ``path`` exists and its size stopped changing (fully written)."""
+    """Bloqueia até ``path`` existir e seu tamanho parar de mudar (escrita completa)."""
 
     deadline = time.monotonic() + timeout_seconds
     last_size = -1
@@ -50,7 +53,7 @@ def wait_for_stable_file(
 
 
 class _GatedConnection:
-    """TraCI connection proxy: ``simulationStep`` also waits for a pending screenshot."""
+    """Proxy da conexão TraCI: ``simulationStep`` também espera uma captura de tela pendente."""
 
     def __init__(self, inner: Any, after_step: Callable[[], None]) -> None:
         self._inner = inner
@@ -66,7 +69,7 @@ class _GatedConnection:
 
 
 class ReplayRunner(TraCISimulationRunner):
-    """``TraCISimulationRunner`` in GUI mode with deterministic screenshot support."""
+    """``TraCISimulationRunner`` em modo GUI com suporte a captura de tela determinística."""
 
     def __init__(
         self,
@@ -119,7 +122,7 @@ class ReplayRunner(TraCISimulationRunner):
 
     @property
     def traci_connection(self) -> Any:
-        """The raw TraCI connection (read-only queries and GUI calls only)."""
+        """A conexão TraCI bruta (somente consultas de leitura e chamadas de GUI)."""
 
         if self._inner_connection is None:
             msg = "replay runner has not been started"
@@ -127,7 +130,7 @@ class ReplayRunner(TraCISimulationRunner):
         return self._inner_connection
 
     def frame_for_view(self, view: ViewWindow, *, width: int, height: int) -> None:
-        """Frame the world rectangle ``view`` in every following screenshot."""
+        """Enquadra o retângulo do mundo ``view`` em toda captura de tela seguinte."""
 
         assert self._view_id is not None
         self._shot_size = (width, height)
@@ -136,7 +139,7 @@ class ReplayRunner(TraCISimulationRunner):
         )
 
     def request_screenshot(self, path: Path) -> None:
-        """Ask SUMO for a screenshot of the state at the end of the NEXT simulation step."""
+        """Pede ao SUMO uma captura de tela do estado ao fim do PRÓXIMO passo de simulação."""
 
         assert self._view_id is not None
         path.parent.mkdir(parents=True, exist_ok=True)

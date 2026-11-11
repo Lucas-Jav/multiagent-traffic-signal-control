@@ -98,7 +98,7 @@ def write_telemetry(run_dir: Path, *, steps: int = 30) -> None:
     lane_count = len(LANES)
     step_index = np.repeat(np.arange(steps, dtype=np.int32), lane_count)
     queue = np.zeros((steps, lane_count), dtype=np.int16)
-    queue[:, 0] = np.arange(steps)  # one unique lane carries the whole network queue
+    queue[:, 0] = np.arange(steps)  # uma única lane carrega toda a fila da rede
     pq.write_table(
         pa.table(
             {
@@ -127,7 +127,7 @@ def build_run(tmp_path: Path, *, with_tripinfo: bool = True) -> tuple[Path, Path
     run_dir = tmp_path / "run"
     (run_dir / "sumo").mkdir(parents=True)
     route_path = tmp_path / "routes.rou.xml"
-    # scheduled departure of v0..v5: warmup, then five cohort vehicles.
+    # partida programada de v0..v5: warmup, depois cinco veículos da coorte.
     write_route_file(
         route_path,
         {"v0": 2.0, "v1": 12.0, "v2": 21.0, "v3": 22.0, "v4": 25.0, "v5": 29.0},
@@ -136,7 +136,7 @@ def build_run(tmp_path: Path, *, with_tripinfo: bool = True) -> tuple[Path, Path
         write_tripinfo(
             run_dir / "sumo" / "tripinfo.xml",
             [
-                # scheduled during warmup, arrives inside the window (counts as throughput only)
+                # programado durante o warmup, chega dentro da janela (conta apenas como throughput)
                 dict(
                     id="base_left1A1.0",
                     depart=2,
@@ -167,7 +167,7 @@ def build_run(tmp_path: Path, *, with_tripinfo: bool = True) -> tuple[Path, Path
                     loss=6,
                     stops=2,
                 ),
-                # inserted but not arrived at the end of the run
+                # inserido mas não chegou ao fim da execução
                 dict(
                     id="base_left1A1.3",
                     depart=24,
@@ -220,13 +220,14 @@ def finalize(tmp_path: Path, **overrides: Any) -> dict[str, Any]:
 def test_offered_inserted_arrived_populations_are_separated(tmp_path: Path) -> None:
     metrics = finalize(tmp_path)["metrics"]
 
-    # Whole run: 6 offered, 4 inserted, 3 arrived, 2 never inserted, 1 still in the network.
+    # Execução inteira: 6 ofertados, 4 inseridos, 3 chegaram, 2 nunca inseridos, 1 ainda na rede.
     assert metrics["full_run_offered_vehicle_count"] == 6
     assert metrics["full_run_departed_vehicle_count"] == 4
     assert metrics["full_run_arrived_vehicle_count"] == 3
     assert metrics["full_run_never_inserted_vehicle_count"] == 2
     assert metrics["full_run_unfinished_in_network_count"] == 1
-    # Measurement cohort (scheduled inside [10, 30)): v1..v5 only; warmup vehicle v0 excluded.
+    # Coorte de medição (programados dentro de [10, 30)): apenas v1..v5; o veículo de warmup v0 é
+    # excluído.
     assert metrics["offered_vehicle_count"] == 5
     assert metrics["departed_vehicle_count"] == 3
     assert metrics["arrived_vehicle_count"] == 2
@@ -246,10 +247,10 @@ def test_throughput_counts_window_arrivals_and_warmup_demand_does_not_enter_coho
 ) -> None:
     metrics = finalize(tmp_path)["metrics"]
 
-    # v0 (scheduled in warmup) arrives at t=12 inside the window: flow count only.
+    # v0 (programado no warmup) chega em t=12 dentro da janela: apenas contagem de fluxo.
     assert metrics["throughput"] == 3
     assert metrics["measurement_arrivals_from_warmup_offered_count"] == 1
-    # Completed-trip metrics use the cohort (v1, v2) and exclude the warmup vehicle v0.
+    # As métricas de viagens concluídas usam a coorte (v1, v2) e excluem o veículo de warmup v0.
     assert metrics["completed_trip_count"] == 2
     assert metrics["mean_travel_time"] == pytest.approx((8 + 5) / 2)
     assert metrics["mean_waiting_time"] == pytest.approx((2 + 4) / 2)
@@ -263,12 +264,12 @@ def test_insertion_delay_and_never_inserted_backlog_are_reported_separately(
 ) -> None:
     metrics = finalize(tmp_path)["metrics"]
 
-    # Delays of the three inserted cohort vehicles (v1=0, v2=2, v3=2).
+    # Atrasos dos três veículos da coorte inseridos (v1=0, v2=2, v3=2).
     assert metrics["total_depart_delay_seconds"] == 4
     assert metrics["mean_depart_delay_seconds"] == pytest.approx(4 / 3)
-    # Lower bound for the never-inserted v4 (25) and v5 (29) with the run ending at t=30.
+    # Limite inferior para v4 (25) e v5 (29), nunca inseridos, com a execução terminando em t=30.
     assert metrics["never_inserted_backlog_delay_lower_bound_seconds"] == (30 - 25) + (30 - 29)
-    # Never-inserted vehicles are not folded into completed-trip travel time.
+    # Veículos nunca inseridos não são incorporados ao tempo de viagem de viagens concluídas.
     assert metrics["mean_travel_time"] == pytest.approx(6.5)
 
 
@@ -303,7 +304,8 @@ def test_post_shock_queue_auc_is_trapezoidal_over_network_total_queue(tmp_path: 
     assert metrics["pre_shock_mean_network_queue_vehicles"] == pytest.approx(
         np.arange(WARMUP, shock_step).mean()
     )
-    # Population by SCHEDULED time: only v2 (21) and v3 (22, unfinished) are post-shock; v2 done.
+    # População por tempo PROGRAMADO: apenas v2 (21) e v3 (22, não finalizado) são pós-choque; v2
+    # concluído.
     assert metrics["post_shock_completed_trip_count"] == 1
     assert metrics["post_shock_time_loss"] == pytest.approx(6.0)
     assert metrics["pre_shock_time_loss"] == pytest.approx(3.0)
@@ -330,7 +332,7 @@ def test_communication_and_performance_metrics_are_carried_into_run_metrics(
 def test_corridor_metrics_use_route_membership(tmp_path: Path) -> None:
     metrics = finalize(tmp_path)["metrics"]
 
-    # every synthetic vehicle traverses A1B1 -> B1C1 (corridor definition v2).
+    # todo veículo sintético atravessa A1B1 -> B1C1 (definição de corredor v2).
     assert metrics["corridor_throughput"] == 3
     assert metrics["corridor_mean_travel_time"] == pytest.approx(6.5)
 
@@ -428,7 +430,7 @@ def test_truncated_run_uses_effective_window_and_flags_incomplete_horizon(
 
     assert payload["windows"]["horizon_complete"] is False
     assert payload["windows"]["effective_measurement_end_seconds"] == WARMUP + 8
-    # cohort = vehicles scheduled in [10, 18): only v1 (12).
+    # coorte = veículos programados em [10, 18): apenas v1 (12).
     assert payload["metrics"]["offered_vehicle_count"] == 1
 
 

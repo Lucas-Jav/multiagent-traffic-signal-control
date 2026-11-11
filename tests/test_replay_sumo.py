@@ -1,4 +1,4 @@
-"""Scientific isolation: capturing frames must not change the simulation (needs SUMO GUI)."""
+"""Isolamento científico: capturar frames não deve alterar a simulação (requer SUMO GUI)."""
 
 from __future__ import annotations
 
