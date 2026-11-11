@@ -146,17 +146,17 @@
     "total": 290
   },
   "freeze_name": "FINAL_SCIENTIFIC_CAMPAIGN_FREEZE",
-  "generated_at": "2026-10-14T16:25:39Z",
+  "generated_at": "2026-11-11T13:32:54Z",
   "identity": {
-    "freeze_tooling_git_sha": "176178e36eeafb329a5a1350161be61cf97902b0",
+    "freeze_tooling_git_sha": "c7086250c4f04d39d11f9702a9e849e7dba7574c",
     "git_working_tree_dirty_at_input_inspection": false,
     "note": "git_working_tree_dirty_at_input_inspection describes the tree while the scientific inputs were inspected; evidence written afterwards does not retroactively make that inspection dirty.",
-    "scientific_source_git_sha": "176178e36eeafb329a5a1350161be61cf97902b0",
+    "scientific_source_git_sha": "c7086250c4f04d39d11f9702a9e849e7dba7574c",
     "scientific_source_is_ancestor_of_head": true,
     "scientific_tree_file_count": 183,
-    "scientific_tree_sha256": "b713917890e2dc65b7c25dfca80c627a7607146539bd2dadf5613f70451cdeff",
+    "scientific_tree_sha256": "42e36f8e1bbd0a6ee0632a239f407630099d545f4a6e01690c5a2b09e4410494",
     "scientific_tree_unchanged_from_source": true,
-    "source_scientific_tree_sha256": "b713917890e2dc65b7c25dfca80c627a7607146539bd2dadf5613f70451cdeff"
+    "source_scientific_tree_sha256": "42e36f8e1bbd0a6ee0632a239f407630099d545f4a6e01690c5a2b09e4410494"
   },
   "intersection_terminology": {
     "academic_ids": [
@@ -276,7 +276,7 @@
   "replay": {
     "implemented_at_freeze": true,
     "note": "The synchronized before/after replay system exists at the frozen implementation. Replay outputs are illustrative and are NOT part of the 290 scientific runs.",
-    "replay_tree_sha256": "a36d337869ded1af5c887b18b04b145cd603d6fb6a281392babb8ff45ef98c0f"
+    "replay_tree_sha256": "5b7d2f8a236f25072860cc87b19353a88203aa279304bb104755c942910148e9"
   },
   "s5_matrix": {
     "config": "experiments/configs/final_s5_packet_loss.yaml",
