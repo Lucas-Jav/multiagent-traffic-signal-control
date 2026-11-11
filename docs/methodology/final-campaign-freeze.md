@@ -294,3 +294,23 @@ relativos POSIX) estão descritos nas seções acima. Evidência versionada em
 Verificação: `python scripts/build_final_freeze.py --verify --scientific-source-sha
 176178e36eeafb329a5a1350161be61cf97902b0` (OK). Após o commit do registro do freeze, o SHA fonte
 continua sendo `176178e…`; `HEAD` passa a ser descendente (a árvore científica não muda).
+
+## Regeneração do freeze após tradução de comentários (identidade histórica preservada)
+
+Os valores da tabela acima (`176178e…`, árvore `b713917…`, manifesto `de4af93…`) são a identidade
+**histórica** sob a qual as 290 execuções e a análise final foram produzidas; permanecem nos
+documentos e scripts da análise como registro dessa identidade.
+
+Depois, comentários e docstrings foram traduzidos para português (somente prosa; o código é
+idêntico, conferido por comparação de AST), o que altera os bytes da árvore científica. O freeze
+foi então regenerado, sem executar simulações, sobre o commit `c7086250c4f04d39d11f9702a9e849e7dba7574c`:
+
+| Item | Valor |
+|---|---|
+| `SCIENTIFIC_SOURCE_GIT_SHA` | `c7086250c4f04d39d11f9702a9e849e7dba7574c` |
+| `SCIENTIFIC_TREE_SHA256` | `42e36f8e1bbd0a6ee0632a239f407630099d545f4a6e01690c5a2b09e4410494` |
+| `FREEZE_MANIFEST_SHA256` | `2b1ab6d85d3cfef537f56c050b67f67b7c9d994fe1357d9822a48c06d2815706` |
+
+O manifesto versionado em `docs/evidencias/final-freeze/` reflete esta regeneração. Verificação:
+`python scripts/build_final_freeze.py --verify` (OK). Para a identidade histórica, consulte o
+commit `176178e…` e o histórico git do manifesto.
